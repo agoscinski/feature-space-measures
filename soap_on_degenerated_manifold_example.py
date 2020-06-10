@@ -1,17 +1,12 @@
 import sys
+sys.path.insert(0, "/home/alexgo/lib/librascal/build")
 
-sys.path.insert(0, "/local/scratch/goscinsk/lib/librascal/build")
 from feature_space_measures import reconstruction_measure_matrix
 from rascal.representations import SphericalInvariants
 import numpy as np
 import scipy
 
 import ase.io
-
-import matplotlib.pyplot as plt
-from matplotlib import rc
-
-rc("text", usetex=True)
 
 
 frames_minus = ase.io.read("data/manif-minus.extxyz", ":")
@@ -86,41 +81,3 @@ soap_ps_gto_features = representation.transform(frames).get_features_by_species(
 
 feature_spaces = [soap_rs_dvr_features, soap_rs_gto_features, soap_ps_dvr_features, soap_ps_gto_features]
 FRE_matrix, FRD_matrix = reconstruction_measure_matrix(feature_spaces)
-
-
-def plot_feature_space_measure_matrix(measure_matrix):
-    plt.figure(figsize=(8, 8))
-    plt.imshow(measure_matrix)
-    plt.yticks(
-        np.arange(4),
-        [
-            r"$\textrm{RS}_{\textrm{DVR}}$",
-            r"$\textrm{RS}_{\textrm{GTO}}$",
-            r"$\textrm{PS}_{\textrm{DVR}}$",
-            r"$\textrm{PS}_{\textrm{GTO}}$",
-        ],
-        fontsize=19,
-    )
-    plt.xticks(
-        np.arange(4),
-        [
-            r"$\textrm{RS}_{\textrm{DVR}}$",
-            r"$\textrm{RS}_{\textrm{GTO}}$",
-            r"$\textrm{PS}_{\textrm{DVR}}$",
-            r"$\textrm{PS}_{\textrm{GTO}}$",
-        ],
-        fontsize=19,
-    )
-    plt.ylim(-0.5, 3.5)
-    plt.title("Distortion $\|\\tilde{X}_{F'}-X_F Q\|/\|\\tilde{X}_{F'}'\|$", fontsize=22)
-    plt.xlabel("$X_{F'}$", fontsize=22)
-    plt.ylabel("$X_F$", fontsize=22)
-    cb = plt.colorbar()
-    cb.ax.tick_params(labelsize="x-large")
-    plt.tight_layout()
-    plt.show()
-    plt.close()
-
-
-plot_feature_space_measure_matrix(FRE_matrix)
-plot_feature_space_measure_matrix(FRD_matrix)

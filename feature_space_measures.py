@@ -2,46 +2,75 @@ import numpy as np
 import scipy
 
 
+def two_split_feature_space_reconstruction_measures(features1, features2, svd_method="gesdd", noise_removal=False, seed=0x5f3759df):
+    """
+    Computes the FRE and FRD of features2 from features1 with a two-split
+
+    Parameters:
+    ----------
+    features1 (array): feature space X_F as in the paper, samples x features
+    features2 (array): feature space X_{F'} as in the paper, samples x features
+
+    Returns:
+    --------
+    double: FRE(X_{F},X_{F'}) scalar value
+    double: FRD(X_{F},X_{F'}) scalar value
+    """
+    np.random.seed(seed)
+    idx = np.arange(len(features1))
+    np.random.shuffle(idx)
+    split_id = int(len(idx)/2)
+    features1_train = features1[idx[:split_id]]
+    features1_test = features1[idx[split_id:]]
+    features2_train = features2[idx[:split_id]]
+    features2_test = features2[idx[split_id:]]
+    reconstruction_weights = feature_space_reconstruction_weights(features1_train, features2_train, svd_method)
+    return feature_space_reconstruction_measures(features1_test, features2_test, reconstruction_weights, svd_method)
+
 def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
     """
     Computes the minimal weights reconstructing features2 from features1
 
     Parameters:
     ----------
-    features1 (array): feature space X_F as in the paper
-    features2 (array): feature space X_{F'} as in the paper
+    features1 (array): feature space X_F as in the paper, samples x features
+    features2 (array): feature space X_{F'} as in the paper, samples x features
 
     Returns:
+    --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
     return np.linalg.lstsq(features1, features2, rcond=None)[0]
 
-
-def feature_space_reconstruction_measures(features1, features2, svd_method="gesdd"):
+def feature_space_reconstruction_measures(features1, features2, reconstruction_weights=None, svd_method="gesdd", noise_removal=False):
     """
     Computes the FRE and FRD of features2 from features1
 
     Parameters:
     ----------
-    features1 (array): feature space X_F as in the paper
-    features2 (array): feature space X_{F'} as in the paper
+    features1 (array): feature space X_F as in the paper, samples x features
+    features2 (array): feature space X_{F'} as in the paper, samples x features
+    reconstruction_weights (array):  weights defined by P = argmin_{P'} \| X_{F'} - (X_F)P' \|
 
     Returns:
-    array: FRE(X_{F},X_{F'})
-    array: FRD(X_{F},X_{F'})
+    --------
+    double: FRE(X_{F},X_{F'}) scalar value
+    double: FRD(X_{F},X_{F'}) scalar value
     """
-
-    # P = argmin_{P'} \| X_{F'} - (X_F)P' \|
-    P = feature_space_reconstruction_weights(features1, features2, svd_method)
-
+    if reconstruction_weights is None:
+        reconstruction_weights = feature_space_reconstruction_weights(features1, features2, svd_method)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
-    FRE = np.linalg.norm(features1.dot(P) - features2) / np.linalg.norm(features2)
+    FRE = np.linalg.norm(features1.dot(reconstruction_weights) - features2) / np.linalg.norm(features2)
 
     # P = U S V, we use svd because it is more stable than eigendecomposition
-    U, S, V = scipy.linalg.svd(P, lapack_driver=svd_method)
+    U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver=svd_method)
 
     # Remove noise, TODO this is still an absolute method which needs to be made relative
-    S[S < 1e-9] = 0
+    if noise_removal:
+        print("Warning option not fully coded. Please dont use")
+        # TODO make the below relative
+        #S[S < 1e-9] = 0
+        S = S
 
     # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
     # => \tilde{X}_{F'} V.T = X_F U S
@@ -61,6 +90,28 @@ def feature_space_reconstruction_measures(features1, features2, svd_method="gesd
     FRD /= np.linalg.norm(reconstructed_features2_VT)
     return FRE, FRD
 
+
+def two_split_reconstruction_measure_matrix(feature_spaces,  svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
+    """
+    Computes the FRE and FRD of features2 from features1
+
+    Parameters:
+    ----------
+    feature_spaces (list): a list of feature spaces [X_{H_1}, ..., X_{H_n}]
+
+    Returns:
+    array: a matrix containing the FRE(X_{H_i},X_{H_j})
+    array: a matrix containing the FRD(X_{H_i},X_{H_j})
+    """
+
+    FRE_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
+    FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
+    for i in range(len(feature_spaces)):
+        for j in range(len(feature_spaces)):
+            FRE_matrix[i, j], FRD_matrix[i, j] = two_split_feature_space_reconstruction_measures(
+                feature_spaces[i], feature_spaces[j], svd_method, noise_removal, seed
+            )
+    return FRE_matrix, FRD_matrix
 
 def reconstruction_measure_matrix(feature_spaces):
     """
