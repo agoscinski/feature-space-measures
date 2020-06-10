@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf-8
-import sys
-sys.path.insert(0, "/home/alexgo/lib/librascal/build")
-
 import hashlib
 import json
 
