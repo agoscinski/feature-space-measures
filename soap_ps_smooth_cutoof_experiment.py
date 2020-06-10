@@ -12,24 +12,21 @@ nb_samples = 10000
 # In [7]: frames = ase.io.read("data/selection-10k.extxyz", ':'); np.max([np.max(frame.get_all_distances()) for frame in frames]) #
 # Out[7]: 5.936250715807484
 cutoff = 6
-max_radial = 12
-max_angular = 7
 normalize = False
 
 ## Tested hyperparameters
-radial_bases = ["DVR", "GTO"]
-soap_types = ["RadialSpectrum", "PowerSpectrum", "BiSpectrum"]
+smooth_cutoffs = [1, 3, 5]
 features_hypers = [{
-    "soap_type": "RadialSpectrum",
-    "radial_basis": "DVR",
+    "soap_type": "PowerSpectrum",
+    "radial_basis": "GTO",
     "interaction_cutoff": cutoff,
-    "max_radial": max_radial,
-    "max_angular": max_angular,
-    "gaussian_sigma_constant": 0.3,
+    "max_radial": 10,
+    "max_angular": 6,
+    "gaussian_sigma_constant": 0.1,
     "gaussian_sigma_type": "Constant",
-    "cutoff_smooth_width": 0.01,
+    "cutoff_smooth_width": smooth_cutoff,
     "normalize": normalize,
-} for radial_basis in radial_bases for soap_type in soap_types]
+} for smooth_cutoff in smooth_cutoffs]
 
 two_split = True
 if two_split:
