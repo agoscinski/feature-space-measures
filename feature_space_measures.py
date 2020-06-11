@@ -91,7 +91,7 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
     return FRE, FRD
 
 
-def two_split_reconstruction_measure_matrix(feature_spaces,  svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
+def two_split_reconstruction_measure_all_pairs(feature_spaces,  svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
     """
     Computes the FRE and FRD of features2 from features1
 
@@ -100,6 +100,7 @@ def two_split_reconstruction_measure_matrix(feature_spaces,  svd_method="gesdd",
     feature_spaces (list): a list of feature spaces [X_{H_1}, ..., X_{H_n}]
 
     Returns:
+    --------
     array: a matrix containing the FRE(X_{H_i},X_{H_j})
     array: a matrix containing the FRD(X_{H_i},X_{H_j})
     """
@@ -113,9 +114,9 @@ def two_split_reconstruction_measure_matrix(feature_spaces,  svd_method="gesdd",
             )
     return FRE_matrix, FRD_matrix
 
-def reconstruction_measure_matrix(feature_spaces):
+def reconstruction_measure_all_pairs(feature_spaces):
     """
-    Computes the FRE and FRD of features2 from features1
+    Computes the FRE and FRD for all feature_spaces pairs
 
     Parameters:
     ----------
@@ -136,7 +137,36 @@ def reconstruction_measure_matrix(feature_spaces):
     return FRE_matrix, FRD_matrix
 
 
-# Construction side ahead
+def two_split_reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
+    """
+    Computes the FRE and FRD of (feature_spaces1[i], feature_spaces2[i]) and (feature_spaces2[i], feature_spaces1[i]) pairs
+
+    Parameters:
+    ----------
+
+    Returns:
+    --------
+    array: a (2, len(feature_spaces1)) matrix containing the FRE(X_{H_i},Y_{H_i})
+    array: a (2, len(feature_spaces1)) matrix containing the FRD(X_{H_i},Y_{H_i})
+    """
+    assert(len(feature_spaces1)==len(feature_spaces2))
+    FRE_matrix = np.zeros((2, len(feature_spaces1)))
+    FRD_matrix = np.zeros((2, len(feature_spaces1)))
+    for i in range(len(feature_spaces1)):
+        FRE_matrix[0, i], FRD_matrix[0, i] = two_split_feature_space_reconstruction_measures(
+            feature_spaces1[i], feature_spaces2[i], svd_method, noise_removal, seed
+        )
+        FRE_matrix[1, i], FRD_matrix[1, i] = two_split_feature_space_reconstruction_measures(
+            feature_spaces2[i], feature_spaces1[i], svd_method, noise_removal, seed
+        )
+    return FRE_matrix, FRD_matrix
+
+def reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, svd_method="gesdd", noise_removal=False):
+    print("Error: Function not implemented yet")
+    return
+
+
+##### Construction side ahead
 
 # TODO tools for computing features from different kernels
 

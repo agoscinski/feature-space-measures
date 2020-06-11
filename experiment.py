@@ -3,7 +3,7 @@
 import hashlib
 import json
 
-from feature_space_measures import two_split_reconstruction_measure_matrix, reconstruction_measure_matrix
+from feature_space_measures import two_split_reconstruction_measure_all_pairs, reconstruction_measure_all_pairs, two_split_reconstruction_measure_pairwise, reconstruction_measure_pairwise
 from rascal.representations import SphericalInvariants
 import numpy as np
 import scipy
@@ -15,13 +15,23 @@ import subprocess
 DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
+# This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
+def gfr_pairwise_experiment(dataset_name, nb_samples, features_hypers1, features_hypers2, two_split, seed):
+    metadata, output_hash = store_metadata(dataset_name, nb_samples, list(zip(features_hypers1, features_hypers2)), two_split, seed)
+    data = read_dataset(dataset_name, nb_samples)
+    feature_spaces1 = compute_representations(features_hypers1, data)
+    feature_spaces2 = compute_representations(features_hypers2, data)
+    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces1, feature_spaces2)
+    store_results("mat-"+output_hash, FRE_matrix, FRD_matrix)
 
-def do_experiment(dataset_name, nb_samples, features_hypers, two_split, seed):
+# This experiment produces gfre and gfrd matrices for all pairs from features_hypers
+def gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, seed):
     metadata, output_hash = store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed)
     data = read_dataset(dataset_name, nb_samples)
     feature_spaces = compute_representations(features_hypers, data)
-    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(feature_spaces, two_split, seed)
-    store_results(output_hash, FRE_matrix, FRD_matrix)
+    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces)
+    store_results("mat-"+output_hash, FRE_matrix, FRD_matrix)
+
 
 def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed):
     metadata = {
@@ -41,7 +51,7 @@ def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed):
         "noise_removal": False, # option is not yet available, please do not change
         # if something general in the procedure is changed which cannot be captured with the above hyperparameters
         "git_last_commit_id": subprocess.check_output(["git", "describe" ,"--always"]).strip().decode("utf-8"),
-        "additional_info": "C-H evironment"
+        "additional_info": "CH4 environments"
     }
 
     sha = hashlib.sha1(json.dumps(metadata).encode('utf8')).hexdigest()[:8]
@@ -70,18 +80,24 @@ def compute_representations(features_hypers, frames):
     print("Compute representations finished")
     return feature_spaces
 
-def compute_feature_space_reconstruction_measures(feature_spaces, two_split, seed):
+def compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces1, feature_spaces2=None):
     print("Compute feature space reconstruction measures...")
     if two_split:
-        FRE_matrix, FRD_matrix = two_split_reconstruction_measure_matrix(feature_spaces, seed=seed)
+        if feature_spaces2 is None:
+            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(feature_spaces1, seed=seed)
+        else:
+            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, seed=seed)
     else:
-        FRE_matrix, FRD_matrix = reconstruction_measure_matrix(feature_spaces)
+        if feature_spaces2 is None:
+            FRE_matrix, FRD_matrix = reconstruction_measure_all_pairs(feature_spaces1)
+        else:
+            FRE_matrix, FRD_matrix = reconstruction_measure_pairwise(feature_spaces1, feature_spaces2)
     print("Compute feature space reconstruction measures finished.")
     return FRE_matrix, FRD_matrix
 
-def store_results(output_hash, FRE_matrix, FRD_matrix):
+def store_results(experiment_id, FRE_matrix, FRD_matrix):
     ### Store experiment results
     print("Store results...")
-    np.save(RESULTS_FOLDER+"fre_mat-"+output_hash, FRE_matrix)
-    np.save(RESULTS_FOLDER+"frd_mat-"+output_hash, FRD_matrix)
-    print(f"Store results finished. Hash value {output_hash}")
+    np.save(RESULTS_FOLDER+"fre_"+experiment_id, FRE_matrix)
+    np.save(RESULTS_FOLDER+"frd_"+experiment_id, FRD_matrix)
+    print(f"Store results finished. Hash value {experiment_id}")
