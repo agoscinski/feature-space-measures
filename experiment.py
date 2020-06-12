@@ -62,26 +62,26 @@ def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed, n
     return metadata, output_hash
 
 def read_dataset(dataset_name, nb_samples):
-    print("Load data...")
+    print("Load data...", flush=True)
     frames = ase.io.read(DATASET_FOLDER+dataset_name, ":"+str(nb_samples))
     for frame in frames:
         frame.cell = np.eye(3) * 15
         frame.center()
         frame.wrap(eps=1e-11)
-    print("Load data finished.")
+    print("Load data finished.", flush=True)
     return frames
 
 def compute_representations(features_hypers, frames):
-    print("Compute representations...")
+    print("Compute representations...", flush=True)
     feature_spaces = []
     for feature_hypers in features_hypers:
         representation = SphericalInvariants(**feature_hypers)
         feature_spaces.append(representation.transform(frames).get_features(representation)[::5])
-    print("Compute representations finished")
+    print("Compute representations finished", flush=True)
     return feature_spaces
 
 def compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None):
-    print("Compute feature space reconstruction measures...")
+    print("Compute feature space reconstruction measures...", flush=True)
     if two_split:
         if feature_spaces2 is None:
             FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(feature_spaces1, seed=seed, noise_removal=noise_removal)
@@ -92,7 +92,7 @@ def compute_feature_space_reconstruction_measures(two_split, seed, noise_removal
             FRE_matrix, FRD_matrix = reconstruction_measure_all_pairs(feature_spaces1, noise_removal=noise_removal)
         else:
             FRE_matrix, FRD_matrix = reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, noise_removal=noise_removal)
-    print("Compute feature space reconstruction measures finished.")
+    print("Compute feature space reconstruction measures finished.", flush=True)
     return FRE_matrix, FRD_matrix
 
 def store_results(prefix, experiment_id, FRE_matrix, FRD_matrix):
@@ -100,4 +100,4 @@ def store_results(prefix, experiment_id, FRE_matrix, FRD_matrix):
     print("Store results...")
     np.save(RESULTS_FOLDER+"fre_"+prefix+experiment_id, FRE_matrix)
     np.save(RESULTS_FOLDER+"frd_"+prefix+experiment_id, FRD_matrix)
-    print(f"Store results finished. Hash value {experiment_id}")
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
