@@ -1,31 +1,7 @@
 import numpy as np
 import scipy
 
-
-def two_split_feature_space_reconstruction_measures(features1, features2, svd_method="gesdd", noise_removal=False, seed=0x5f3759df):
-    """
-    Computes the FRE and FRD of features2 from features1 with a two-split
-
-    Parameters:
-    ----------
-    features1 (array): feature space X_F as in the paper, samples x features
-    features2 (array): feature space X_{F'} as in the paper, samples x features
-
-    Returns:
-    --------
-    double: FRE(X_{F},X_{F'}) scalar value
-    double: FRD(X_{F},X_{F'}) scalar value
-    """
-    np.random.seed(seed)
-    idx = np.arange(len(features1))
-    np.random.shuffle(idx)
-    split_id = int(len(idx)/2)
-    features1_train = features1[idx[:split_id]]
-    features1_test = features1[idx[split_id:]]
-    features2_train = features2[idx[:split_id]]
-    features2_test = features2[idx[split_id:]]
-    reconstruction_weights = feature_space_reconstruction_weights(features1_train, features2_train, svd_method)
-    return feature_space_reconstruction_measures(features1_test, features2_test, reconstruction_weights, svd_method)
+#from scalers import NormalizeScaler
 
 def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
     """
@@ -58,19 +34,16 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
     double: FRD(X_{F},X_{F'}) scalar value
     """
     if reconstruction_weights is None:
-        reconstruction_weights = feature_space_reconstruction_weights(features1, features2, svd_method)
+        features1 -= np.mean(features1, axis=0)
+        reconstruction_weights = feature_space_reconstruction_weights(features1, features2-np.mean(features2, axis=0), svd_method)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
-    FRE = np.linalg.norm(features1.dot(reconstruction_weights) - features2) / np.linalg.norm(features2)
+    FRE = np.linalg.norm(features1.dot(reconstruction_weights)+np.mean(features2, axis=0) - features2) / np.linalg.norm(features2)
 
     # P = U S V, we use svd because it is more stable than eigendecomposition
     U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver=svd_method)
 
-    # Remove noise, TODO this is still an absolute method which needs to be made relative
     if noise_removal:
-        print("Warning option not fully coded. Please dont use")
-        # TODO make the below relative
-        #S[S < 1e-9] = 0
-        S = S
+        S[S < 1e-9] = 0
 
     # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
     # => \tilde{X}_{F'} V.T = X_F U S
@@ -90,6 +63,37 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
     FRD /= np.linalg.norm(reconstructed_features2_VT)
     return FRE, FRD
 
+def two_split_feature_space_reconstruction_measures(features1, features2, svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
+    """
+    Computes the FRE and FRD of features2 from features1 with a two-split
+
+    Parameters:
+    ----------
+    features1 (array): feature space X_F as in the paper, samples x features
+    features2 (array): feature space X_{F'} as in the paper, samples x features
+
+    Returns:
+    --------
+    double: FRE(X_{F},X_{F'}) scalar value
+    double: FRD(X_{F},X_{F'}) scalar value
+    """
+    np.random.seed(seed)
+    idx = np.arange(len(features1))
+    np.random.shuffle(idx)
+    split_id = int(len(idx)/2)
+
+    #features1 = NormalizeScaler().fit(features1[idx[:split_id]]).transform(features1)
+    features1_train = features1[idx[:split_id]]
+    features1_train -= np.mean(features1_train, axis=0)
+    features1_test = features1[idx[split_id:]]
+    features1_test -= np.mean(features1_test, axis=0)
+
+    #features2 = NormalizeScaler().fit(features2[idx[:split_id]]).transform(features2)
+    features2_train = features2[idx[:split_id]]
+    features2_train -= np.mean(features2_train, axis=0)
+    features2_test = features2[idx[split_id:]]
+    reconstruction_weights = feature_space_reconstruction_weights(features1_train, features2_train, svd_method)
+    return feature_space_reconstruction_measures(features1_test, features2_test, reconstruction_weights, svd_method, noise_removal)
 
 def two_split_reconstruction_measure_all_pairs(feature_spaces,  svd_method="gesdd", seed=0x5f3759df, noise_removal=False):
     """
@@ -110,11 +114,11 @@ def two_split_reconstruction_measure_all_pairs(feature_spaces,  svd_method="gesd
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
             FRE_matrix[i, j], FRD_matrix[i, j] = two_split_feature_space_reconstruction_measures(
-                feature_spaces[i], feature_spaces[j], svd_method, noise_removal, seed
+                feature_spaces[i], feature_spaces[j], svd_method, seed, noise_removal
             )
     return FRE_matrix, FRD_matrix
 
-def reconstruction_measure_all_pairs(feature_spaces):
+def reconstruction_measure_all_pairs(feature_spaces, svd_method="gesdd", noise_removal=False):
     """
     Computes the FRE and FRD for all feature_spaces pairs
 
@@ -132,7 +136,7 @@ def reconstruction_measure_all_pairs(feature_spaces):
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
             FRE_matrix[i, j], FRD_matrix[i, j] = feature_space_reconstruction_measures(
-                feature_spaces[i], feature_spaces[j]
+                feature_spaces[i], feature_spaces[j], svd_method=svd_method, noise_removal=noise_removal
             )
     return FRE_matrix, FRD_matrix
 
@@ -154,16 +158,25 @@ def two_split_reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, 
     FRD_matrix = np.zeros((2, len(feature_spaces1)))
     for i in range(len(feature_spaces1)):
         FRE_matrix[0, i], FRD_matrix[0, i] = two_split_feature_space_reconstruction_measures(
-            feature_spaces1[i], feature_spaces2[i], svd_method, noise_removal, seed
+            feature_spaces1[i], feature_spaces2[i], svd_method, seed, noise_removal
         )
         FRE_matrix[1, i], FRD_matrix[1, i] = two_split_feature_space_reconstruction_measures(
-            feature_spaces2[i], feature_spaces1[i], svd_method, noise_removal, seed
+            feature_spaces2[i], feature_spaces1[i], svd_method, seed, noise_removal
         )
     return FRE_matrix, FRD_matrix
 
 def reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, svd_method="gesdd", noise_removal=False):
-    print("Error: Function not implemented yet")
-    return
+    assert(len(feature_spaces1)==len(feature_spaces2))
+    FRE_matrix = np.zeros((2, len(feature_spaces1)))
+    FRD_matrix = np.zeros((2, len(feature_spaces1)))
+    for i in range(len(feature_spaces1)):
+        FRE_matrix[0, i], FRD_matrix[0, i] = two_split_feature_space_reconstruction_measures(
+            feature_spaces1[i], feature_spaces2[i], svd_method, noise_removal
+        )
+        FRE_matrix[1, i], FRD_matrix[1, i] = two_split_feature_space_reconstruction_measures(
+            feature_spaces2[i], feature_spaces1[i], svd_method, noise_removal
+        )
+    return FRE_matrix, FRD_matrix
 
 
 ##### Construction side ahead

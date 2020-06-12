@@ -16,24 +16,24 @@ DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
-def gfr_pairwise_experiment(dataset_name, nb_samples, features_hypers1, features_hypers2, two_split, seed):
-    metadata, output_hash = store_metadata(dataset_name, nb_samples, list(zip(features_hypers1, features_hypers2)), two_split, seed)
+def gfr_pairwise_experiment(dataset_name, nb_samples, features_hypers1, features_hypers2, two_split, seed, noise_removal):
+    metadata, experiment_id = store_metadata(dataset_name, nb_samples, list(zip(features_hypers1, features_hypers2)), two_split, seed, noise_removal)
     data = read_dataset(dataset_name, nb_samples)
     feature_spaces1 = compute_representations(features_hypers1, data)
     feature_spaces2 = compute_representations(features_hypers2, data)
-    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces1, feature_spaces2)
-    store_results("mat-"+output_hash, FRE_matrix, FRD_matrix)
+    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces1, feature_spaces2)
+    store_results("mat-", experiment_id, FRE_matrix, FRD_matrix)
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
-def gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, seed):
-    metadata, output_hash = store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed)
+def gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal):
+    metadata, experiment_id = store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal)
     data = read_dataset(dataset_name, nb_samples)
     feature_spaces = compute_representations(features_hypers, data)
-    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces)
-    store_results("mat-"+output_hash, FRE_matrix, FRD_matrix)
+    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces)
+    store_results("mat-", experiment_id, FRE_matrix, FRD_matrix)
 
 
-def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed):
+def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal):
     metadata = {
         # All datasets are from CH4
         # datasets "selection-10k.extxyz" -  random-methane
@@ -48,7 +48,7 @@ def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed):
         # the number of samples used from the corresponding dataset
         "nb_samples": nb_samples,
         # for FRD one removes the distortion of the samples
-        "noise_removal": False, # option is not yet available, please do not change
+        "noise_removal": noise_removal,
         # if something general in the procedure is changed which cannot be captured with the above hyperparameters
         "git_last_commit_id": subprocess.check_output(["git", "describe" ,"--always"]).strip().decode("utf-8"),
         "additional_info": "CH4 environments"
@@ -80,24 +80,24 @@ def compute_representations(features_hypers, frames):
     print("Compute representations finished")
     return feature_spaces
 
-def compute_feature_space_reconstruction_measures(two_split, seed, feature_spaces1, feature_spaces2=None):
+def compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None):
     print("Compute feature space reconstruction measures...")
     if two_split:
         if feature_spaces2 is None:
-            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(feature_spaces1, seed=seed)
+            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(feature_spaces1, seed=seed, noise_removal=noise_removal)
         else:
-            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, seed=seed)
+            FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, seed=seed, noise_removal=noise_removal)
     else:
         if feature_spaces2 is None:
-            FRE_matrix, FRD_matrix = reconstruction_measure_all_pairs(feature_spaces1)
+            FRE_matrix, FRD_matrix = reconstruction_measure_all_pairs(feature_spaces1, noise_removal=noise_removal)
         else:
-            FRE_matrix, FRD_matrix = reconstruction_measure_pairwise(feature_spaces1, feature_spaces2)
+            FRE_matrix, FRD_matrix = reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, noise_removal=noise_removal)
     print("Compute feature space reconstruction measures finished.")
     return FRE_matrix, FRD_matrix
 
-def store_results(experiment_id, FRE_matrix, FRD_matrix):
+def store_results(prefix, experiment_id, FRE_matrix, FRD_matrix):
     ### Store experiment results
     print("Store results...")
-    np.save(RESULTS_FOLDER+"fre_"+experiment_id, FRE_matrix)
-    np.save(RESULTS_FOLDER+"frd_"+experiment_id, FRD_matrix)
+    np.save(RESULTS_FOLDER+"fre_"+prefix+experiment_id, FRE_matrix)
+    np.save(RESULTS_FOLDER+"frd_"+prefix+experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}")

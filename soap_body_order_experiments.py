@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from experiment import do_experiment
+from experiment import gfr_all_pairs_experiment
 
 ### Experiment metadata
 
@@ -37,4 +37,6 @@ if two_split:
 else:
     seed = None
 
-do_experiment(dataset_name, nb_samples, features_hypers, two_split, seed)
+noise_removal = False
+
+gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal)
