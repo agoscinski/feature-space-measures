@@ -37,7 +37,7 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
         features1 -= np.mean(features1, axis=0)
         reconstruction_weights = feature_space_reconstruction_weights(features1, features2-np.mean(features2, axis=0), svd_method)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
-    FRE = np.linalg.norm(features1.dot(reconstruction_weights)+np.mean(features2, axis=0) - features2) / np.linalg.norm(features2)
+    FRE = np.linalg.norm(features1.dot(reconstruction_weights)+np.mean(features2, axis=0) - features2)# / np.linalg.norm(features2)
 
     # P = U S V, we use svd because it is more stable than eigendecomposition
     U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver=svd_method)
