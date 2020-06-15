@@ -3,7 +3,7 @@ import scipy
 from scalers import NormalizeScaler
 
 
-def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
+def feature_space_reconstruction_weights(features1, features2):
     """
     Computes the minimal weights reconstructing features2 from features1
 
@@ -33,7 +33,7 @@ def feature_space_reconstruction_measures(
     ----------
     features1 (array): feature space X_F as in the paper, samples x features
     features2 (array): feature space X_{F'} as in the paper, samples x features
-    reconstruction_weights (array):  weights defined by P = argmin_{P'} \| X_{F'} - (X_F)P' \|
+    reconstruction_weights (array):  weights defined by P = argmin_{P'} || X_{F'} - (X_F)P' ||
 
     Returns:
     --------
@@ -44,7 +44,7 @@ def feature_space_reconstruction_measures(
         features1 = NormalizeScaler().fit(features1).transform(features1)
         features2 = NormalizeScaler().fit(features2).transform(features2)
         reconstruction_weights = feature_space_reconstruction_weights(
-            features1, features2, svd_method
+            features1, features2
         )
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     FRE = np.linalg.norm(
@@ -62,13 +62,14 @@ def feature_space_reconstruction_measures(
     # TODO here I am lacking a bit an intuitive reason why we do this, obviously keeping U S V on the right side will completely ignore the contribution of V when applying it in the procrustes problem, but this is does not explain why putting V.T on the right side is the way to go. Maybe this can be more explored in the paper supplementary
 
     # X_F U
-    features1_U = features1.dot(U)[:, : len(S)]
+    features1_U = features1.dot(U)[:, :len(S)]
     # \tilde{X}_{F'} V.T = X_F U S
     reconstructed_features2_VT = features1_U.dot(np.diag(S))
 
-    # Solve procrusets problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
+    # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
     U2, S2, V2 = scipy.linalg.svd(
-        features1_U.T.dot(reconstructed_features2_VT), lapack_driver=svd_method
+        features1_U.T.dot(reconstructed_features2_VT),
+        lapack_driver=svd_method
     )
     Q = U2.dot(V2)
     # see paper for derivation of alpha
@@ -199,14 +200,10 @@ def two_split_reconstruction_measure_pairwise(
     FRE_matrix = np.zeros((2, len(feature_spaces1)))
     FRD_matrix = np.zeros((2, len(feature_spaces1)))
     for i in range(len(feature_spaces1)):
-        FRE_matrix[0, i], FRD_matrix[
-            0, i
-        ] = two_split_feature_space_reconstruction_measures(
+        FRE_matrix[0, i], FRD_matrix[0, i] = two_split_feature_space_reconstruction_measures(
             feature_spaces1[i], feature_spaces2[i], svd_method, seed, noise_removal
         )
-        FRE_matrix[1, i], FRD_matrix[
-            1, i
-        ] = two_split_feature_space_reconstruction_measures(
+        FRE_matrix[1, i], FRD_matrix[1, i] = two_split_feature_space_reconstruction_measures(
             feature_spaces2[i], feature_spaces1[i], svd_method, seed, noise_removal
         )
     return FRE_matrix, FRD_matrix
