@@ -1,7 +1,6 @@
 import numpy as np
 import scipy
-
-#from scalers import NormalizeScaler
+from scalers import NormalizeScaler
 
 def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
     """
@@ -34,8 +33,9 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
     double: FRD(X_{F},X_{F'}) scalar value
     """
     if reconstruction_weights is None:
-        features1 -= np.mean(features1, axis=0)
-        reconstruction_weights = feature_space_reconstruction_weights(features1, features2-np.mean(features2, axis=0), svd_method)
+        features1 = NormalizeScaler().fit(features1).transform(features1)
+        features2 = NormalizeScaler().fit(features2).transform(features2)
+        reconstruction_weights = feature_space_reconstruction_weights(features1, features2, svd_method)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     FRE = np.linalg.norm(features1.dot(reconstruction_weights)+np.mean(features2, axis=0) - features2)# / np.linalg.norm(features2)
 
@@ -82,16 +82,14 @@ def two_split_feature_space_reconstruction_measures(features1, features2, svd_me
     np.random.shuffle(idx)
     split_id = int(len(idx)/2)
 
-    #features1 = NormalizeScaler().fit(features1[idx[:split_id]]).transform(features1)
+    features1 = NormalizeScaler().fit(features1[idx[:split_id]]).transform(features1)
     features1_train = features1[idx[:split_id]]
-    features1_train -= np.mean(features1_train, axis=0)
     features1_test = features1[idx[split_id:]]
-    features1_test -= np.mean(features1_test, axis=0)
 
-    #features2 = NormalizeScaler().fit(features2[idx[:split_id]]).transform(features2)
+    features2 = NormalizeScaler().fit(features2[idx[:split_id]]).transform(features2)
     features2_train = features2[idx[:split_id]]
-    features2_train -= np.mean(features2_train, axis=0)
     features2_test = features2[idx[split_id:]]
+
     reconstruction_weights = feature_space_reconstruction_weights(features1_train, features2_train, svd_method)
     return feature_space_reconstruction_measures(features1_test, features2_test, reconstruction_weights, svd_method, noise_removal)
 
