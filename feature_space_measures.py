@@ -37,7 +37,7 @@ def feature_space_reconstruction_measures(features1, features2, reconstruction_w
         features2 = NormalizeScaler().fit(features2).transform(features2)
         reconstruction_weights = feature_space_reconstruction_weights(features1, features2, svd_method)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
-    FRE = np.linalg.norm(features1.dot(reconstruction_weights)+np.mean(features2, axis=0) - features2)# / np.linalg.norm(features2)
+    FRE = np.linalg.norm(features1.dot(reconstruction_weights) - features2)# / np.linalg.norm(features2)
 
     # P = U S V, we use svd because it is more stable than eigendecomposition
     U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver=svd_method)
@@ -181,11 +181,9 @@ def reconstruction_measure_pairwise(feature_spaces1, feature_spaces2, svd_method
 
 # TODO tools for computing features from different kernels
 
-
 def center_features(features):
     H = np.eye(len(features)) - np.ones((len(features), len(features))) / len(features)
     return H.dot(features)
-
 
 def distance2_from_features(features):
     distmat = np.sum(features ** 2, axis=1)[:, np.newaxis]
