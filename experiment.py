@@ -20,6 +20,7 @@ import subprocess
 DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
+
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
 def gfr_pairwise_experiment(
     dataset_name,
@@ -153,7 +154,7 @@ def compute_feature_space_reconstruction_measures(
 
 
 def store_results(prefix, experiment_id, FRE_matrix, FRD_matrix):
-    ### Store experiment results
+    # Store experiment results
     print("Store results...")
     np.save(RESULTS_FOLDER + "fre_" + prefix + experiment_id, FRE_matrix)
     np.save(RESULTS_FOLDER + "frd_" + prefix + experiment_id, FRD_matrix)
