@@ -4,6 +4,7 @@ import hashlib
 import json
 
 from feature_space_measures import two_split_reconstruction_measure_all_pairs, reconstruction_measure_all_pairs, two_split_reconstruction_measure_pairwise, reconstruction_measure_pairwise
+from representation import compute_representations
 from rascal.representations import SphericalInvariants
 import numpy as np
 import scipy
@@ -38,7 +39,7 @@ def store_metadata(dataset_name, nb_samples, features_hypers, two_split, seed, n
         # All datasets are from CH4
         # datasets "selection-10k.extxyz" -  random-methane
         # datasets "manif-minus.extxyz" + "manif-plus.extxyz" -  degenerated manifold
-        # datasets "decomposition.extxyz" -  degenerated manifold
+        # datasets "dragged_methane.extxyz" - methane with one hydrogen dragged away from the center
         "dataset": dataset_name,
         # the hypers of targeted features spaces for the experiment
         "features_hypers": features_hypers,
@@ -70,17 +71,6 @@ def read_dataset(dataset_name, nb_samples):
         frame.wrap(eps=1e-11)
     print("Load data finished.", flush=True)
     return frames
-
-def compute_representations(features_hypers, frames):
-    cumulative_nb_atoms = np.cumsum([frame.get_global_number_of_atoms() for frame in frames])
-    first_atom_idx_for_each_frame = cumulative_nb_atoms - frames[0].get_global_number_of_atoms()
-    print("Compute representations...", flush=True)
-    feature_spaces = []
-    for feature_hypers in features_hypers:
-        representation = SphericalInvariants(**feature_hypers)
-        feature_spaces.append(representation.transform(frames).get_features(representation)[first_atom_idx_for_each_frame])
-    print("Compute representations finished", flush=True)
-    return feature_spaces
 
 def compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None):
     print("Compute feature space reconstruction measures...", flush=True)
