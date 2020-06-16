@@ -106,26 +106,6 @@ def read_dataset(dataset_name, nb_samples):
     print("Load data finished.", flush=True)
     return frames
 
-def compute_representations(features_hypers, frames):
-    cumulative_nb_atoms = np.cumsum(
-        [frame.get_global_number_of_atoms() for frame in frames]
-    )
-    first_atom_idx_for_each_frame = (
-        cumulative_nb_atoms - frames[0].get_global_number_of_atoms()
-    )
-    print("Compute representations...", flush=True)
-    feature_spaces = []
-    for feature_hypers in features_hypers:
-        representation = SphericalInvariants(**feature_hypers)
-        feature_spaces.append(
-            representation.transform(frames).get_features(representation)[
-                first_atom_idx_for_each_frame
-            ]
-        )
-    print("Compute representations finished", flush=True)
-    return feature_spaces
-
-
 def compute_feature_space_reconstruction_measures(
     two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None
 ):
