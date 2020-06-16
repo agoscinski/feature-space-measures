@@ -51,7 +51,7 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
     # insert the zero probabilty point at the beginning to help interpolating at the beginning
     cdf = np.concatenate((np.zeros((cdf.shape[0],1)),cdf),axis=1)
 
-    dist = np.zeros((len(nb_envs), len(nb_envs)))
+    dist = np.zeros((nb_envs, nb_envs))
     if feature_paramaters["hilbert_space_parameters"]["distance_parameters"]["delta_normalization"]:
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points+1)
         for i in range(nb_envs):
@@ -77,6 +77,7 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
         if feature_paramaters["hilbert_space_parameters"]["distance_parameters"]["grid_type"] == "gaussian_quadrature":
             wasserstein_features *= np.sqrt(interp_weights)
 
+        print("intp finished")
         wasserstein_features = wasserstein_features.reshape(nb_envs, nb_species * nb_basis_functions)
 
         if normalize_wasserstein_features:
