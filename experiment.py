@@ -106,10 +106,6 @@ def read_dataset(dataset_name, nb_samples):
     print("Load data finished.", flush=True)
     return frames
 
-<<<<<<< HEAD
-def compute_feature_space_reconstruction_measures(two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None):
-=======
-
 def compute_representations(features_hypers, frames):
     cumulative_nb_atoms = np.cumsum(
         [frame.get_global_number_of_atoms() for frame in frames]
