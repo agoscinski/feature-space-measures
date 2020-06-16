@@ -3,7 +3,7 @@ import scipy
 from scalers import NormalizeScaler
 
 
-def feature_space_reconstruction_weights(features1, features2):
+def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
     """
     Computes the minimal weights reconstructing features2 from features1
 
