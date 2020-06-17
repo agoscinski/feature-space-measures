@@ -204,12 +204,26 @@ def two_split_reconstruction_measure_pairwise(
     assert len(feature_spaces1) == len(feature_spaces2)
     FRE_matrix = np.zeros((2, len(feature_spaces1)))
     FRD_matrix = np.zeros((2, len(feature_spaces1)))
+
+
+    nb_samples = len(feature_spaces1[0])
+    train_idx, test_idx = generate_two_split_idx(nb_samples, seed)
     for i in range(len(feature_spaces1)):
-        FRE_matrix[0, i], FRD_matrix[0, i] = two_split_feature_space_reconstruction_measures(
-            feature_spaces1[i], feature_spaces2[i], svd_method, seed, noise_removal
+        features1 = standardize_features(feature_spaces1[i], train_idx)
+        features2 = standardize_features(feature_spaces2[i], train_idx)
+        features1_train, features2_train, features1_test, features2_test = split_in_two(
+                features1, features2, train_idx, test_idx)
+        reconstruction_weights = feature_space_reconstruction_weights(
+            features1_train, features2_train
         )
-        FRE_matrix[1, i], FRD_matrix[1, i] = two_split_feature_space_reconstruction_measures(
-            feature_spaces2[i], feature_spaces1[i], svd_method, seed, noise_removal
+        FRE_matrix[0, i], FRD_matrix[0, i] = feature_space_reconstruction_measures(
+            features1_test, features2_test, reconstruction_weights, svd_method, noise_removal
+        )
+        reconstruction_weights = feature_space_reconstruction_weights(
+            features2_train, features1_train
+        )
+        FRE_matrix[1, i], FRD_matrix[1, i] = feature_space_reconstruction_measures(
+            features2_test, features1_test, reconstruction_weights, svd_method, noise_removal
         )
     return FRE_matrix, FRD_matrix
 
