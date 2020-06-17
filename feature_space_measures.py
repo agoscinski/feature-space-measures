@@ -105,7 +105,7 @@ def standardize_features(features, train_idx=None):
         return NormalizeScaler().fit(features).transform(features)
     return NormalizeScaler().fit(features[train_idx]).transform(features)
 
-def two_split(features1, features2, train_idx, test_idx):
+def split_in_two(features1, features2, train_idx, test_idx):
     features1_train = features1[train_idx]
     features1_test = features1[test_idx]
 
@@ -138,7 +138,7 @@ def two_split_reconstruction_measure_all_pairs(
         for j in range(len(feature_spaces)):
             features1 = standardize_features(feature_spaces[i], train_idx)
             features2 = standardize_features(feature_spaces[j], train_idx)
-            features1_train, features2_train, features1_test, features2_test  = two_split(
+            features1_train, features2_train, features1_test, features2_test = split_in_two(
                     features1, features2, train_idx, test_idx)
             reconstruction_weights = feature_space_reconstruction_weights(
                 features1_train, features2_train
@@ -270,8 +270,8 @@ def feature_spaces_hidden_feature_reconstruction_errors(
         features = standardize_features(features, train_idx)
         hidden_feature = standardize_features(hidden_feature, train_idx)
         if two_split:
-            features_train, hidden_feature_train, features_test, hidden_feature_test = two_split(
-                    feature_spaces[i], hidden_feature, train_idx, test_idx)
+            features_train, hidden_feature_train, features_test, hidden_feature_test = split_in_two(
+                    features, hidden_feature, train_idx, test_idx)
             FRE_vectors[i] = hidden_feature_reconstruction_errors(
                features_train, hidden_feature_train, features_test, hidden_feature_test
             )
