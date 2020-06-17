@@ -18,7 +18,6 @@ def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd
     """
     return np.linalg.lstsq(features1, features2, rcond=None)[0]
 
-
 def feature_space_reconstruction_measures(
     features1,
     features2,
@@ -228,72 +227,39 @@ def reconstruction_measure_pairwise(
         )
     return FRE_matrix, FRD_matrix
 
+def latent_feature_reconstruction_errors(
+    features, latent_feature
+):
+    FRE_vector = np.zeros(features.shape[1])
+    for i in range (features.shape[1]): # nb features
+        features = NormalizeScaler().fit(features).transform(features)
+        latent_feature = NormalizeScaler().fit(latent_feature).transform(latent_feature)
+        reconstruction_weights = feature_space_reconstruction_weights(
+                features[:,i][:,np.newaxis], latent_feature
+        )
+        # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
+        FRE_vector[i] = np.linalg.norm(
+                features[:,i][:,np.newaxis].dot(reconstruction_weights) - latent_feature
+        )  # / np.linalg.norm(features2)
+    return FRE_vector
+
+def feature_spaces_latent_feature_reconstruction_errors(
+    feature_spaces, latent_feature, noise_removal=False
+):
+    # we assert that only feature_spaces with the same number of features are used to simplify storage
+    for i in range(len(feature_spaces)):
+        assert( feature_spaces[i].shape[1] == feature_spaces[0].shape[1] )
+    # for each feature space a fre vector exist, computing the error for each feature
+    FRE_vectors = np.zeros((len(feature_spaces), feature_spaces[0].shape[1]))
+    for i in range(len(feature_spaces)):
+        FRE_vectors[i] = latent_feature_reconstruction_errors(
+           feature_spaces[i], latent_feature
+        )
+    return FRE_vectors
+
 
 # ----- Construction side ahead
 # TODO tools for computing features from different kernels
-
-
-def center_features(features):
-    H = np.eye(len(features)) - np.ones((len(features), len(features))) / len(features)
-    return H.dot(features)
-
-
-def distance2_from_features(features):
-    distmat = np.sum(features ** 2, axis=1)[:, np.newaxis]
-    distmat += np.sum(features ** 2, axis=1)[np.newaxis, :]
-    distmat -= 2 * features.dot(features.T)
-    # FIXME: having to do this is highly suspicious of something else going
-    # wrong, should at least be distmat[distmat < 0 and distmat > -1e-6] = 0
-    # or something
-    distmat[distmat < 0] = 0
-    return distmat
-
-
-def centered_kernel_from_distance2(distance):
-    H = np.eye(len(distance)) - np.ones((len(distance), len(distance))) / len(distance)
-    return -H.dot(distance).dot(H) / 2
-
-
-def rbf_kernel_from_distance2(distance2, sigma=1):
-    return np.exp(-distance2 / sigma)
-
-
-def features_from_kernel(K):
-    D, U = scipy.linalg.eigh(K)
-    if np.min(D) < 0:
-        # print('negative eigenvalue encounterd',np.min(D))
-        D[D < 0] = 0
-    # flip such that largest eigvals are on the left
-    return np.flip(U, axis=1).dot(np.diag(np.sqrt(np.flip(D))))
-
-
-def features_from_distance2(distance):
-    n = len(distance)
-    D, U = np.linalg.eigh(
-        -(np.eye(n) - np.ones((n, n)) / n)
-        .dot(distance)
-        .dot(np.eye(n) - np.ones((n, n)) / n) / 2
-    )
-    if np.min(D) < 0:
-        # print('negative eigenvalue encounterd',np.min(D))
-        D[D < 0] = 0
-    return np.flip(U, axis=1).dot(np.diag(np.sqrt(np.flip(D))))
-
-
-def feature2_reconstruction_error(features1, features2):
-    W = np.linalg.pinv(features1.T.dot(features1)).dot(features1.T.dot(features2))
-    features2_reconstructed = features1.dot(W)
-    tmp = np.linalg.norm(features2 - features2_reconstructed) / np.linalg.norm(features2)
-    return (tmp, W)
-
-
-def feature2_reconstruction_error_vector(features1, features2):
-    W = np.linalg.pinv(features1.T.dot(features1)).dot(features1.T.dot(features2))
-    features2_reconstructed = features1.dot(W)
-    return np.linalg.norm(features2 - features2_reconstructed, axis=1) / np.linalg.norm(
-        features2, axis=1
-    )
-
 
 # TODO global and local feature space reconstruction measures
 
@@ -331,25 +297,3 @@ def local_reconstruction(features1, features2, nb_of_local_env=100):
             truncated_features1, truncated_features2
         )[0]
     return reconstruction_error
-
-
-def global_truncated_reconstruction(features1, features2):
-    distance2 = distance2_from_features(features1)
-    truncated_features1 = features_from_kernel(
-        centered_kernel_from_distance2(distance2_from_features(features1))
-    )
-    truncated_features2 = features_from_kernel(
-        centered_kernel_from_distance2(distance2_from_features(features2))
-    )
-    return feature2_reconstruction_error_vector(
-        truncated_features1, truncated_features2
-    )
-
-
-def global_reconstruction(features1, features2):
-    distance2 = distance2_from_features(features1)
-    truncated_features1 = features1
-    truncated_features2 = features2
-    return feature2_reconstruction_error_vector(
-        truncated_features1, truncated_features2
-    )

@@ -8,6 +8,7 @@ from feature_space_measures import (
     reconstruction_measure_all_pairs,
     two_split_reconstruction_measure_pairwise,
     reconstruction_measure_pairwise,
+    feature_spaces_latent_feature_reconstruction_errors
 )
 from representation import compute_representations
 import numpy as np
@@ -39,13 +40,16 @@ def gfr_pairwise_experiment(
         seed,
         noise_removal,
     )
-    data = read_dataset(dataset_name, nb_samples)
-    feature_spaces1 = compute_representations(features_hypers1, data)
-    feature_spaces2 = compute_representations(features_hypers2, data)
+    frames = read_dataset(dataset_name, nb_samples)
+    feature_spaces1 = compute_representations(features_hypers1, frames)
+    feature_spaces2 = compute_representations(features_hypers2, frames)
     FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
         two_split, seed, noise_removal, feature_spaces1, feature_spaces2
     )
-    store_results("mat-", experiment_id, FRE_matrix, FRD_matrix)
+    print("Store results...")
+    store_results("fre_mat-", experiment_id, FRE_matrix)
+    store_results("frd_mat-", experiment_id, FRD_matrix)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
@@ -55,22 +59,43 @@ def gfr_all_pairs_experiment(
     metadata, experiment_id = store_metadata(
         dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal
     )
-    data = read_dataset(dataset_name, nb_samples)
-    feature_spaces = compute_representations(features_hypers, data)
+    frames = read_dataset(dataset_name, nb_samples)
+    feature_spaces = compute_representations(features_hypers, frames)
     FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
         two_split, seed, noise_removal, feature_spaces
     )
-    store_results("mat-", experiment_id, FRE_matrix, FRD_matrix)
 
+    print("Store results...")
+    store_results("fre_mat-", experiment_id, FRE_matrix)
+    store_results("frd_mat-", experiment_id, FRD_matrix)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
+
+def lfre_experiment(
+    dataset_name, nb_samples, features_hypers, two_split, seed, latent_feature_name
+):
+    metadata, experiment_id = store_metadata(
+        dataset_name, nb_samples, features_hypers, two_split, seed, False, latent_feature_name
+    )
+    frames = read_dataset(dataset_name, nb_samples)
+    latent_feature = np.array([frame.info[latent_feature_name] for frame in frames])[:,np.newaxis]
+    feature_spaces = compute_representations(features_hypers, frames)
+    FRE_vector = compute_feature_spaces_latent_feature_reconstruction_errors(
+        two_split, seed, feature_spaces, latent_feature
+    )
+    print("Store results...")
+    store_results("vec-", experiment_id, FRE_vector)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal
+    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal, latent_feature_name = None
 ):
     metadata = {
-        # All datasets are from CH4
+        # Methane
         # datasets "selection-10k.extxyz" -  random-methane
         # datasets "manif-minus.extxyz" + "manif-plus.extxyz" -  degenerated manifold
         # datasets "dragged_methane.extxyz" - methane with one hydrogen dragged away from the center
+        # Carbon
+        # datasets "C-VII-pp-wrapped.xyz" -  
         "dataset": dataset_name,
         # the hypers of targeted features spaces for the experiment
         "features_hypers": features_hypers,
@@ -87,6 +112,10 @@ def store_metadata(
         .decode("utf-8"),
         "additional_info": "CH4 environments",
     }
+    
+    # only relevant for latent feature reconstruction error experiments
+    if latent_feature_name is not None:
+        metadata["latent_feature_name"] = latent_feature_name
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
     output_hash = f"{sha}"
@@ -105,6 +134,18 @@ def read_dataset(dataset_name, nb_samples):
         frame.wrap(eps=1e-11)
     print("Load data finished.", flush=True)
     return frames
+
+def compute_feature_spaces_latent_feature_reconstruction_errors(
+    two_split, seed, feature_spaces, latent_feature
+):
+    print("Compute latent feature reconstruction errors...", flush=True)
+    if two_split:
+        raise ValueError("latent feature reconstruction errors for two split is not implemented yet.")
+    else:
+        FRE_vector = feature_spaces_latent_feature_reconstruction_errors(
+            feature_spaces, latent_feature)
+    print("Compute latent feature reconstruction errors finished.", flush=True)
+    return FRE_vector
 
 def compute_feature_space_reconstruction_measures(
     two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None
@@ -132,9 +173,6 @@ def compute_feature_space_reconstruction_measures(
     return FRE_matrix, FRD_matrix
 
 
-def store_results(prefix, experiment_id, FRE_matrix, FRD_matrix):
+def store_results(prefix, experiment_id, result_np_array):
     # Store experiment results
-    print("Store results...")
-    np.save(RESULTS_FOLDER + "fre_" + prefix + experiment_id, FRE_matrix)
-    np.save(RESULTS_FOLDER + "frd_" + prefix + experiment_id, FRD_matrix)
-    print(f"Store results finished. Hash value {experiment_id}", flush=True)
+    np.save(RESULTS_FOLDER + prefix + experiment_id, result_np_array)
