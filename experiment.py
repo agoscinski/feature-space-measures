@@ -66,8 +66,8 @@ def gfr_all_pairs_experiment(
     )
 
     print("Store results...")
-    store_results("fre_mat-", experiment_id, FRE_matrix)
-    store_results("frd_mat-", experiment_id, FRD_matrix)
+    store_results("gfre_mat-", experiment_id, FRE_matrix)
+    store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def hfre_experiment(
@@ -83,7 +83,8 @@ def hfre_experiment(
         two_split, seed, feature_spaces, hidden_feature
     )
     print("Store results...")
-    store_results("fre_vec-", experiment_id, FRE_vector)
+    store_results("hfre_features-", experiment_id, np.array(feature_spaces))
+    store_results("hfre_vec-", experiment_id, FRE_vector)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(

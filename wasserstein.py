@@ -54,14 +54,17 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
     dist = np.zeros((nb_envs, nb_envs))
     if feature_paramaters["hilbert_space_parameters"]["distance_parameters"]["delta_normalization"]:
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points+1)
-        for i in range(nb_envs):
-            for j in range(nb_envs):
+        # potential bug when species are present
+        for i in range(nb_envs): # subset of nb_envs*nb_species
+            for j in range(nb_envs): # subset of nb_envs*nb_species
                 for sp in range(nb_species):
                     max_norm = max(cdf[i,sp,-1], cdf[j,sp,-1])
                     cdf_i = np.copy(cdf[i,sp,:])
                     cdf_j = np.copy(cdf[j,sp,:])
                     cdf_i[-1] = max_norm
                     cdf_j[-1] = max_norm
+                    cdf_i /= max_norm
+                    cdf_j /= max_norm
                     interpolator_i = interp1d(cdf_i, density_grid, assume_sorted=True)
                     interpolator_j = interp1d(cdf_j, density_grid, assume_sorted=True)
                     wasserstein_features_i = interpolator_i(interp_grid)
@@ -77,7 +80,6 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
         if feature_paramaters["hilbert_space_parameters"]["distance_parameters"]["grid_type"] == "gaussian_quadrature":
             wasserstein_features *= np.sqrt(interp_weights)
 
-        print("intp finished")
         wasserstein_features = wasserstein_features.reshape(nb_envs, nb_species * nb_basis_functions)
 
         if normalize_wasserstein_features:
