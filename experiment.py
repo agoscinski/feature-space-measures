@@ -83,7 +83,7 @@ def hfre_experiment(
         two_split, seed, feature_spaces, hidden_feature
     )
     print("Store results...")
-    store_results("vec-", experiment_id, FRE_vector)
+    store_results("fre_vec-", experiment_id, FRE_vector)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
