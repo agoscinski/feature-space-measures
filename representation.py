@@ -36,7 +36,7 @@ def compute_squared_distance(feature_hypers, frames, environment_idx):
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
-        representation = SphericalInvariants(**feature_hypers)
+        representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         features = representation.transform(frames).get_features(representation)[environment_idx]
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
         return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
