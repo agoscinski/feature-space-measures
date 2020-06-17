@@ -47,8 +47,8 @@ def gfr_pairwise_experiment(
         two_split, seed, noise_removal, feature_spaces1, feature_spaces2
     )
     print("Store results...")
-    store_results("fre_mat-", experiment_id, FRE_matrix)
-    store_results("frd_mat-", experiment_id, FRD_matrix)
+    store_results("gfre_mat-", experiment_id, FRE_matrix)
+    store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 
