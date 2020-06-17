@@ -237,13 +237,13 @@ def reconstruction_measure_pairwise(
     for i in range(len(feature_spaces1)):
         FRE_matrix[0, i], FRD_matrix[
             0, i
-        ] = two_split_feature_space_reconstruction_measures(
-            feature_spaces1[i], feature_spaces2[i], svd_method, noise_removal
+        ] = feature_space_reconstruction_measures(
+            feature_spaces1[i], feature_spaces2[i], svd_method=svd_method, noise_removal=noise_removal
         )
         FRE_matrix[1, i], FRD_matrix[
             1, i
-        ] = two_split_feature_space_reconstruction_measures(
-            feature_spaces2[i], feature_spaces1[i], svd_method, noise_removal
+        ] = feature_space_reconstruction_measures(
+            feature_spaces2[i], feature_spaces1[i], svd_method=svd_method, noise_removal=noise_removal
         )
     return FRE_matrix, FRD_matrix
 
