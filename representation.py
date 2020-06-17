@@ -15,6 +15,11 @@ def compute_representations(features_hypers, frames):
         else:
             features = compute_representation(feature_hypers, frames, first_atom_idx_for_each_frame)
         feature_spaces.append(features)
+    if "feature_selection_parameters" in feature_hypers:
+        raise ValueError("The feature selection methods are not implemented yet.")
+        for feature_space in feature_spaces:
+            # TODO Guillaume: apply feature selection method on all features in list feature_spaces
+            print(feature_hypers["feature_selection_parameters"]["nb_features"])
     print("Compute representations finished", flush=True)
     return feature_spaces
 
@@ -22,8 +27,13 @@ def compute_representation(feature_hypers, frames, evironment_idx):
     if feature_hypers["feature_type"] == "soap":
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         return representation.transform(frames).get_features(representation)[evironment_idx]
-    if feature_hypers["feature_type"] == "wasserstein":
+    elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames, evironment_idx)
+    elif feature_hypers["feature_type"] == "precomputed":
+        # TODO Guillaume: load BP features from file with len(frames)
+        feature_hypers["feature_paramaters"]["file_name"]
+        # select the envirnoment features with evironment_idx
+        raise ValueError("The feature_type='precomputed' is not implemented yet.")
     else:
         raise ValueError("The feature_type="+feature_hypers["feature_type"]+" is not known.")
 
