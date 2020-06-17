@@ -5,8 +5,8 @@ from rascal.representations import SphericalInvariants
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
 
 def compute_representations(features_hypers, frames):
-    cumulative_nb_atoms = np.cumsum([frame.get_global_number_of_atoms() for frame in frames])
-    first_atom_idx_for_each_frame = cumulative_nb_atoms - frames[0].get_global_number_of_atoms()
+    cumulative_nb_atoms = np.cumsum([len(frame) for frame in frames])
+    first_atom_idx_for_each_frame = cumulative_nb_atoms - len(frames[0])
     print("Compute representations...", flush=True)
     feature_spaces = []
     for feature_hypers in features_hypers:
