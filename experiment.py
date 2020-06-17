@@ -79,9 +79,11 @@ def hfre_experiment(
     frames = read_dataset(dataset_name, nb_samples)
     hidden_feature = np.array([frame.info[hidden_feature_name] for frame in frames])[:,np.newaxis]
     feature_spaces = compute_representations(features_hypers, frames)
-    FRE_vector = compute_feature_spaces_hidden_feature_reconstruction_errors(
-        two_split, seed, feature_spaces, hidden_feature
-    )
+    print("Compute hidden feature reconstruction errors...", flush=True)
+
+    FRE_vector = feature_spaces_hidden_feature_reconstruction_errors(
+        feature_spaces, hidden_feature, two_split, seed)
+    print("Compute hidden feature reconstruction errors finished.", flush=True)
     print("Store results...")
     store_results("hfre_features-", experiment_id, np.array(feature_spaces))
     store_results("hfre_vec-", experiment_id, FRE_vector)
@@ -135,18 +137,6 @@ def read_dataset(dataset_name, nb_samples):
         frame.wrap(eps=1e-11)
     print("Load data finished.", flush=True)
     return frames
-
-def compute_feature_spaces_hidden_feature_reconstruction_errors(
-    two_split, seed, feature_spaces, hidden_feature
-):
-    print("Compute hidden feature reconstruction errors...", flush=True)
-    if two_split:
-        raise ValueError("hidden feature reconstruction errors for two split is not implemented yet.")
-    else:
-        FRE_vector = feature_spaces_hidden_feature_reconstruction_errors(
-            feature_spaces, hidden_feature)
-    print("Compute hidden feature reconstruction errors finished.", flush=True)
-    return FRE_vector
 
 def compute_feature_space_reconstruction_measures(
     two_split, seed, noise_removal, feature_spaces1, feature_spaces2=None

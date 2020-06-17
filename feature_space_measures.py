@@ -3,7 +3,7 @@ import scipy
 from scalers import NormalizeScaler
 
 
-def feature_space_reconstruction_weights(features1, features2, svd_method="gesdd"):
+def feature_space_reconstruction_weights(features1, features2):
     """
     Computes the minimal weights reconstructing features2 from features1
 
@@ -40,8 +40,8 @@ def feature_space_reconstruction_measures(
     double: FRD(X_{F},X_{F'}) scalar value
     """
     if reconstruction_weights is None:
-        features1 = NormalizeScaler().fit(features1).transform(features1)
-        features2 = NormalizeScaler().fit(features2).transform(features2)
+        features1 = standardize_features(features1)
+        features2 = standardize_features(features2)
         reconstruction_weights = feature_space_reconstruction_weights(
             features1, features2
         )
@@ -80,9 +80,7 @@ def feature_space_reconstruction_measures(
     return FRE, FRD
 
 
-def two_split_feature_space_reconstruction_measures(
-    features1, features2, svd_method="gesdd", seed=0x5F3759DF, noise_removal=False
-):
+def generate_two_split_idx(nb_samples, seed=0x5F3759DF):
     """
     Computes the FRE and FRD of features2 from features1 with a two-split
 
@@ -97,29 +95,24 @@ def two_split_feature_space_reconstruction_measures(
     double: FRD(X_{F},X_{F'}) scalar value
     """
     np.random.seed(seed)
-    idx = np.arange(len(features1))
+    idx = np.arange(nb_samples)
     np.random.shuffle(idx)
     split_id = int(len(idx) / 2)
+    return idx[split_id:], idx[:split_id]
 
-    features1 = NormalizeScaler().fit(features1[idx[:split_id]]).transform(features1)
-    features1_train = features1[idx[:split_id]]
-    features1_test = features1[idx[split_id:]]
+def standardize_features(features, train_idx=None):
+    if train_idx is None:
+        return NormalizeScaler().fit(features).transform(features)
+    return NormalizeScaler().fit(features[train_idx]).transform(features)
 
-    features2 = NormalizeScaler().fit(features2[idx[:split_id]]).transform(features2)
-    features2_train = features2[idx[:split_id]]
-    features2_test = features2[idx[split_id:]]
+def two_split(features1, features2, train_idx, test_idx):
+    features1_train = features1[train_idx]
+    features1_test = features1[test_idx]
 
-    reconstruction_weights = feature_space_reconstruction_weights(
-        features1_train, features2_train, svd_method
-    )
-    return feature_space_reconstruction_measures(
-        features1_test,
-        features2_test,
-        reconstruction_weights,
-        svd_method,
-        noise_removal,
-    )
+    features2_train = features2[train_idx]
+    features2_test = features2[test_idx]
 
+    return features1_train, features2_train, features1_test, features2_test
 
 def two_split_reconstruction_measure_all_pairs(
     feature_spaces, svd_method="gesdd", seed=0x5F3759DF, noise_removal=False
@@ -139,13 +132,26 @@ def two_split_reconstruction_measure_all_pairs(
 
     FRE_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
+    nb_samples = len(feature_spaces[0])
+    train_idx, test_idx = generate_two_split_idx(nb_samples, seed)
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
+            features1 = standardize_features(feature_spaces[i], train_idx)
+            features2 = standardize_features(feature_spaces[j], train_idx)
+            features1_train, features2_train, features1_test, features2_test  = two_split(
+                    features1, features2, train_idx, test_idx)
+            reconstruction_weights = feature_space_reconstruction_weights(
+                features1_train, features2_train
+            )
             FRE_matrix[i, j], FRD_matrix[
                 i, j
-            ] = two_split_feature_space_reconstruction_measures(
-                feature_spaces[i], feature_spaces[j], svd_method, seed, noise_removal
-            )
+            ] = feature_space_reconstruction_measures(
+                    features1_test,
+                    features2_test,
+                    reconstruction_weights,
+                    svd_method,
+                    noise_removal,
+                )
     return FRE_matrix, FRD_matrix
 
 
@@ -155,7 +161,7 @@ def reconstruction_measure_all_pairs(
     """
     Computes the FRE and FRD for all feature_spaces pairs
 
-    Parameters:
+ a   Parameters:
     ----------
     feature_spaces (list): a list of feature spaces [X_{H_1}, ..., X_{H_n}]
 
@@ -228,35 +234,51 @@ def reconstruction_measure_pairwise(
     return FRE_matrix, FRD_matrix
 
 def hidden_feature_reconstruction_errors(
-    features, hidden_feature
+    features_train, hidden_feature_train, features_test=None, hidden_feature_test=None
 ):
-    FRE_vector = np.zeros(features.shape[1])
-    for i in range (features.shape[1]): # nb features
-        features = NormalizeScaler().fit(features).transform(features)
-        hidden_feature = NormalizeScaler().fit(hidden_feature).transform(hidden_feature)
+    if features_test is None:
+        features_test = features_train
+    if hidden_feature_test is None:
+        hidden_feature_test = hidden_feature_train
+
+    FRE_vector = np.zeros(features_train.shape[1])
+    for i in range (features_train.shape[1]): # nb features
         reconstruction_weights = feature_space_reconstruction_weights(
-                features[:,i][:,np.newaxis], hidden_feature
+                features_train[:,i][:,np.newaxis], hidden_feature_train
         )
         # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
         FRE_vector[i] = np.linalg.norm(
-                features[:,i][:,np.newaxis].dot(reconstruction_weights) - hidden_feature
-        )  # / np.linalg.norm(features2)
+                features_test[:,i][:,np.newaxis].dot(reconstruction_weights) - hidden_feature_test
+        )  # / np.linalg.norm(features_test)
     return FRE_vector
 
 def feature_spaces_hidden_feature_reconstruction_errors(
-    feature_spaces, hidden_feature, noise_removal=False
-):
+    feature_spaces, hidden_feature, two_split=False, seed=None):
     # we assert that only feature_spaces with the same number of features are used to simplify storage
     for i in range(len(feature_spaces)):
         assert( feature_spaces[i].shape[1] == feature_spaces[0].shape[1] )
     # for each feature space a fre vector exist, computing the error for each feature
     FRE_vectors = np.zeros((len(feature_spaces), feature_spaces[0].shape[1]))
+    if two_split:
+        # generate idx beforehand 
+        nb_samples = len(feature_spaces[0])
+        train_idx, test_idx = generate_two_split_idx(nb_samples, seed)
+    else:
+        train_idx, test_idx = (None, None)
     for i in range(len(feature_spaces)):
-        FRE_vectors[i] = hidden_feature_reconstruction_errors(
-           feature_spaces[i], hidden_feature
-        )
+        features = feature_spaces[i]
+        features = standardize_features(features, train_idx)
+        hidden_feature = standardize_features(hidden_feature, train_idx)
+        if two_split:
+            features_train, hidden_feature_train, features_test, hidden_feature_test = two_split(
+                    feature_spaces[i], hidden_feature, train_idx, test_idx)
+            FRE_vectors[i] = hidden_feature_reconstruction_errors(
+               features_train, hidden_feature_train, features_test, hidden_feature_test
+            )
+        else:
+            FRE_vectors[i] = hidden_feature_reconstruction_errors(
+               features, hidden_feature)
     return FRE_vectors
-
 
 # ----- Construction side ahead
 # TODO tools for computing features from different kernels
