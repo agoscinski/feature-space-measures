@@ -16,7 +16,7 @@ def feature_space_reconstruction_weights(features1, features2):
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    return np.linalg.lstsq(features1, features2, rcond=None)[0]
+    return np.linalg.lstsq(features1, features2, rcond=1e-5)[0]
 
 def feature_space_reconstruction_measures(
     features1,
