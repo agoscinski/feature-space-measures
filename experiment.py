@@ -8,7 +8,7 @@ from feature_space_measures import (
     reconstruction_measure_all_pairs,
     two_split_reconstruction_measure_pairwise,
     reconstruction_measure_pairwise,
-    feature_spaces_latent_feature_reconstruction_errors
+    feature_spaces_hidden_feature_reconstruction_errors
 )
 from representation import compute_representations
 import numpy as np
@@ -70,24 +70,24 @@ def gfr_all_pairs_experiment(
     store_results("frd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-def lfre_experiment(
-    dataset_name, nb_samples, features_hypers, two_split, seed, latent_feature_name
+def hfre_experiment(
+    dataset_name, nb_samples, features_hypers, two_split, seed, hidden_feature_name
 ):
     metadata, experiment_id = store_metadata(
-        dataset_name, nb_samples, features_hypers, two_split, seed, False, latent_feature_name
+        dataset_name, nb_samples, features_hypers, two_split, seed, False, hidden_feature_name
     )
     frames = read_dataset(dataset_name, nb_samples)
-    latent_feature = np.array([frame.info[latent_feature_name] for frame in frames])[:,np.newaxis]
+    hidden_feature = np.array([frame.info[hidden_feature_name] for frame in frames])[:,np.newaxis]
     feature_spaces = compute_representations(features_hypers, frames)
-    FRE_vector = compute_feature_spaces_latent_feature_reconstruction_errors(
-        two_split, seed, feature_spaces, latent_feature
+    FRE_vector = compute_feature_spaces_hidden_feature_reconstruction_errors(
+        two_split, seed, feature_spaces, hidden_feature
     )
     print("Store results...")
     store_results("vec-", experiment_id, FRE_vector)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal, latent_feature_name = None
+    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal, hidden_feature_name = None
 ):
     metadata = {
         # Methane
@@ -113,9 +113,9 @@ def store_metadata(
         "additional_info": "CH4 environments",
     }
     
-    # only relevant for latent feature reconstruction error experiments
-    if latent_feature_name is not None:
-        metadata["latent_feature_name"] = latent_feature_name
+    # only relevant for hidden feature reconstruction error experiments
+    if hidden_feature_name is not None:
+        metadata["hidden_feature_name"] = hidden_feature_name
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
     output_hash = f"{sha}"
@@ -135,16 +135,16 @@ def read_dataset(dataset_name, nb_samples):
     print("Load data finished.", flush=True)
     return frames
 
-def compute_feature_spaces_latent_feature_reconstruction_errors(
-    two_split, seed, feature_spaces, latent_feature
+def compute_feature_spaces_hidden_feature_reconstruction_errors(
+    two_split, seed, feature_spaces, hidden_feature
 ):
-    print("Compute latent feature reconstruction errors...", flush=True)
+    print("Compute hidden feature reconstruction errors...", flush=True)
     if two_split:
-        raise ValueError("latent feature reconstruction errors for two split is not implemented yet.")
+        raise ValueError("hidden feature reconstruction errors for two split is not implemented yet.")
     else:
-        FRE_vector = feature_spaces_latent_feature_reconstruction_errors(
-            feature_spaces, latent_feature)
-    print("Compute latent feature reconstruction errors finished.", flush=True)
+        FRE_vector = feature_spaces_hidden_feature_reconstruction_errors(
+            feature_spaces, hidden_feature)
+    print("Compute hidden feature reconstruction errors finished.", flush=True)
     return FRE_vector
 
 def compute_feature_space_reconstruction_measures(

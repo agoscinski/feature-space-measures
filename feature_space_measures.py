@@ -227,24 +227,24 @@ def reconstruction_measure_pairwise(
         )
     return FRE_matrix, FRD_matrix
 
-def latent_feature_reconstruction_errors(
-    features, latent_feature
+def hidden_feature_reconstruction_errors(
+    features, hidden_feature
 ):
     FRE_vector = np.zeros(features.shape[1])
     for i in range (features.shape[1]): # nb features
         features = NormalizeScaler().fit(features).transform(features)
-        latent_feature = NormalizeScaler().fit(latent_feature).transform(latent_feature)
+        hidden_feature = NormalizeScaler().fit(hidden_feature).transform(hidden_feature)
         reconstruction_weights = feature_space_reconstruction_weights(
-                features[:,i][:,np.newaxis], latent_feature
+                features[:,i][:,np.newaxis], hidden_feature
         )
         # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
         FRE_vector[i] = np.linalg.norm(
-                features[:,i][:,np.newaxis].dot(reconstruction_weights) - latent_feature
+                features[:,i][:,np.newaxis].dot(reconstruction_weights) - hidden_feature
         )  # / np.linalg.norm(features2)
     return FRE_vector
 
-def feature_spaces_latent_feature_reconstruction_errors(
-    feature_spaces, latent_feature, noise_removal=False
+def feature_spaces_hidden_feature_reconstruction_errors(
+    feature_spaces, hidden_feature, noise_removal=False
 ):
     # we assert that only feature_spaces with the same number of features are used to simplify storage
     for i in range(len(feature_spaces)):
@@ -252,8 +252,8 @@ def feature_spaces_latent_feature_reconstruction_errors(
     # for each feature space a fre vector exist, computing the error for each feature
     FRE_vectors = np.zeros((len(feature_spaces), feature_spaces[0].shape[1]))
     for i in range(len(feature_spaces)):
-        FRE_vectors[i] = latent_feature_reconstruction_errors(
-           feature_spaces[i], latent_feature
+        FRE_vectors[i] = hidden_feature_reconstruction_errors(
+           feature_spaces[i], hidden_feature
         )
     return FRE_vectors
 

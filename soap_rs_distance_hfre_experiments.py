@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from experiment import lfre_experiment
+from experiment import hfre_experiment
 
 ### Experiment metadata
 
@@ -12,7 +12,7 @@ if two_split:
 else:
     seed = None
 nb_samples = 1000
-latent_feature_name = "hydrogen_distance"
+hidden_feature_name = "hydrogen_distance"
 
 # feature space hyperparameteres
 ## Constant hyperparameters
@@ -58,4 +58,4 @@ for delta_normalization in [False, True]:
         }
     })
 
-lfre_experiment(dataset_name, nb_samples, features_hypers, two_split, seed, latent_feature_name)
+hfre_experiment(dataset_name, nb_samples, features_hypers, two_split, seed, hidden_feature_name)
