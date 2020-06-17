@@ -15,4 +15,4 @@ for i in range(nb_samples):
     new_frame.info = {"hydrogen_distance": round(new_frame[1].position[2],4)}
     frames.append(new_frame)
 
-ase.io.write("dragged-methane.extxyz", frames)
+ase.io.write("pulled-methane.extxyz", frames)
