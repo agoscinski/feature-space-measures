@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+from scipy.spatial.distance import cdist
 from scalers import NormalizeScaler
 
 
@@ -45,10 +46,11 @@ def feature_space_reconstruction_measures(
         reconstruction_weights = feature_space_reconstruction_weights(
             features1, features2
         )
+    n_test = features2.shape[0]
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     FRE = np.linalg.norm(
         features1.dot(reconstruction_weights) - features2
-    )  # / np.linalg.norm(features2)
+    ) / np.sqrt(n_test)
 
     # P = U S V, we use svd because it is more stable than eigendecomposition
     U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver=svd_method)
@@ -75,8 +77,7 @@ def feature_space_reconstruction_measures(
     alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
         features1_U.dot(features1_U.T)
     )
-    FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT)
-    FRD /= np.linalg.norm(reconstructed_features2_VT)
+    FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
     return FRE, FRD
 
 
@@ -254,7 +255,7 @@ def hidden_feature_reconstruction_errors(
         features_test = features_train
     if hidden_feature_test is None:
         hidden_feature_test = hidden_feature_train
-
+    n_test = features_train.shape[0]
     FRE_vector = np.zeros(features_train.shape[1])
     for i in range (features_train.shape[1]): # nb features
         reconstruction_weights = feature_space_reconstruction_weights(
@@ -263,7 +264,7 @@ def hidden_feature_reconstruction_errors(
         # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
         FRE_vector[i] = np.linalg.norm(
                 features_test[:,i][:,np.newaxis].dot(reconstruction_weights) - hidden_feature_test
-        )  # / np.linalg.norm(features_test)
+        )  / np.sqrt(n_test)
     return FRE_vector
 
 def feature_spaces_hidden_feature_reconstruction_errors(
@@ -294,42 +295,34 @@ def feature_spaces_hidden_feature_reconstruction_errors(
                features, hidden_feature)
     return FRE_vectors
 
-# ----- Construction side ahead
-# TODO tools for computing features from different kernels
-
-# TODO global and local feature space reconstruction measures
-
-
-def local_truncated_reconstruction(features1, features2, nb_of_local_env=10):
-    distance2 = distance2_from_features(features1)
-    reconstruction_error = np.zeros((len(features1), len(features1)))
-    for local_env in range(len(features1)):
-        local_env_idx = np.random.randint(len(features1), size=nb_of_local_env)
-        truncated_features1 = features_from_kernel(
-            centered_kernel_from_distance2(
-                distance2_from_features(features1[local_env_idx])
-            )
+def local_feature_reconstruction_error(features1, features2, nb_of_local_env):
+    n_test = features2.shape[0]
+    lfre_vec = np.zeros(n_test)
+    for i in range(nb_samples):
+        features2_i = features2[i,:][np.newaxis,:]
+        local_env_idx = np.argsort(cdist(features1 - features2_i))[:nb_of_local_env]
+        local_features1 = features1[local_env_idx] - np.mean(features1[local_env_idx], axis=0)
+        local_features2 = features2[local_env_idx] - np.mean(features2[local_env_idx], axis=0)
+        # standardize
+        reconstruction_weights = feature_space_reconstruction_weights(
+            local_features1, local_features2
         )
-        truncated_features2 = features_from_kernel(
-            centered_kernel_from_distance2(
-                distance2_from_features(features2[local_env_idx])
-            )
-        )
-        reconstruction_error[local_env] = feature2_reconstruction_error_vector(
-            truncated_features1, truncated_features2
-        )[0]
-    return reconstruction_error
+        # \|x_i' - \tilde{x}_i' \| / n_test
+        lfre_vec[i] = np.linalg.norm(
+            local_features1.dot(reconstruction_weights) - local_features2
+        )**2 / n_test
+    return lfre_vec
 
+def feature_spaces_local_feature_reconstruction_error_pairwise(
+        feature_spaces1, feature_spaces2, nb_of_local_env):
+    assert( len(feature_spaces1) == len(feature_spaces2) )
+    for i in range(len(feature_spaces)):
+        assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
 
-def local_reconstruction(features1, features2, nb_of_local_env=100):
-    distance2 = distance2_from_features(features1)
-    reconstruction_error = np.zeros((len(features1), len(features1)))
-    for local_env in range(len(features1)):
-        # local_env_idx = np.random.randint(len(features1),size=nb_of_local_env)
-        local_env_idx = np.argsort(distance2[local_env])[:nb_of_local_env][::-1]
-        truncated_features1 = features1[local_env_idx]
-        truncated_features2 = features2[local_env_idx]
-        reconstruction_error[local_env] = feature2_reconstruction_error_vector(
-            truncated_features1, truncated_features2
-        )[0]
-    return reconstruction_error
+    n_test = features2.shape[0]
+    lfre_mat = np.zeros((len(feature_spaces1), n_test))
+    for i in range(len(feature_spaces1)):
+        lfre_mat[i] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_of_local_env)
+    return lfre_mat
+
+#def feature_spaces_local_feature_reconstruction_error_all_pairs
