@@ -8,6 +8,8 @@ from feature_space_measures import (
     reconstruction_measure_all_pairs,
     two_split_reconstruction_measure_pairwise,
     reconstruction_measure_pairwise,
+    compute_local_feature_reconstruction_error_for_pairwise_feature_spaces,
+    compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs,
     feature_spaces_hidden_feature_reconstruction_errors
 )
 from representation import compute_representations
@@ -70,6 +72,47 @@ def gfr_all_pairs_experiment(
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
+def lfr_pairwise_experiment(
+    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs
+):
+
+
+    metadata, experiment_id = store_metadata(
+        dataset_name,
+        nb_samples,
+        list(zip(features_hypers1, features_hypers2)),
+        False,
+        None,
+        False,
+        nb_local_envs = nb_local_envs
+    )
+    frames = read_dataset(dataset_name, nb_samples)
+    feature_spaces1 = compute_representations(features_hypers1, frames)
+    feature_spaces2 = compute_representations(features_hypers2, frames)
+    lfre_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
+        feature_spaces1, feature_spaces2, nb_local_envs
+    )
+
+    print("Store results...")
+    store_results("lfre_mat-", experiment_id, lfre_mat)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
+
+def lfr_all_pairs_experiment(
+    dataset_name, nb_samples, features_hypers, nb_local_envs
+):
+    metadata, experiment_id = store_metadata(
+        dataset_name, nb_samples, features_hypers, nb_local_envs
+    )
+    frames = read_dataset(dataset_name, nb_samples)
+    feature_spaces = compute_representations(features_hypers, frames)
+    lfre_mat = compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
+        feature_spaces, nb_local_envs
+    )
+
+    print("Store results...")
+    store_results("lfre_mat-", experiment_id, lfre_mat)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
+
 def hfre_experiment(
     dataset_name, nb_samples, features_hypers, two_split, seed, hidden_feature_name
 ):
@@ -90,7 +133,7 @@ def hfre_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal, hidden_feature_name = None
+    dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal, hidden_feature_name = None, nb_local_envs = None
 ):
     metadata = {
         # Methane
@@ -119,6 +162,8 @@ def store_metadata(
     # only relevant for hidden feature reconstruction error experiments
     if hidden_feature_name is not None:
         metadata["hidden_feature_name"] = hidden_feature_name
+    if nb_local_envs is not None:
+        metadata["nb_local_envs"] = nb_local_envs
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
     output_hash = f"{sha}"

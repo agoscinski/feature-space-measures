@@ -295,12 +295,15 @@ def feature_spaces_hidden_feature_reconstruction_errors(
                features, hidden_feature)
     return FRE_vectors
 
-def local_feature_reconstruction_error(features1, features2, nb_of_local_env):
+def local_feature_reconstruction_error(features1, features2, nb_local_envs):
     n_test = features2.shape[0]
     lfre_vec = np.zeros(n_test)
-    for i in range(nb_samples):
+    # D(A,B)^2 = K(A,A) + K(B,B) - 2 * K(A,B)
+    features2_sq_sum = np.sum(features2**2, axis=1)
+    squared_dist = features2_sq_sum[:,np.newaxis] + features2_sq_sum  - 2 * features2.dot(features2.T)
+    for i in range(n_test):
         features2_i = features2[i,:][np.newaxis,:]
-        local_env_idx = np.argsort(cdist(features1 - features2_i))[:nb_of_local_env]
+        local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
         local_features1 = features1[local_env_idx] - np.mean(features1[local_env_idx], axis=0)
         local_features2 = features2[local_env_idx] - np.mean(features2[local_env_idx], axis=0)
         # standardize
@@ -310,19 +313,30 @@ def local_feature_reconstruction_error(features1, features2, nb_of_local_env):
         # \|x_i' - \tilde{x}_i' \| / n_test
         lfre_vec[i] = np.linalg.norm(
             local_features1.dot(reconstruction_weights) - local_features2
-        )**2 / n_test
+        ) / np.sqrt(n_test)
     return lfre_vec
 
-def feature_spaces_local_feature_reconstruction_error_pairwise(
-        feature_spaces1, feature_spaces2, nb_of_local_env):
+def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
+        feature_spaces1, feature_spaces2, nb_local_envs):
     assert( len(feature_spaces1) == len(feature_spaces2) )
-    for i in range(len(feature_spaces)):
+    for i in range(len(feature_spaces1)):
         assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
 
-    n_test = features2.shape[0]
-    lfre_mat = np.zeros((len(feature_spaces1), n_test))
+    n_test = feature_spaces2[0].shape[0]
+    lfre_mat = np.zeros((len(feature_spaces1)*2, n_test))
     for i in range(len(feature_spaces1)):
-        lfre_mat[i] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_of_local_env)
+        lfre_mat[2*i] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_local_envs)
+        lfre_mat[2*i+1] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_local_envs)
     return lfre_mat
 
-#def feature_spaces_local_feature_reconstruction_error_all_pairs
+def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
+        feature_spaces1, nb_local_envs):
+    for i in range(len(feature_spaces)):
+        for j in range(i+1,len(feature_spaces)):
+            assert( feature_spaces1[i].shape[0] == feature_spaces2[j].shape[0] )
+    n_test = features[0].shape[0]
+    lfre_mat = np.zeros((len(feature_spaces1), len(feature_spaces1), n_test))
+    for i in range(len(feature_spaces)):
+        for j in range(len(feature_spaces)):
+            lfre_mat[i,j] = local_feature_reconstruction_error(feature_spaces[i], feature_spaces[j], nb_local_envs)
+    return lfre_mat
