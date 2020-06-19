@@ -326,7 +326,7 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
     lfre_mat = np.zeros((len(feature_spaces1)*2, n_test))
     for i in range(len(feature_spaces1)):
         lfre_mat[2*i] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_local_envs)
-        lfre_mat[2*i+1] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_local_envs)
+        lfre_mat[2*i+1] = local_feature_reconstruction_error(feature_spaces2[i], feature_spaces1[i], nb_local_envs)
     return lfre_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
