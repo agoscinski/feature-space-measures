@@ -72,7 +72,7 @@ def gfr_all_pairs_experiment(
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-def lfr_pairwise_experiment(
+def lfre_pairwise_experiment(
     dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs
 ):
 
@@ -97,7 +97,7 @@ def lfr_pairwise_experiment(
     store_results("lfre_mat-", experiment_id, lfre_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-def lfr_all_pairs_experiment(
+def lfre_all_pairs_experiment(
     dataset_name, nb_samples, features_hypers, nb_local_envs
 ):
     metadata, experiment_id = store_metadata(
