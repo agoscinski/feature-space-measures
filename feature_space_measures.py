@@ -302,7 +302,6 @@ def local_feature_reconstruction_error(features1, features2, nb_local_envs):
     features2_sq_sum = np.sum(features2**2, axis=1)
     squared_dist = features2_sq_sum[:,np.newaxis] + features2_sq_sum  - 2 * features2.dot(features2.T)
     for i in range(n_test):
-        features2_i = features2[i,:][np.newaxis,:]
         local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
         local_features1 = features1[local_env_idx] - np.mean(features1[local_env_idx], axis=0)
         local_features2 = features2[local_env_idx] - np.mean(features2[local_env_idx], axis=0)
@@ -310,10 +309,10 @@ def local_feature_reconstruction_error(features1, features2, nb_local_envs):
         reconstruction_weights = feature_space_reconstruction_weights(
             local_features1, local_features2
         )
-        # \|x_i' - \tilde{x}_i' \| / n_test
+        # \|x_i' - \tilde{x}_i' \|^2 / n_test
         lfre_vec[i] = np.linalg.norm(
-            local_features1.dot(reconstruction_weights) - local_features2
-        ) / np.sqrt(n_test)
+            features1[i,:][np.newaxis,:].dot(reconstruction_weights) - features2[i,:][np.newaxis,:]
+        )**2 / np.sqrt(n_test)
     return lfre_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
