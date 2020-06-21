@@ -327,7 +327,6 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
     #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
     squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
-    print(squared_dist.shape)
     for i in range(n_test):
         local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
         local_features1_train = features1_train[local_env_idx]
@@ -358,8 +357,6 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
     for i in range(len(feature_spaces1)):
         features1 = standardize_features(feature_spaces1[i])
         features2 = standardize_features(feature_spaces2[i])
-        print(features1.shape)
-        print(features2.shape)
         if two_split:
             features1_train, features2_train, _, _ = split_in_two(
                     features1, features2, train_idx, test_idx)
