@@ -5,15 +5,13 @@ from rascal.representations import SphericalInvariants
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
 
 def compute_representations(features_hypers, frames):
-    cumulative_nb_atoms = np.cumsum([len(frame) for frame in frames])
-    first_atom_idx_for_each_frame = cumulative_nb_atoms - len(frames[0])
     print("Compute representations...", flush=True)
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
-            features = compute_hilbert_space_features(feature_hypers, frames, first_atom_idx_for_each_frame)
+            features = compute_hilbert_space_features(feature_hypers, frames)
         else:
-            features = compute_representation(feature_hypers, frames, first_atom_idx_for_each_frame)
+            features = compute_representation(feature_hypers, frames)
         feature_spaces.append(features)
     if "feature_selection_parameters" in feature_hypers:
         raise ValueError("The feature selection methods are not implemented yet.")
@@ -23,35 +21,34 @@ def compute_representations(features_hypers, frames):
     print("Compute representations finished", flush=True)
     return feature_spaces
 
-def compute_representation(feature_hypers, frames, evironment_idx):
+def compute_representation(feature_hypers, frames):
     if feature_hypers["feature_type"] == "soap":
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
-        return representation.transform(frames).get_features(representation)[evironment_idx]
+        return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "wasserstein":
-        return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames, evironment_idx)
+        return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
     elif feature_hypers["feature_type"] == "precomputed":
         # TODO Guillaume: load BP features from file with len(frames)
         feature_hypers["feature_paramaters"]["file_name"]
-        # select the envirnoment features with evironment_idx
         raise ValueError("The feature_type='precomputed' is not implemented yet.")
     else:
         raise ValueError("The feature_type="+feature_hypers["feature_type"]+" is not known.")
 
-def compute_hilbert_space_features(feature_hypers, frames, environment_idx):
-    return compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, environment_idx), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+def compute_hilbert_space_features(feature_hypers, frames):
+    return compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
 
-def compute_squared_distance(feature_hypers, frames, environment_idx):
+def compute_squared_distance(feature_hypers, frames):
     if feature_hypers["feature_type"] != "soap":
         raise ValueError("Hilbert space features only work with soap features.")
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
-        features = representation.transform(frames).get_features(representation)[environment_idx]
+        features = representation.transform(frames).get_features(representation)
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
         return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
     elif distance_type == "wasserstein":
-        return compute_squared_wasserstein_distance(feature_hypers, frames, environment_idx)
+        return compute_squared_wasserstein_distance(feature_hypers, frames)
     else:
         raise ValueError("The distance_type="+distance_type+" is not known.")
 
