@@ -366,7 +366,7 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
             features1_test = features1
             features2_test = features2
             lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test)
-            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test)
+            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test)
         else:
             lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2)
             lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1)
