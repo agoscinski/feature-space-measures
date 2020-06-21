@@ -19,6 +19,11 @@ def feature_space_reconstruction_weights(features1, features2):
     """
     return np.linalg.lstsq(features1, features2, rcond=1e-5)[0]
 
+def standardize_features(features, train_idx=None):
+    if train_idx is None:
+        return NormalizeScaler().fit(features).transform(features)
+    return NormalizeScaler().fit(features[train_idx]).transform(features)
+
 def feature_space_reconstruction_measures(
     features1,
     features2,
@@ -100,11 +105,6 @@ def generate_two_split_idx(nb_samples, seed=0x5F3759DF):
     np.random.shuffle(idx)
     split_id = int(len(idx) / 2)
     return idx[split_id:], idx[:split_id]
-
-def standardize_features(features, train_idx=None):
-    if train_idx is None:
-        return NormalizeScaler().fit(features).transform(features)
-    return NormalizeScaler().fit(features[train_idx]).transform(features)
 
 def split_in_two(features1, features2, train_idx, test_idx):
     features1_train = features1[train_idx]
@@ -295,47 +295,102 @@ def feature_spaces_hidden_feature_reconstruction_errors(
                features, hidden_feature)
     return FRE_vectors
 
-def local_feature_reconstruction_error(features1, features2, nb_local_envs):
-    n_test = features2.shape[0]
+#def local_feature_reconstruction_error(features1, features2, nb_local_envs):
+#    n_test = features2.shape[0]
+#    lfre_vec = np.zeros(n_test)
+#    # D(A,B)^2 = K(A,A) + K(B,B) - 2 * K(A,B)
+#    features2_sq_sum = np.sum(features2**2, axis=1)
+#    squared_dist = features2_sq_sum[:,np.newaxis] + features2_sq_sum - 2 * features2.dot(features2.T)
+#    for i in range(n_test):
+#        local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
+#        local_features1 = features1[local_env_idx] - np.mean(features1[local_env_idx], axis=0)
+#        local_features2 = features2[local_env_idx] - np.mean(features2[local_env_idx], axis=0)
+#        # standardize
+#        reconstruction_weights = feature_space_reconstruction_weights(
+#            local_features1, local_features2
+#        )
+#        # \|x_i' - \tilde{x}_i' \|^2 / n_test
+#        lfre_vec[i] = np.linalg.norm(
+#            features1[i,:][np.newaxis,:].dot(reconstruction_weights) - features2[i,:][np.newaxis,:]
+#        )**2 / np.sqrt(n_test)
+#    return lfre_vec
+
+def local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test = None, features2_test = None):
+    if features1_test is None:
+        features1_test = features1_train
+    if features2_test is None:
+        features2_test = features2_train
+
+    n_test = features2_test.shape[0]
     lfre_vec = np.zeros(n_test)
     # D(A,B)^2 = K(A,A) + K(B,B) - 2 * K(A,B)
-    features2_sq_sum = np.sum(features2**2, axis=1)
-    squared_dist = features2_sq_sum[:,np.newaxis] + features2_sq_sum  - 2 * features2.dot(features2.T)
+    #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
+    #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
+    squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
+    print(squared_dist.shape)
     for i in range(n_test):
         local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
-        local_features1 = features1[local_env_idx] - np.mean(features1[local_env_idx], axis=0)
-        local_features2 = features2[local_env_idx] - np.mean(features2[local_env_idx], axis=0)
+        local_features1_train = features1_train[local_env_idx]
+        local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
+        local_features2_train = features2_train[local_env_idx]
+        local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
         # standardize
         reconstruction_weights = feature_space_reconstruction_weights(
-            local_features1, local_features2
+            local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean
         )
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
         lfre_vec[i] = np.linalg.norm(
-            features1[i,:][np.newaxis,:].dot(reconstruction_weights) - features2[i,:][np.newaxis,:]
+            (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
+            - features2_test[i,:][np.newaxis,:]
         )**2 / np.sqrt(n_test)
     return lfre_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs):
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, seed):
     assert( len(feature_spaces1) == len(feature_spaces2) )
     for i in range(len(feature_spaces1)):
         assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
 
     n_test = feature_spaces2[0].shape[0]
+    if two_split:
+        train_idx, test_idx = generate_two_split_idx(n_test, seed)
     lfre_mat = np.zeros((len(feature_spaces1)*2, n_test))
     for i in range(len(feature_spaces1)):
-        lfre_mat[2*i] = local_feature_reconstruction_error(feature_spaces1[i], feature_spaces2[i], nb_local_envs)
-        lfre_mat[2*i+1] = local_feature_reconstruction_error(feature_spaces2[i], feature_spaces1[i], nb_local_envs)
+        features1 = standardize_features(feature_spaces1[i])
+        features2 = standardize_features(feature_spaces2[i])
+        print(features1.shape)
+        print(features2.shape)
+        if two_split:
+            features1_train, features2_train, _, _ = split_in_two(
+                    features1, features2, train_idx, test_idx)
+            features1_test = features1
+            features2_test = features2
+            lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test)
+            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test)
+        else:
+            lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2)
+            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1)
     return lfre_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
-        feature_spaces1, nb_local_envs):
+        feature_spaces, nb_local_envs, two_split, seed):
     for i in range(len(feature_spaces)):
         for j in range(i+1,len(feature_spaces)):
             assert( feature_spaces1[i].shape[0] == feature_spaces2[j].shape[0] )
-    n_test = features[0].shape[0]
-    lfre_mat = np.zeros((len(feature_spaces1), len(feature_spaces1), n_test))
+    n_test = feature_spaces[0].shape[0]
+    if two_split:
+        train_idx, test_idx = generate_two_split_idx(n_test, seed)
+    lfre_mat = np.zeros((len(feature_spaces), len(feature_spaces), n_test))
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
-            lfre_mat[i,j] = local_feature_reconstruction_error(feature_spaces[i], feature_spaces[j], nb_local_envs)
+            features1 = feature_spaces[i]
+            features2 = feature_spaces[j]
+            if two_split:
+                features1_train, features2_train, _, _ = split_in_two(
+                        features1, features2, train_idx, test_idx)
+                features1_test = features1
+                features2_test = features2
+                lfre_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, nb_local_envs)
+            else:
+                lfre_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1, features2)
     return lfre_mat

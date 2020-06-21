@@ -74,7 +74,7 @@ def gfr_all_pairs_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def lfre_pairwise_experiment(
-    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs
+    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed
 ):
 
 
@@ -82,8 +82,8 @@ def lfre_pairwise_experiment(
         dataset_name,
         nb_samples,
         list(zip(features_hypers1, features_hypers2)),
-        False,
-        None,
+        two_split,
+        seed,
         False,
         nb_local_envs = nb_local_envs
     )
@@ -91,7 +91,7 @@ def lfre_pairwise_experiment(
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
     lfre_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, seed
     )
 
     print("Store results...")
