@@ -3,15 +3,15 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist, squareform
 from scipy.interpolate import interp1d
 
-def compute_squared_wasserstein_distance(feature_paramaters, frames, environment_idx):
+def compute_squared_wasserstein_distance(feature_paramaters, frames):
     if feature_paramaters["feature_parameters"]["soap_type"] == "RadialSpectrum":
-        return compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, frames, environment_idx)
+        return compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, frames)
     elif feature_paramaters["feature_parameters"]["soap_type"] == "PowerSpectrum":
         raise ValueError("The soap_type="+feature_paramaters["feature_parameters"]["soap_type"]+" is not implemented yet.")
     else:
         raise ValueError("The soap_type="+feature_paramaters["feature_parameters"]["soap_type"]+" is not known.")
 
-def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, frames, environment_idx, nb_grid_points=200):
+def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, frames, nb_grid_points=200):
     if  feature_paramaters["feature_parameters"]["soap_type"] != "RadialSpectrum":
         raise ValueError('Wasserstein features can be only computed for soap_type="RadialSpectrum".')
     if  feature_paramaters["feature_parameters"]["radial_basis"] != "DVR":
@@ -25,7 +25,7 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
 
     # compute soap representation for interpolation
     representation = SphericalInvariants(**feature_paramaters["feature_parameters"])
-    densities = representation.transform(frames).get_features(representation)[environment_idx]
+    densities = representation.transform(frames).get_features(representation)
     nb_envs = densities.shape[0]
     nb_species = densities.shape[1]//nb_grid_points
     densities = densities.reshape(nb_envs * nb_species, nb_grid_points)
@@ -87,7 +87,7 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
         return squareform(pdist(wasserstein_features))
 
 # 200 grid points is just chosen arbitrary to obtain an approximation which is accurate enough
-def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, environment_idx, nb_grid_points=200):
+def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, nb_grid_points=200):
     """Compute"""
     if  feature_paramaters["soap_parameters"]["soap_type"] != "RadialSpectrum":
         raise ValueError('Wasserstein features can be only computed for soap_type="RadialSpectrum".')
@@ -102,7 +102,7 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, env
 
     # compute soap representation for interpolation
     representation = SphericalInvariants(**feature_paramaters["soap_parameters"])
-    densities = representation.transform(frames).get_features(representation)[environment_idx]
+    densities = representation.transform(frames).get_features(representation)
     nb_envs = densities.shape[0]
     nb_species = densities.shape[1]//nb_grid_points
     densities = densities.reshape(nb_envs * nb_species, nb_grid_points)
