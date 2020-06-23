@@ -142,7 +142,7 @@ def store_metadata(
         # datasets "manif-minus.extxyz" + "manif-plus.extxyz" -  degenerated manifold
         # datasets "dragged_methane.extxyz" - methane with one hydrogen dragged away from the center
         # Carbon
-        # datasets "C-VII-pp-wrapped.xyz" -  
+        # datasets "C-VII-pp-wrapped.xyz" -
         "dataset": dataset_name,
         # the hypers of targeted features spaces for the experiment
         "features_hypers": features_hypers,
@@ -159,7 +159,7 @@ def store_metadata(
         .decode("utf-8"),
         "additional_info": "CH4 environments",
     }
-    
+
     # only relevant for hidden feature reconstruction error experiments
     if hidden_feature_name is not None:
         metadata["hidden_feature_name"] = hidden_feature_name
