@@ -54,6 +54,12 @@ def gfr_pairwise_experiment(
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
+    return {
+        'hash': experiment_id,
+        'fre': FRE_matrix,
+        'frd': FRD_matrix,
+    }
+
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
 def gfr_all_pairs_experiment(

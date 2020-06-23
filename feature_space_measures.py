@@ -275,7 +275,7 @@ def feature_spaces_hidden_feature_reconstruction_errors(
     # for each feature space a fre vector exist, computing the error for each feature
     FRE_vectors = np.zeros((len(feature_spaces), feature_spaces[0].shape[1]))
     if two_split:
-        # generate idx beforehand 
+        # generate idx beforehand
         nb_samples = len(feature_spaces[0])
         train_idx, test_idx = generate_two_split_idx(nb_samples, seed)
     else:
