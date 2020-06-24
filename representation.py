@@ -91,7 +91,8 @@ def compute_squared_distance(feature_hypers, frames):
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         features = representation.transform(frames).get_features(representation)
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
-        return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
+        D_sq = np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
+        return D_sq/np.max(D_sq)
     elif distance_type == "wasserstein":
         return compute_squared_wasserstein_distance(feature_hypers, frames)
     else:
