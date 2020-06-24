@@ -91,8 +91,7 @@ def compute_squared_distance(feature_hypers, frames):
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         features = representation.transform(frames).get_features(representation)
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
-        D_sq = np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
-        return D_sq/np.max(D_sq)
+        return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
     elif distance_type == "wasserstein":
         return compute_squared_wasserstein_distance(feature_hypers, frames)
     else:
@@ -129,8 +128,8 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
-        return np.exp(-kernel_parameters["gamma"] * squared_distance)
+        return np.exp(-kernel_parameters["gamma"] * np.max(squared_distance) * squared_distance)
     elif kernel_type == "laplacian":
-        return np.exp(-kernel_parameters["gamma"] * np.sqrt(squared_distance))
+        return np.exp(-kernel_parameters["gamma"] * np.max(squared_distance) * np.sqrt(squared_distance))
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")
