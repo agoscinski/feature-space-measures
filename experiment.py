@@ -13,9 +13,7 @@ from feature_space_measures import (
     feature_spaces_hidden_feature_reconstruction_errors
 )
 from representation import compute_representations
-from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 import numpy as np
-import scipy
 
 import ase.io
 
@@ -180,17 +178,13 @@ def store_metadata(
     return metadata, output_hash
 
 
-def read_dataset(dataset_name, nb_samples, center_atom_id_mask = None):
+def read_dataset(dataset_name, nb_samples):
     print("Load data...", flush=True)
     frames = ase.io.read(DATASET_FOLDER + dataset_name, ":" + str(nb_samples))
-    if center_atom_id_mask is None:
-        center_atom_id_mask = [np.arange(1,len(frame)) for frame in frames]
     for i in range(len(frames)):
         frames[i].cell = np.eye(3) * 15
         frames[i].center()
         frames[i].wrap(eps=1e-11)
-        # masks the atom such that only the representation of the first environment is computed
-        mask_center_atoms_by_id(frames[i], id_blacklist=center_atom_id_mask[i])
     print("Load data finished.", flush=True)
     return frames
 

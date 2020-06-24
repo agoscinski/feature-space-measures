@@ -2,17 +2,23 @@ import numpy as np
 import scipy
 
 from rascal.representations import SphericalInvariants
+from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
 
 
-def compute_representations(features_hypers, frames):
+def compute_representations(features_hypers, frames, center_atom_id_mask=None):
+    if center_atom_id_mask is None:
+        center_atom_id_mask = [[0] for frame in frames]
+    for i in range(len(frames)):
+        # masks the atom such that only the representation of the first environment is computed
+        mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
     print("Compute representations...", flush=True)
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
             features = compute_hilbert_space_features(feature_hypers, frames)
         else:
-            features = compute_representation(feature_hypers, frames)
+            features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         feature_spaces.append(features)
     if "feature_selection_parameters" in feature_hypers:
         raise ValueError("The feature selection methods are not implemented yet.")
@@ -23,16 +29,18 @@ def compute_representations(features_hypers, frames):
     return feature_spaces
 
 
-def compute_representation(feature_hypers, frames):
+def compute_representation(feature_hypers, frames, center_atom_id_mask):
     if feature_hypers["feature_type"] == "soap":
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
     elif feature_hypers["feature_type"] == "precomputed_BP":
+        nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
+
         parameters = feature_hypers["feature_parameters"]
         path = f"{parameters['file_root']}/{parameters['dataset']}/compute_features/{parameters['dataset']}_{parameters['SF_count']}SF"
-        data = np.zeros((len(frames), parameters["SF_count"]))
+        data = np.zeros((nb_envs, parameters["SF_count"]))
 
         if parameters['dataset'] == "methane":
             # only C-centered envs are included in the BF feature, so we have
@@ -40,7 +48,7 @@ def compute_representation(feature_hypers, frames):
             with open(path) as fd:
                 for i, line in enumerate(fd):
                     # only the first 4000 frames are used
-                    if i >= 4000:
+                    if i >= nb_envs:
                         break
                     data[i, :] = list(map(float, line.split()))
                 assert(i == data.shape[0])
@@ -59,7 +67,7 @@ def compute_representation(feature_hypers, frames):
                     if line_i in included_envs:
                         data[i, :] = list(map(float, line.split()))
                         i += 1
-                    if i >= 4000:
+                    if i >= nb_envs:
                         break
 
                 assert(i == data.shape[0])
