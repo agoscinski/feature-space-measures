@@ -128,8 +128,12 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
-        return np.exp(-kernel_parameters["gamma"] * np.max(squared_distance) * squared_distance)
+        kernel = np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * squared_distance)
+        plt.imshow(kernel)
+        plt.colorbar()
+        plt.show()
+        return kernel
     elif kernel_type == "laplacian":
-        return np.exp(-kernel_parameters["gamma"] * np.max(squared_distance) * np.sqrt(squared_distance))
+        return np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * np.sqrt(squared_distance))
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")
