@@ -48,10 +48,10 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
             with open(path) as fd:
                 for i, line in enumerate(fd):
                     # only the first 4000 frames are used
-                    if i >= nb_envs:
-                        break
                     data[i, :] = list(map(float, line.split()))
-                assert(i == data.shape[0])
+                    if i >= nb_envs-1:
+                        break
+                assert(i == nb_envs-1)
         elif parameters['dataset'] == "carbon":
             # all envs are included in BP, but SOAP only compute the env for the
             # first atom of the frame, so we need to skip some of them
@@ -67,10 +67,10 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
                     if line_i in included_envs:
                         data[i, :] = list(map(float, line.split()))
                         i += 1
-                    if i >= nb_envs:
+                    if i >= nb_envs-1:
                         break
 
-                assert(i == data.shape[0])
+                assert(i == nb_envs-1)
         else:
             raise ValueError("unknown dataset " + parameters['dataset'])
         return data
