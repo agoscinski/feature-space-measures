@@ -129,9 +129,6 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
         kernel = np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * squared_distance)
-        plt.imshow(kernel)
-        plt.colorbar()
-        plt.show()
         return kernel
     elif kernel_type == "laplacian":
         return np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * np.sqrt(squared_distance))
