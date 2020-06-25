@@ -16,7 +16,7 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
-            features = compute_hilbert_space_features(feature_hypers, frames)
+            features = compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         feature_spaces.append(features)
@@ -78,15 +78,15 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         raise ValueError("The feature_type=" + feature_hypers["feature_type"] + " is not known.")
 
 
-def compute_hilbert_space_features(feature_hypers, frames):
-    return compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+def compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask):
+    return compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
 
 
-def compute_squared_distance(feature_hypers, frames):
+def compute_squared_distance(feature_hypers, frames, center_atom_id_mask):
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
-        features = compute_representation(feature_hypers, frames, None)
+        features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
         return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
     elif distance_type == "wasserstein":
