@@ -83,19 +83,17 @@ def compute_hilbert_space_features(feature_hypers, frames):
 
 
 def compute_squared_distance(feature_hypers, frames):
-    if feature_hypers["feature_type"] != "soap":
-        raise ValueError("Hilbert space features only work with soap features.")
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
-        representation = SphericalInvariants(**feature_hypers["feature_parameters"])
-        features = representation.transform(frames).get_features(representation)
+        features = compute_representation(feature_hypers, frames, None)
         # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
         return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
     elif distance_type == "wasserstein":
+        raise ValueError("The distance_type='wasserstein' is not fully implemented yet.")
         return compute_squared_wasserstein_distance(feature_hypers, frames)
     else:
-        raise ValueError("The distance_type=" + distance_type + " is not known.")
+        raise ValueError("The distance_type='" + distance_type + "' is not known.")
 
 
 def compute_features_from_kernel(kernel):
