@@ -64,10 +64,10 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
                     if line_i in included_envs:
                         data[i, :] = list(map(float, line.split()))
                         i += 1
-                    if i >= nb_envs-1:
+                    if i >= nb_envs:
                         break
 
-                assert(i == nb_envs-1)
+                assert(i == nb_envs)
         else:
             raise ValueError("unknown dataset " + parameters['dataset'])
         return data
