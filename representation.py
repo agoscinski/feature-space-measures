@@ -22,9 +22,6 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
         if "feature_selection_parameters" in feature_hypers:
             features = features[:,::-1][:,:feature_hypers["feature_selection_parameters"]["nb_features"]]
         feature_spaces.append(features)
-        #raise ValueError("The feature selection methods are not implemented yet.")
-        # TODO Guillaume: apply feature selection method on all features in list feature_spaces
-        print(feature_hypers["feature_selection_parameters"]["nb_features"])
     print("Compute representations finished", flush=True)
     return feature_spaces
 
