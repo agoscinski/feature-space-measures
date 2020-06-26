@@ -79,7 +79,13 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
 
 
 def compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask):
-    return compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    if "feature_selection_parameters" in feature_hypers:
+        features = features[:,::-1][:,:feature_hypers["feature_selection_parameters"]["nb_features"]]
+    import matplotlib.pyplot as plt
+    plt.imshow(features)
+    plt.show()
+    return features
 
 
 def compute_squared_distance(feature_hypers, frames, center_atom_id_mask):
