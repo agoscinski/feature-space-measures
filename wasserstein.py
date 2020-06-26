@@ -138,7 +138,8 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, nb_
 
     wasserstein_features = np.zeros((nb_envs*nb_species, nb_basis_functions))
     for i in np.where(nonzero_mask)[0]: # subset of nb_envs*nb_species
-        interpolator = interp1d(cdf[i,:], density_grid, assume_sorted=True)
+        cdf_i, cdf_idx = np.unique(cdf[i,:], return_index=True)
+        interpolator = interp1d(cdf_i, density_grid[cdf_idx], assume_sorted=True, kind='slinear')
         wasserstein_features[i,:] = interpolator(interp_grid)
 
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
