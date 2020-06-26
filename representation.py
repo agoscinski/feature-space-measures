@@ -19,12 +19,12 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
             features = compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+        if "feature_selection_parameters" in feature_hypers:
+            features = features[:,::-1][:,:feature_hypers["feature_selection_parameters"]["nb_features"]]
         feature_spaces.append(features)
-    if "feature_selection_parameters" in feature_hypers:
-        raise ValueError("The feature selection methods are not implemented yet.")
-        for feature_space in feature_spaces:
-            # TODO Guillaume: apply feature selection method on all features in list feature_spaces
-            print(feature_hypers["feature_selection_parameters"]["nb_features"])
+        #raise ValueError("The feature selection methods are not implemented yet.")
+        # TODO Guillaume: apply feature selection method on all features in list feature_spaces
+        print(feature_hypers["feature_selection_parameters"]["nb_features"])
     print("Compute representations finished", flush=True)
     return feature_spaces
 
@@ -80,8 +80,6 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
 
 def compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask):
     features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
-    if "feature_selection_parameters" in feature_hypers:
-        features = features[:,::-1][:,:feature_hypers["feature_selection_parameters"]["nb_features"]]
     return features
 
 
