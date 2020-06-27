@@ -81,10 +81,11 @@ def feature_space_reconstruction_measures(
         lapack_driver=svd_method
     )
     Q = U2.dot(V2)
-    # see paper for derivation of alpha
-    alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
-        features1_U.dot(features1_U.T)
-    )
+    # alpha is not important anymore because features are standardized 
+    ## see paper for derivation of alpha
+    #alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
+    #    features1_U.dot(features1_U.T)
+    #)
     alpha = 1
     FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
     return FRE, FRD
