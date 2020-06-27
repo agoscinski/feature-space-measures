@@ -165,7 +165,7 @@ def store_metadata(
         "git_last_commit_id": subprocess.check_output(["git", "describe", "--always"])
         .strip()
         .decode("utf-8"),
-        "additional_info": "CH4 environments, regularizer 1e-9, alpha set to 1",
+        "additional_info": "CH4 environments",
     }
 
     # only relevant for hidden feature reconstruction error experiments
