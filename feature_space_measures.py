@@ -17,7 +17,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer):
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    print(regularizer)
     return np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
 
 def standardize_features(features, train_idx=None):
