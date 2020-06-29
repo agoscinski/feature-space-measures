@@ -49,7 +49,7 @@ def gfr_pairwise_experiment(
     FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
         two_split, seed, noise_removal, regularizer, feature_spaces1, feature_spaces2
     )
-    print("Store results...")
+    print("Store results...", flush=True)
     store_results("gfre_mat-", experiment_id, FRE_matrix)
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
@@ -119,6 +119,26 @@ def lfre_all_pairs_experiment(
 
     print("Store results...")
     store_results("lfre_mat-", experiment_id, lfre_mat)
+    print(f"Store results finished. Hash value {experiment_id}", flush=True)
+
+
+def ghfre_experiment(
+    dataset_name, nb_samples, features_hypers, two_split, seed, regularizer, hidden_feature_name,
+):
+    metadata, experiment_id = store_metadata(
+        dataset_name, nb_samples, features_hypers, two_split, seed, noise_removal=False, regularizer=regularizer, hidden_feature_name=hidden_feature_name)
+    frames = read_dataset(dataset_name, nb_samples)
+    hidden_feature = np.array([frame.info[hidden_feature_name] for frame in frames])[:,np.newaxis]
+    feature_spaces = compute_representations(features_hypers, frames)
+    print("Compute hidden feature reconstruction errors...", flush=True)
+
+    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
+        two_split, seed, False, regularizer, feature_spaces, [hidden_feature for _ in range(len(feature_spaces))]
+    )
+
+    print("Store results...", flush=True)
+    store_results("ghfre_mat-", experiment_id, FRE_matrix)
+    store_results("ghfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def hfre_experiment(
