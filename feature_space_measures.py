@@ -109,7 +109,6 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     idx = np.arange(nb_samples)
     np.random.shuffle(idx)
     split_id = int(len(idx) * train_ratio)
-    print(len(idx[:split_id]))
     return idx[:split_id], idx[split_id:]
 
 def split_in_two(features1, features2, train_idx, test_idx):
