@@ -91,7 +91,7 @@ def feature_space_reconstruction_measures(
     return FRE, FRD
 
 
-def generate_two_split_idx(nb_samples, splitting_ratio=0.5, seed=0x5F3759DF):
+def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     """
     Computes the FRE and FRD of features2 from features1 with a two-split
 
@@ -108,8 +108,9 @@ def generate_two_split_idx(nb_samples, splitting_ratio=0.5, seed=0x5F3759DF):
     np.random.seed(seed)
     idx = np.arange(nb_samples)
     np.random.shuffle(idx)
-    split_id = int(len(idx) * splitting_ratio)
-    return idx[split_id:], idx[:split_id]
+    split_id = int(len(idx) * train_ratio)
+    print(len(idx[:split_id]))
+    return idx[:split_id], idx[split_id:]
 
 def split_in_two(features1, features2, train_idx, test_idx):
     features1_train = features1[train_idx]
@@ -121,7 +122,7 @@ def split_in_two(features1, features2, train_idx, test_idx):
     return features1_train, features2_train, features1_test, features2_test
 
 def two_split_reconstruction_measure_all_pairs(
-    feature_spaces, svd_method="gesdd", splitting_ratio=0.5, seed=0x5F3759DF, noise_removal=False, regularizer=np.nan
+    feature_spaces, svd_method="gesdd", train_ratio=0.5, seed=0x5F3759DF, noise_removal=False, regularizer=np.nan
 ):
     """
     Computes the FRE and FRD of features2 from features1
@@ -139,7 +140,7 @@ def two_split_reconstruction_measure_all_pairs(
     FRE_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     nb_samples = len(feature_spaces[0])
-    train_idx, test_idx = generate_two_split_idx(nb_samples, splitting_ratio, seed)
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
             features1 = standardize_features(feature_spaces[i], train_idx)
@@ -195,7 +196,7 @@ def two_split_reconstruction_measure_pairwise(
     feature_spaces1,
     feature_spaces2,
     svd_method="gesdd",
-    splitting_ratio=0.5,
+    train_ratio=0.5,
     seed=0x5F3759DF,
     noise_removal=False,
     regularizer=np.nan,
@@ -217,7 +218,7 @@ def two_split_reconstruction_measure_pairwise(
 
 
     nb_samples = len(feature_spaces1[0])
-    train_idx, test_idx = generate_two_split_idx(nb_samples, splitting_ratio, seed)
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     for i in range(len(feature_spaces1)):
         features1 = standardize_features(feature_spaces1[i], train_idx)
         features2 = standardize_features(feature_spaces2[i], train_idx)
@@ -279,7 +280,7 @@ def hidden_feature_reconstruction_errors(
     return FRE_vector
 
 def feature_spaces_hidden_feature_reconstruction_errors(
-    feature_spaces, hidden_feature, two_split=False, splitting_ratio=None, seed=None, regularizer=np.nan):
+    feature_spaces, hidden_feature, two_split=False, train_ratio=None, seed=None, regularizer=np.nan):
     # we assert that only feature_spaces with the same number of features are used to simplify storage
     for i in range(len(feature_spaces)):
         assert( feature_spaces[i].shape[1] == feature_spaces[0].shape[1] )
@@ -288,7 +289,7 @@ def feature_spaces_hidden_feature_reconstruction_errors(
     if two_split:
         # generate idx beforehand
         nb_samples = len(feature_spaces[0])
-        train_idx, test_idx = generate_two_split_idx(nb_samples, splitting_ratio, seed)
+        train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     else:
         train_idx, test_idx = (None, None)
     for i in range(len(feature_spaces)):
@@ -336,14 +337,14 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     return lfre_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs, two_split, splitting_ratio, seed, regularizer):
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer):
     assert( len(feature_spaces1) == len(feature_spaces2) )
     for i in range(len(feature_spaces1)):
         assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
 
     n_test = feature_spaces2[0].shape[0]
     if two_split:
-        train_idx, test_idx = generate_two_split_idx(n_test, splitting_ratio, seed)
+        train_idx, test_idx = generate_two_split_idx(n_test, train_ratio, seed)
     lfre_mat = np.zeros((len(feature_spaces1)*2, n_test))
     for i in range(len(feature_spaces1)):
         features1 = standardize_features(feature_spaces1[i])
@@ -361,13 +362,13 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
     return lfre_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
-        feature_spaces, nb_local_envs, two_split, splitting_ratio, seed, regularizer):
+        feature_spaces, nb_local_envs, two_split, train_ratio, seed, regularizer):
     for i in range(len(feature_spaces)):
         for j in range(i+1,len(feature_spaces)):
             assert( feature_spaces1[i].shape[0] == feature_spaces2[j].shape[0] )
     n_test = feature_spaces[0].shape[0]
     if two_split:
-        train_idx, test_idx = generate_two_split_idx(n_test, splitting_ratio, seed)
+        train_idx, test_idx = generate_two_split_idx(n_test, train_ratio, seed)
     lfre_mat = np.zeros((len(feature_spaces), len(feature_spaces), n_test))
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
