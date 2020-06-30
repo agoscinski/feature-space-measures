@@ -31,6 +31,7 @@ def feature_space_reconstruction_measures(
     noise_removal=False,
     reconstruction_weights=None,
     regularizer=np.nan,
+    n_test=None
 ):
     """
     Computes the FRE and FRD of features2 from features1
@@ -54,7 +55,8 @@ def feature_space_reconstruction_measures(
         reconstruction_weights = feature_space_reconstruction_weights(
             features1, features2, regularizer
         )
-    n_test = features2.shape[0]
+    if n_test is None:
+        n_test = features2.shape[0]
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     FRE = np.linalg.norm(
         features1.dot(reconstruction_weights) - features2
@@ -314,6 +316,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
 
     n_test = features2_test.shape[0]
     lfre_vec = np.zeros(n_test)
+    lfrd_vec = np.zeros(n_test)
     # D(A,B)^2 = K(A,A) + K(B,B) - 2 * K(A,B)
     #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
     #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
@@ -329,11 +332,17 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
         )
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
-        lfre_vec[i] = np.linalg.norm(
-            (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
-            - features2_test[i,:][np.newaxis,:]
-        )**2 / np.sqrt(n_test)
-    return lfre_vec
+        # not evactly _i_tilde but: (x_F^{(i)}-\bar{x}_F)P_{FF'}^{(i)}
+        features1_i = features1_test[i,:][np.newaxis,:] - local_features1_train_mean
+        # not exactly _i but x_{F'}^{(i)}-\bar{x}_{F'}^{(i)}
+        features2_i = features2_test[i,:][np.newaxis,:] - local_features2_train_mean
+        lfre_vec[i], lfrd_vec[i] = feature_space_reconstruction_measures(features1_i, features2_i, reconstruction_weights=reconstruction_weights, n_test=1)
+        lfre_vec[i] = lfre_vec[i]**2/ np.sqrt(n_test)
+        lfrd_vec[i] = lfrd_vec[i]**2/ np.sqrt(n_test)
+        #lfre_vec[i] = np.linalg.norm(
+        #    (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
+        #    - features2_test[i,:][np.newaxis,:])**2/ np.sqrt(n_test)
+    return lfre_vec, lfrd_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
         feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer):
@@ -345,6 +354,7 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
     if two_split:
         train_idx, test_idx = generate_two_split_idx(n_test, train_ratio, seed)
     lfre_mat = np.zeros((len(feature_spaces1)*2, n_test))
+    lfrd_mat = np.zeros((len(feature_spaces1)*2, n_test))
     for i in range(len(feature_spaces1)):
         features1 = standardize_features(feature_spaces1[i])
         features2 = standardize_features(feature_spaces2[i])
@@ -353,12 +363,12 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
                     features1, features2, train_idx, test_idx)
             features1_test = features1
             features2_test = features2
-            lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, regularizer=regularizer)
-            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer)
+            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, regularizer=regularizer)
+            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer)
         else:
-            lfre_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer)
-            lfre_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer)
-    return lfre_mat
+            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer)
+            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer)
+    return lfre_mat, lfrd_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
         feature_spaces, nb_local_envs, two_split, train_ratio, seed, regularizer):
@@ -369,6 +379,7 @@ def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
     if two_split:
         train_idx, test_idx = generate_two_split_idx(n_test, train_ratio, seed)
     lfre_mat = np.zeros((len(feature_spaces), len(feature_spaces), n_test))
+    lfrd_mat = np.zeros((len(feature_spaces), len(feature_spaces), n_test))
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
             features1 = feature_spaces[i]
@@ -378,7 +389,7 @@ def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
                         features1, features2, train_idx, test_idx)
                 features1_test = features1
                 features2_test = features2
-                lfre_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, nb_local_envs, regularizer=regularizer)
+                lfre_mat[i,j], lfrd_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, nb_local_envs, regularizer=regularizer)
             else:
-                lfre_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer)
-    return lfre_mat
+                lfre_mat[i,j], lfrd_mat[i,j] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer)
+    return lfre_mat, lfrd_mat

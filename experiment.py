@@ -99,13 +99,14 @@ def lfre_pairwise_experiment(
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
     print("Compute local feature reconstruction errors...", flush=True)
-    lfre_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
+    lfre_mat, lfrd_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
         feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer
     )
     print("Computation local feature reconstruction errors finished", flush=True)
 
     print("Store results...")
     store_results("lfre_mat-", experiment_id, lfre_mat)
+    store_results("lfrd_mat-", experiment_id, lfrd_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def lfre_all_pairs_experiment(
@@ -116,12 +117,13 @@ def lfre_all_pairs_experiment(
     )
     frames = read_dataset(dataset_name, nb_samples)
     feature_spaces = compute_representations(features_hypers, frames)
-    lfre_mat = compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
+    lfre_mat, lfrd_mat = compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
         feature_spaces, nb_local_envs, two_split, train_ratio, seed, regularizer
     )
 
     print("Store results...")
     store_results("lfre_mat-", experiment_id, lfre_mat)
+    store_results("lfrd_mat-", experiment_id, lfrd_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 
