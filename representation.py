@@ -8,7 +8,10 @@ from wasserstein import compute_squared_wasserstein_distance, compute_radial_spe
 
 def compute_representations(features_hypers, frames, center_atom_id_mask=None):
     if center_atom_id_mask is None:
+        # only first center
         center_atom_id_mask = [[0] for frame in frames]
+        # all centers
+        #center_atom_id_mask = [list(range(2)) for frame in frames]
     for i in range(len(frames)):
         # masks the atom such that only the representation of the first environment is computed
         mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
@@ -54,9 +57,9 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
             # first atom of the frame, so we need to skip some of them
             count = 0
             included_envs = []
-            for frame in frames:
-                included_envs.append(count)
-                count += len(frame)
+            for i in range(len(frames)):
+                included_envs.extend([count+id_mask for id_mask in center_atom_id_mask[i]])
+                count += len(frames[i])
 
             with open(path) as fd:
                 i = 0
@@ -66,7 +69,6 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
                         i += 1
                     if i >= nb_envs:
                         break
-
                 assert(i == nb_envs)
         else:
             raise ValueError("unknown dataset " + parameters['dataset'])
