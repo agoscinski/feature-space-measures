@@ -323,24 +323,22 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
     for i in range(n_test):
         local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
-        local_features1_train = features1_train[local_env_idx]
-        local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
-        local_features2_train = features2_train[local_env_idx]
-        local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
-        # standardize
+        local_features1 = standardize_features(features1_train[local_env_idx])
+        local_features2 = standardize_features(features2_train[local_env_idx])
+
         reconstruction_weights = feature_space_reconstruction_weights(
-            local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
+            local_features1, local_features2, regularizer
         )
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
         # not evactly _i_tilde but: (x_F^{(i)}-\bar{x}_F)P_{FF'}^{(i)}
-        features1_i = local_features1_train - local_features1_train_mean
+        #features1_i = features1_test[local_env_idx] - local_features1_train_mean
         #features1_i = features1_test[i,:][np.newaxis,:] - local_features1_train_mean
         # not exactly _i but x_{F'}^{(i)}-\bar{x}_{F'}^{(i)}
-        features2_i = features2_train[local_env_idx]
+        #features2_i = features2_test[local_env_idx]
         #features2_i = features2_test[i,:][np.newaxis,:] - local_features2_train_mean
         #lfre_vec[i], lfrd_vec[i] = feature_space_reconstruction_measures(features1_i, features2_i, reconstruction_weights=reconstruction_weights, n_test=1)
-        lfre_vec[i] = np.linalg.norm(features1_i.dot(reconstruction_weights)  - features2_i)
-        lfre_vec[i] = lfre_vec[i]**2/ np.sqrt(n_test)
+        lfre_vec[i] = np.linalg.norm(local_features1.dot(reconstruction_weights)  - local_features2 ) / np.sqrt(len(local_env_idx))
+        lfre_vec[i] = lfre_vec[i]**2/ n_test
         #lfrd_vec[i] = lfrd_vec[i]**2/ np.sqrt(n_test)
     return lfre_vec, lfrd_vec
 
