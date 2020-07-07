@@ -11,7 +11,7 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
         # only first center
         center_atom_id_mask = [[0] for frame in frames]
         # all centers
-        #center_atom_id_mask = [list(range(2)) for frame in frames]
+        #center_atom_id_mask = [list(range(len(frame))) for frame in frames]
     for i in range(len(frames)):
         # masks the atom such that only the representation of the first environment is computed
         mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
