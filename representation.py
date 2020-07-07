@@ -4,6 +4,7 @@ import scipy
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
+from select_features import select_features
 
 
 def compute_representations(features_hypers, frames, center_atom_id_mask=None):
@@ -21,10 +22,10 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         feature_spaces.append(features)
     if "feature_selection_parameters" in feature_hypers:
-        raise ValueError("The feature selection methods are not implemented yet.")
-        for feature_space in feature_spaces:
-            # TODO Guillaume: apply feature selection method on all features in list feature_spaces
-            print(feature_hypers["feature_selection_parameters"]["nb_features"])
+        selected = []
+        for features in feature_spaces:
+            selected.append(select_features(features, feature_hypers["feature_selection_parameters"]))
+        feature_spaces = selected
     print("Compute representations finished", flush=True)
     return feature_spaces
 
@@ -49,9 +50,9 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
                 for i, line in enumerate(fd):
                     # only the first 4000 frames are used
                     data[i, :] = list(map(float, line.split()))
-                    if i >= nb_envs-1:
+                    if i >= nb_envs - 1:
                         break
-                assert(i == nb_envs-1)
+                assert(i == nb_envs - 1)
         elif parameters['dataset'] == "carbon":
             # all envs are included in BP, but SOAP only compute the env for the
             # first atom of the frame, so we need to skip some of them
@@ -67,10 +68,10 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
                     if line_i in included_envs:
                         data[i, :] = list(map(float, line.split()))
                         i += 1
-                    if i >= nb_envs-1:
+                    if i >= nb_envs - 1:
                         break
 
-                assert(i == nb_envs-1)
+                assert(i == nb_envs - 1)
         else:
             raise ValueError("unknown dataset " + parameters['dataset'])
         return data
@@ -128,9 +129,9 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
-        kernel = np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * squared_distance)
+        kernel = np.exp(-kernel_parameters["gamma"] * 1 / np.mean(squared_distance) * squared_distance)
         return kernel
     elif kernel_type == "laplacian":
-        return np.exp(-kernel_parameters["gamma"] * 1/np.mean(squared_distance) * np.sqrt(squared_distance))
+        return np.exp(-kernel_parameters["gamma"] * 1 / np.mean(squared_distance) * np.sqrt(squared_distance))
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")
