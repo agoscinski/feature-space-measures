@@ -14,32 +14,35 @@ def select_features(features, hypers):
 
 def select_fps(X, hypers, seed=0x5f3759df):
     requested = hypers['n_features']
-
     if requested > X.shape[1]:
         return X
     idx = np.zeros(requested, dtype=np.int)
+    idx[:] = np.nan
     # Pick first point at random
     np.random.seed(seed)
     idx[0] = np.random.randint(0, X.shape[0])
     # Compute distance from all points to the first point
-    d1 = scipy.spatial.distance.cdist(X, X[idx[:1]])
 
     # Loop over the remaining points...
-    for i in range(1, requested):
+    for i in range(requested-1):
         # Get maximum distance and corresponding point
-        idx[i] = np.argmax(d1)
 
         # Compute distance from all points to the selected point
         #d2 = np.linalg.norm(X - X[idx[i]], axis=1)**2
         d2 = np.sum( scipy.spatial.distance.cdist(X, X[idx[:i+1]]), axis=1)
 
         # Set distances to minimum among the last two selected points
-        d1 = np.minimum(d1, d2)
+        for k in np.argsort(d2)[::-1]:
+            if not(k in idx):
+                new_id = k
+                break;
 
-        if d1.max() == 0.0:
-            print("WARNING ---- {} points requested, but only {} are availabe in FPS".format(requested, i))
-            return X[idx[:i], :]
+        idx[i+1] = new_id
+        #if np.sort(d2, order='descending')[new_id] == 0.0:
+        #    print("WARNING ---- {} points requested, but only {} are availabe in FPS".format(requested, i))
+        #    return X[idx[:i], :]
 
+    idx[-1] = new_id
     return X[idx, :]
 
 
