@@ -24,10 +24,7 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         if "feature_selection_parameters" in feature_hypers:
-            selected = []
-            for features in feature_spaces:
-                selected.append(select_features(features, feature_hypers["feature_selection_parameters"]))
-            feature_spaces = selected
+            features = select_features(features, feature_hypers["feature_selection_parameters"])
         feature_spaces.append(features)
     print("Compute representations finished", flush=True)
     return feature_spaces
