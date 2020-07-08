@@ -4,6 +4,9 @@ from CUR import CUR
 
 
 def select_features(features, hypers):
+    if hypers['n_features'] >= features.shape[1]:
+        print("Warning: n_features >= nb_samples")
+        return features
     if hypers['type'] == 'FPS':
         return select_fps(features.T, hypers).T
     if hypers['type'] == 'CUR':
@@ -14,8 +17,6 @@ def select_features(features, hypers):
 
 def select_fps(X, hypers, seed=0x5f3759df):
     requested = hypers['n_features']
-    if requested > X.shape[1]:
-        return X
     idx = np.zeros(requested, dtype=np.int)
     idx[:] = np.nan
     # Pick first point at random
@@ -43,6 +44,7 @@ def select_fps(X, hypers, seed=0x5f3759df):
         #    return X[idx[:i], :]
 
     idx[-1] = new_id
+    print(idx)
     return X[idx, :]
 
 
@@ -55,6 +57,7 @@ def select_cur(X, hypers):
     cur = CUR(X, feature_select=True)
     cur.compute(requested)
 
-    print(X[:, cur.idx_c].shape)
+    #print(X[:, cur.idx_c].shape)
 
+    print(cur.idx_c)
     return X[:, cur.idx_c]
