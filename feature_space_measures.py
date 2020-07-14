@@ -25,7 +25,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     for i in range( features2.shape[1] ):
         reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
         reg.fit(features1, features2[:,i])
-        W[i,:] = reg.coef_
+        W[:,i] = reg.coef_
     return W
     #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
     #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
