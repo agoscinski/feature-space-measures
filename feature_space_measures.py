@@ -18,11 +18,20 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
+    
+
     print("Computing weights...")
-    regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
-    [regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
-    print("Computing weights finished.")
-    return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
+    W = np.zeros((features1.shape[1],features2.shape[1]))
+    for i in range( features2.shape[1] ):
+        reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
+        reg.fit(features1, features2[:,i])
+        W[i,:] = reg.coef_
+    return W
+    #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
+    #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
+    #print("Computing weights finished.")
+    #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
+
     #W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     #if np.linalg.norm(W) > 1e4:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
