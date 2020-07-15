@@ -8,7 +8,7 @@ os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=4
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1" # export VECLIB_MAXIMUM_THREADS=4
 os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=4
 
-nb_samples = 10000
+nb_samples = 4000
 two_split = True
 if two_split:
     seed = 0x5f3759df

@@ -2,7 +2,7 @@
 # coding: utf-8
 from experiment import gfr_all_pairs_experiment
 
-nb_samples = 10000
+nb_samples = 4000
 two_split = True
 if two_split:
     seed = 0x5f3759df
