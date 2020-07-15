@@ -221,7 +221,7 @@ def read_dataset(dataset_name, nb_samples):
             frames[i].cell = np.eye(3) * 15
             frames[i].center()
             frames[i].wrap(eps=1e-11)
-            #frames[i].numbers = np.ones(len(frames[i]))
+            frames[i].numbers = np.ones(len(frames[i]))
     print("Load data finished.", flush=True)
     return frames
 
