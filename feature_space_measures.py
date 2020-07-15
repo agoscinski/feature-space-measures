@@ -20,22 +20,22 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     """
     
 
-    ##print("Computing weights...")
-    #W = np.zeros((features1.shape[1],features2.shape[1]))
-    #for i in range( features2.shape[1] ):
-    #    reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
-    #    reg.fit(features1, features2[:,i])
-    #    W[:,i] = reg.coef_
-    ##print("Computing weights finished.")
-    #return W
+    #print("Computing weights...")
+    W = np.zeros((features1.shape[1],features2.shape[1]))
+    for i in range( features2.shape[1] ):
+        reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
+        reg.fit(features1, features2[:,i])
+        W[:,i] = reg.coef_
+    #print("Computing weights finished.")
+    return W
     #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
     #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
 
-    W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    if np.linalg.norm(W) > 1e4:
-        warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
-    return W
+    #W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
+    #if np.linalg.norm(W) > 1e4:
+    #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
+    #return W
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
@@ -239,6 +239,7 @@ def two_split_reconstruction_measure_pairwise(
 
     nb_samples = len(feature_spaces1[0])
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+
     for i in range(len(feature_spaces1)):
         features1 = standardize_features(feature_spaces1[i], train_idx)
         features2 = standardize_features(feature_spaces2[i], train_idx)

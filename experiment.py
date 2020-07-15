@@ -145,7 +145,7 @@ def ghfre_experiment(
     store_results("ghfre_mat-", experiment_id, FRE_matrix)
     store_results("ghfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
-    return experiment_id
+    return experiment_id, FRE_matrix
 
 def hfre_experiment(
     dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, regularizer, hidden_feature_name,
@@ -212,10 +212,16 @@ def store_metadata(
 def read_dataset(dataset_name, nb_samples):
     print("Load data...", flush=True)
     frames = ase.io.read(DATASET_FOLDER + dataset_name, ":" + str(nb_samples))
-    for i in range(len(frames)):
-        frames[i].cell = np.eye(3) * 15
-        frames[i].center()
-        frames[i].wrap(eps=1e-11)
+    if  dataset_name == "C-VII-pp-wrapped.xyz":
+        for i in range(len(frames)):
+            frames[i].wrap(eps=1e-11)
+            frames[i].pbc=True
+    else:
+        for i in range(len(frames)):
+            frames[i].center()
+            frames[i].wrap(eps=1e-11)
+            frames[i].cell = np.eye(3) * 15
+            #frames[i].numbers = np.ones(len(frames[i]))
     print("Load data finished.", flush=True)
     return frames
 
