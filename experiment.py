@@ -214,13 +214,13 @@ def read_dataset(dataset_name, nb_samples):
     frames = ase.io.read(DATASET_FOLDER + dataset_name, ":" + str(nb_samples))
     if  dataset_name == "C-VII-pp-wrapped.xyz":
         for i in range(len(frames)):
-            frames[i].wrap(eps=1e-11)
             frames[i].pbc=True
+            frames[i].wrap(eps=1e-11)
     else:
         for i in range(len(frames)):
+            frames[i].cell = np.eye(3) * 15
             frames[i].center()
             frames[i].wrap(eps=1e-11)
-            frames[i].cell = np.eye(3) * 15
             #frames[i].numbers = np.ones(len(frames[i]))
     print("Load data finished.", flush=True)
     return frames

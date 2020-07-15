@@ -14,7 +14,7 @@ noise_removal = False
 regularizer = 1e-6
 
 ## Constant hyperparameters
-nb_samples = 10000
+nb_samples = 4000
 cutoff = 4
 normalize = False
 
@@ -22,7 +22,7 @@ normalize = False
 #sigmas = [0.1, 0.2, 0.3, 0.4, 0.5]
 sigmas = [0.1, 0.3, 0.5]
 for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
-    for radial_basis in ["GTO"]:
+    for radial_basis in ["GTO", "DVR"]:
         features_hypers = [{
             "feature_type": "soap",
             "feature_parameters": {
