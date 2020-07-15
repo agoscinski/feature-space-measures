@@ -23,6 +23,8 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #print("Computing weights...")
     W = np.zeros((features1.shape[1],features2.shape[1]))
     for i in range( features2.shape[1] ):
+        if i % int(features2.shape[1]/5) == 0:
+            print("weight step "+str(i)+"")
         reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
         reg.fit(features1, features2[:,i])
         W[:,i] = reg.coef_
