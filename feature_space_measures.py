@@ -20,22 +20,22 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     """
     
 
-    print("Computing weights...")
+    #print("Computing weights...")
     W = np.zeros((features1.shape[1],features2.shape[1]))
     for i in range( features2.shape[1] ):
         reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
         reg.fit(features1, features2[:,i])
         W[:,i] = reg.coef_
+    #print("Computing weights finished.")
     return W
     #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
     #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
-    #print("Computing weights finished.")
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
 
-    #W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    #if np.linalg.norm(W) > 1e4:
-    #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
-    #return W
+    W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
+    if np.linalg.norm(W) > 1e4:
+        warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
+    return W
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
@@ -363,11 +363,12 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
         )
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
+        print(np.linalg.norm(features1_test[i,:][np.newaxis,:]))
         lfre_vec[i] = np.linalg.norm(
             (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
             - features2_test[i,:][np.newaxis,:]
-        )**2 / np.sqrt(n_test)
-
+        )**2
+        print(lfre_vec[i])
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
         # not evactly _i_tilde but: (x_F^{(i)}-\bar{x}_F)P_{FF'}^{(i)}
         #features1_i = features1_test[local_env_idx] - local_features1_train_mean
