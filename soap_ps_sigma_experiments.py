@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # coding: utf-8
 from experiment import gfr_all_pairs_experiment, gfr_pairwise_experiment
+import os
+
+os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4 
+os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=4
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1" # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=4
 
 ### Experiment metadata
 two_split = True
@@ -50,12 +57,12 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
 #                "interaction_cutoff": cutoff,
 #                "max_radial": 10,
 #                "max_angular": 6,
-#                "gaussian_sigma_constant": 0.1,
+#                "gaussian_sigma_constant": 0.3,
 #                "gaussian_sigma_type": "Constant",
 #                "cutoff_smooth_width": 0.5,
 #                "normalize": normalize
 #            }
-#        } for _ in [0.3, 0.5]]
+#        }]
 #
 #        features_hypers2 = [{
 #            "feature_type": "soap",
@@ -65,12 +72,12 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
 #                "interaction_cutoff": cutoff,
 #                "max_radial": 10,
 #                "max_angular": 6,
-#                "gaussian_sigma_constant": 0.1,
+#                "gaussian_sigma_constant": 0.3,
 #                "gaussian_sigma_type": "Constant",
 #                "cutoff_smooth_width": 0.5,
 #                "normalize": normalize
 #            }
-#        } for sigma in [0.3, 0.5]]
+#        }]
 #
 #        gfr_pairwise_experiment(
 #            dataset_name,

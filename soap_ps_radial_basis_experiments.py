@@ -4,15 +4,15 @@ from experiment import gfr_pairwise_experiment
 
 ### Experiment metadata
 
-nb_samples = 4000
+nb_samples = 10000
 two_split = True
 if two_split:
     seed = 0x5f3759df
-    train_ratio = 0.5
+    train_ratio = 0.6
 else:
     seed = None
 noise_removal = False
-regularizer = 1e-6
+regularizer = "CV"
 
 # Constant hyperparameters
 cutoff = 4

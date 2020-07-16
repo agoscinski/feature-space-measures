@@ -10,7 +10,7 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1" # export VECLIB_MAXIMUM_THREADS=4
 os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=4
 
 # Experiment metadata
-nb_samples = 4000
+nb_samples = 10000
 # Constant hyperparameters
 sigma = 0.5
 cutoff_smooth_width = 0.5
@@ -19,11 +19,11 @@ nb_features = 40
 two_split = True
 if two_split:
     seed = 0x5f4759df
-    train_ratio = 0.5
+    train_ratio = 0.6
 else:
     seed = None
     train_ratio = None
-regularizers = [1e-6]
+regularizers = ["CV"]
 
 
 for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]: #"selection-10k.extxyz",
@@ -31,18 +31,19 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]: #"selectio
         cutoff = 4
         precomputed_name = 'methane'
         BP_sizes = [35, 191, 534, 1147]
-        # max_radials_angulars sizes are 36, 192, 540, 1152
+        ## max_radials_angulars sizes are 36, 192, 540, 1152
         max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5)]
+        #BP_sizes = [1147]
+        # max_radials_angulars sizes are 36, 192, 540, 1152
+        #max_radials_angulars = [(8, 5)]
     elif dataset_name == "C-VII-pp-wrapped.xyz":
         cutoff = 7.5
         precomputed_name = 'carbon'
         BP_sizes = [11, 61, 181, 377, 699]
         max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5), (10, 6)]
+
         #BP_sizes = [377]
         #max_radials_angulars = [(8, 5)]
-
-        #BP_sizes = [699]
-        #max_radials_angulars = [(10, 6)]
 
 
     features_hypers1 = [{
