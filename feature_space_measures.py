@@ -65,7 +65,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
     if regularizer == "CV":
         regularizer = global_embed_cv(features1, features2)
-        print(regularizer)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     if np.linalg.norm(W) > 1e4:
         warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
@@ -398,12 +397,10 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
         )
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
-        print(np.linalg.norm(features1_test[i,:][np.newaxis,:]))
         lfre_vec[i] = np.linalg.norm(
             (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
             - features2_test[i,:][np.newaxis,:]
         )**2
-        print(lfre_vec[i])
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
         # not evactly _i_tilde but: (x_F^{(i)}-\bar{x}_F)P_{FF'}^{(i)}
         #features1_i = features1_test[local_env_idx] - local_features1_train_mean
