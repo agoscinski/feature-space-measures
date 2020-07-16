@@ -5,6 +5,36 @@ from scalers import NormalizeScaler
 from sklearn import linear_model
 import warnings
 
+
+def global_embed_cv(x1, x2):
+    # features1 = x1
+    # features2 = x1
+    n = len(x1)
+    # two-way split of the dataset
+    x1a = x1[:n//2]; x1b = x1[n//2:]
+    x2a = x2[:n//2]; x2b = x2[n//2:]
+    # svd of the two halves
+    k = min(x1a.shape[1], x2a.shape[1])
+    ua, sa, vha = np.linalg.svd(x1a, full_matrices = False)
+    ub, sb, vhb = np.linalg.svd(x1b, full_matrices = False)
+    # computes intermediates
+    uat_x2a = ua.T @ x2a
+    ubt_x2b = ub.T @ x2b
+    x1b_va = x1b @ vha.T
+    x1a_vb = x1a @ vhb.T
+    def thresh_cv_loss(lthr):
+        thr = np.exp(lthr)
+        na = len(np.where(sa>thr)[0])
+        nb = len(np.where(sb>thr)[0])
+        # error approximating x2b a-fitted model and vice versa
+        loss_ab = (( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b)**2).sum()
+        loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
+        return loss_ab+loss_ba
+    res = sp.optimize.minimize_scalar(thresh_cv_loss, method='Bounded', bounds=[-50,0])
+    return np.exp(res.x)*2/(sa[0]+sb[0])
+
+
+
 def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6):
     """
     Computes the minimal weights reconstructing features2 from features1
@@ -20,24 +50,26 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     """
     
 
-    #print("Computing weights...")
-    W = np.zeros((features1.shape[1],features2.shape[1]))
-    for i in range( features2.shape[1] ):
-        if i % int(features2.shape[1]/5) == 0:
-            print("weight step "+str(i)+"")
-        reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
-        reg.fit(features1, features2[:,i])
-        W[:,i] = reg.coef_
-    #print("Computing weights finished.")
-    return W
+    ##print("Computing weights...")
+    #W = np.zeros((features1.shape[1],features2.shape[1]))
+    #for i in range( features2.shape[1] ):
+    #    if i % int(features2.shape[1]/5) == 0:
+    #        print("weight step "+str(i)+"")
+    #    reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
+    #    reg.fit(features1, features2[:,i])
+    #    W[:,i] = reg.coef_
+    ##print("Computing weights finished.")
+    #return W
     #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
     #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
-
-    #W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    #if np.linalg.norm(W) > 1e4:
-    #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
-    #return W
+    if regularizer == "CV":
+        regularizer = global_embed_cv(features1, features2)
+        print(regularizer)
+    W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
+    if np.linalg.norm(W) > 1e4:
+        warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
+    return W
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
