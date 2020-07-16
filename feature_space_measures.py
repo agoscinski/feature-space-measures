@@ -30,7 +30,7 @@ def global_embed_cv(x1, x2):
         loss_ab = (( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b)**2).sum()
         loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
         return loss_ab+loss_ba
-    res = sp.optimize.minimize_scalar(thresh_cv_loss, method='Bounded', bounds=[-50,0])
+    res = scipy.optimize.minimize_scalar(thresh_cv_loss, method='Bounded', bounds=[-50,0])
     return np.exp(res.x)*2/(sa[0]+sb[0])
 
 
