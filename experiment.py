@@ -82,7 +82,7 @@ def gfr_all_pairs_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def lfre_pairwise_experiment(
-    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer
+    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -99,8 +99,9 @@ def lfre_pairwise_experiment(
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
     print("Compute local feature reconstruction errors...", flush=True)
+
     lfre_mat, lfrd_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon, outer_epsilon
     )
     print("Computation local feature reconstruction errors finished", flush=True)
 

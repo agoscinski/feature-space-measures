@@ -361,7 +361,7 @@ def feature_spaces_hidden_feature_reconstruction_errors(
                features, hidden_feature, regularizer=regularizer)
     return FRE_vectors
 
-def local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test = None, features2_test = None, regularizer=np.nan):
+def local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test = None, features2_test = None, regularizer=np.nan, inner_epsilon=None, outer_epsilon=None):
     if features1_test is None:
         features1_test = features1_train
     if features2_test is None:
@@ -377,6 +377,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     for i in range(n_test):
         if i % int(n_test/10) == 0:
             print("step "+str(i)+"")
+        # piecewise LFRE
         #local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
         #local_features1 = standardize_features(features1_train[local_env_idx])
         #local_features2 = standardize_features(features2_train[local_env_idx])
@@ -387,7 +388,29 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
         #lfre_vec[i] = np.linalg.norm(local_features1.dot(reconstruction_weights)  - local_features2 ) / np.sqrt(len(local_env_idx))
         #lfre_vec[i] = lfre_vec[i]**2/ n_test
 
+        ## LLE-inspired LFRE
+        #local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
+        #local_features1_train = features1_train[local_env_idx]
+        #local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
+        #local_features2_train = features2_train[local_env_idx]
+        #local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
+        ## standardize
+        #reconstruction_weights = feature_space_reconstruction_weights(
+        #    local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
+        #)
+        ## \|x_i' - \tilde{x}_i' \|^2 / n_test
+        #lfre_vec[i] = np.linalg.norm(
+        #    (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
+        #    - features2_test[i,:][np.newaxis,:]
+        #)**2
+
+        # LLE-inspired epsilon-LFRE
         local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
+        drop = len(np.where(squared_dist[i]<inner_epsilon)[0])
+        keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
+        local_env_idx = local_env_idx[drop:drop+(max(len(nb_local_envs), keep-drop))]
+        print(len(local_env_idx))
+
         local_features1_train = features1_train[local_env_idx]
         local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
         local_features2_train = features2_train[local_env_idx]
@@ -401,6 +424,8 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
             - features2_test[i,:][np.newaxis,:]
         )**2
+ 
+
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
         # not evactly _i_tilde but: (x_F^{(i)}-\bar{x}_F)P_{FF'}^{(i)}
         #features1_i = features1_test[local_env_idx] - local_features1_train_mean
@@ -413,7 +438,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     return lfre_vec, lfrd_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer):
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon=None, outer_epsilon=None):
     assert( len(feature_spaces1) == len(feature_spaces2) )
     for i in range(len(feature_spaces1)):
         assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
@@ -431,11 +456,11 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
                     features1, features2, train_idx, test_idx)
             features1_test = features1
             features2_test = features2
-            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, regularizer=regularizer)
-            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer)
+            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
+            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
         else:
-            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer)
-            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer)
+            lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
+            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
     return lfre_mat, lfrd_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
