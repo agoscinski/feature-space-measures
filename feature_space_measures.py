@@ -13,24 +13,35 @@ def global_embed_cv(x1, x2):
     # two-way split of the dataset
     x1a = x1[:n//2]; x1b = x1[n//2:]
     x2a = x2[:n//2]; x2b = x2[n//2:]
+    
     # svd of the two halves
     k = min(x1a.shape[1], x2a.shape[1])
     ua, sa, vha = np.linalg.svd(x1a, full_matrices = False)
     ub, sb, vhb = np.linalg.svd(x1b, full_matrices = False)
-    # computes intermediates
+    
+    # computes intermediates in the least squares solution by SVD,
+    # X2B ~ X1B@(VA@SA^-1@UA.T)@X2A
     uat_x2a = ua.T @ x2a
     ubt_x2b = ub.T @ x2b
     x1b_va = x1b @ vha.T
     x1a_vb = x1a @ vhb.T
+    
+    bounds = np.asarray([max(sa[-1]/sa[0],sb[-1]/sb[0]), 1])
     def thresh_cv_loss(lthr):
         thr = np.exp(lthr)
-        na = len(np.where(sa>thr)[0])
-        nb = len(np.where(sb>thr)[0])
+        if thr<bounds[0] or thr>bounds[1]:
+            return 1e10
+        
+        na = len(np.where(sa/sa[0]>thr)[0])
+        nb = len(np.where(sb/sb[0]>thr)[0])
+        
         # error approximating x2b a-fitted model and vice versa
         loss_ab = (( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b)**2).sum()
         loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
-        return loss_ab+loss_ba
-    res = scipy.optimize.minimize_scalar(thresh_cv_loss, method='Bounded', bounds=[-50,0])
+        #print("loss ", thr, (loss_ab+loss_ba)/n)
+        return (loss_ab+loss_ba)/n
+    res = sp.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds))
+    #print("Automatically determined rcond: ", np.exp(res.x)*2/(sa[0]+sb[0]))
     return np.exp(res.x)*2/(sa[0]+sb[0])
 
 
@@ -66,8 +77,8 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     if regularizer == "CV":
         regularizer = global_embed_cv(features1, features2)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    if np.linalg.norm(W) > 1e6:
-        warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
+    #if np.linalg.norm(W) > 1e7:
+    #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W
 
 def standardize_features(features, train_idx=None):
@@ -374,11 +385,6 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
     #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
     squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
-    print(np.max(squared_dist))
-    import matplotlib.pyplot as plt
-    plt.imshow(squared_dist)
-    plt.colorbar()
-    plt.show()
     for i in range(n_test):
         if i % int(n_test/10) == 0:
             print("step "+str(i)+"")
