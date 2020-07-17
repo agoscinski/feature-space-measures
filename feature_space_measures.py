@@ -405,10 +405,12 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
         #)**2
 
         # LLE-inspired epsilon-LFRE
-        local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
+        local_env_idx = np.argsort(squared_dist[i])
         drop = len(np.where(squared_dist[i]<inner_epsilon)[0])
         keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
         local_env_idx = local_env_idx[drop:drop+(max(nb_local_envs, keep-drop))]
+        if len(local_env_idx) == 0:
+            print("Error: No neighbourhood found. Closest neighbour outside inner epsilon " +str(np.sort(squared_dist[i])[drop+1]))
 
         local_features1_train = features1_train[local_env_idx]
         local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
