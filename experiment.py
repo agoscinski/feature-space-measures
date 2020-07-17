@@ -93,8 +93,8 @@ def lfre_pairwise_experiment(
         seed,
         noise_removal=False,
         regularizer=regularizer,
-        nb_local_envs = nb_local_envs
-        inner_epsilon=inner_epsilon
+        nb_local_envs = nb_local_envs,
+        inner_epsilon=inner_epsilon,
         outer_epsilon=outer_epsilon
     )
     frames = read_dataset(dataset_name, nb_samples)
