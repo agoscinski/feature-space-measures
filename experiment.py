@@ -94,6 +94,8 @@ def lfre_pairwise_experiment(
         noise_removal=False,
         regularizer=regularizer,
         nb_local_envs = nb_local_envs
+        inner_epsilon=inner_epsilon
+        outer_epsilon=outer_epsilon
     )
     frames = read_dataset(dataset_name, nb_samples)
     feature_spaces1 = compute_representations(features_hypers1, frames)
@@ -167,7 +169,7 @@ def hfre_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None
+    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None
 ):
     metadata = {
         # Methane
@@ -201,6 +203,10 @@ def store_metadata(
         metadata["hidden_feature_name"] = hidden_feature_name
     if nb_local_envs is not None:
         metadata["nb_local_envs"] = nb_local_envs
+    if inner_epsilon is not None:
+        metadata["inner_epsilon"] = inner_epsilon
+    if outer_epsilon is not None:
+        metadata["outer_epsilon"] = outer_epsilon
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
     output_hash = f"{sha}"

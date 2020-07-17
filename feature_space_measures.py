@@ -388,43 +388,44 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
         #lfre_vec[i] = np.linalg.norm(local_features1.dot(reconstruction_weights)  - local_features2 ) / np.sqrt(len(local_env_idx))
         #lfre_vec[i] = lfre_vec[i]**2/ n_test
 
-        ## LLE-inspired LFRE
-        #local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
-        #local_features1_train = features1_train[local_env_idx]
-        #local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
-        #local_features2_train = features2_train[local_env_idx]
-        #local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
-        ## standardize
-        #reconstruction_weights = feature_space_reconstruction_weights(
-        #    local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
-        #)
-        ## \|x_i' - \tilde{x}_i' \|^2 / n_test
-        #lfre_vec[i] = np.linalg.norm(
-        #    (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
-        #    - features2_test[i,:][np.newaxis,:]
-        #)**2
-
-        # LLE-inspired epsilon-LFRE
-        local_env_idx = np.argsort(squared_dist[i])
-        drop = len(np.where(squared_dist[i]<inner_epsilon)[0])
-        keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
-        local_env_idx = local_env_idx[drop:drop+(max(nb_local_envs, keep-drop))]
-        if len(local_env_idx) == 0:
-            print("Error: No neighbourhood found. Closest neighbour outside inner epsilon " +str(np.sort(squared_dist[i])[drop+1]))
-
-        local_features1_train = features1_train[local_env_idx]
-        local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
-        local_features2_train = features2_train[local_env_idx]
-        local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
-        # standardize
-        reconstruction_weights = feature_space_reconstruction_weights(
-            local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
-        )
-        # \|x_i' - \tilde{x}_i' \|^2 / n_test
-        lfre_vec[i] = np.linalg.norm(
-            (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
-            - features2_test[i,:][np.newaxis,:]
-        )**2
+        if inner_epsilon is None:
+            # LLE-inspired LFRE
+            local_env_idx = np.argsort(squared_dist[i])[:nb_local_envs]
+            local_features1_train = features1_train[local_env_idx]
+            local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
+            local_features2_train = features2_train[local_env_idx]
+            local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
+            # standardize
+            reconstruction_weights = feature_space_reconstruction_weights(
+                local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
+            )
+            # \|x_i' - \tilde{x}_i' \|^2 / n_test
+            lfre_vec[i] = np.linalg.norm(
+                (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
+                - features2_test[i,:][np.newaxis,:]
+            )**2
+        else:
+            # LLE-inspired epsilon-LFRE
+            local_env_idx = np.argsort(squared_dist[i])
+            drop = len(np.where(squared_dist[i]<inner_epsilon)[0])
+            keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
+            local_env_idx = local_env_idx[drop:drop+(max(nb_local_envs, keep-drop))]
+            if len(local_env_idx) == 0:
+                print("Error: No neighbourhood found. Closest neighbour outside inner epsilon " +str(np.sort(squared_dist[i])[drop+1]))
+            print(len(local_env_idx))
+            local_features1_train = features1_train[local_env_idx]
+            local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
+            local_features2_train = features2_train[local_env_idx]
+            local_features2_train_mean = np.mean(features2_train[local_env_idx], axis=0)
+            # standardize
+            reconstruction_weights = feature_space_reconstruction_weights(
+                local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
+            )
+            # \|x_i' - \tilde{x}_i' \|^2 / n_test
+            lfre_vec[i] = np.linalg.norm(
+                (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
+                - features2_test[i,:][np.newaxis,:]
+            )**2
  
 
         # \|x_i' - \tilde{x}_i' \|^2 / n_test
