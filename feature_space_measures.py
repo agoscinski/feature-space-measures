@@ -40,7 +40,7 @@ def global_embed_cv(x1, x2):
         loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
         #print("loss ", thr, (loss_ab+loss_ba)/n)
         return (loss_ab+loss_ba)/n
-    res = sp.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds))
+    res = scipy.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds))
     #print("Automatically determined rcond: ", np.exp(res.x)*2/(sa[0]+sb[0]))
     return np.exp(res.x)*2/(sa[0]+sb[0])
 
