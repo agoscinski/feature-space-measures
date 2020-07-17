@@ -66,7 +66,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     if regularizer == "CV":
         regularizer = global_embed_cv(features1, features2)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    if np.linalg.norm(W) > 1e4:
+    if np.linalg.norm(W) > 1e6:
         warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W
 
@@ -374,6 +374,11 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
     #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
     squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
+    print(np.max(squared_dist))
+    import matplotlib.pyplot as plt
+    plt.imshow(squared_dist)
+    plt.colorbar()
+    plt.show()
     for i in range(n_test):
         if i % int(n_test/10) == 0:
             print("step "+str(i)+"")
@@ -408,11 +413,11 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             # LLE-inspired epsilon-LFRE
             local_env_idx = np.argsort(squared_dist[i])
             drop = len(np.where(squared_dist[i]<inner_epsilon)[0])
-            keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
-            local_env_idx = local_env_idx[drop:drop+(max(nb_local_envs, keep-drop))]
-            if len(local_env_idx) == 0:
-                print("Error: No neighbourhood found. Closest neighbour outside inner epsilon " +str(np.sort(squared_dist[i])[drop+1]))
-            print(len(local_env_idx))
+            if outer_epsilon is None:
+                local_env_idx = local_env_idx[drop:drop+nb_local_envs]
+            else:
+                keep = len(np.where(squared_dist[i]<outer_epsilon)[0])
+                local_env_idx = local_env_idx[drop:drop+(max(nb_local_envs, keep-drop))]
             local_features1_train = features1_train[local_env_idx]
             local_features1_train_mean = np.mean(features1_train[local_env_idx], axis=0)
             local_features2_train = features2_train[local_env_idx]
