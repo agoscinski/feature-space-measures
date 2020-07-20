@@ -36,6 +36,15 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
+    elif feature_hypers["feature_type"] == "precomputed_NICE":
+        nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
+        parameters = feature_hypers['feature_parameters']
+        if parameters['dataset'] == "selection-10k.extxyz":
+            return np.load(f"{parameters['file_root']}/methane-allc.npy")[:nb_envs]
+        elif parameters['dataset'] == "C-VII-pp-wrapped.xyz":
+            return np.load(f"{parameters['file_root']}/carbon-first.npy")[:nb_envs]
+        else:
+            raise("Error dataset "+parameters['dataset']+" is not available")
     elif feature_hypers["feature_type"] == "precomputed_BP":
         nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
 
