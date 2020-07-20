@@ -60,7 +60,7 @@ def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
     features = standardize_features(features, train_idx)
     if "feature_selection_parameters" in feature_hypers:
         features_idx = select_features(features[train_idx], feature_hypers["feature_selection_parameters"])
-        features[:, features_idx] = features
+        features = features[:, features_idx]
     return (features[train_idx], features[test_idx])
 
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
@@ -92,8 +92,8 @@ def gfr_pairwise_experiment(
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     
     for i in range(len(feature_spaces1)):
-        feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1, train_idx, test_idx)
-        feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers2, train_idx, test_idx)
+        feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
+        feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers2[i], train_idx, test_idx)
 
     print("Compute feature space reconstruction measures...", flush=True)
     FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(
