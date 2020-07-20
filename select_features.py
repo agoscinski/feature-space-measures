@@ -51,13 +51,11 @@ def select_fps(X, hypers, seed=0x5f3759df):
 def select_cur(X, hypers):
     requested = hypers['n_features']
 
-    if requested > X.shape[0]:
+    if requested > X.shape[1]:
         return X
 
     cur = CUR(X, feature_select=True)
     cur.compute(requested)
 
     #print(X[:, cur.idx_c].shape)
-
-    print(cur.idx_c)
     return X[:, cur.idx_c]
