@@ -1,6 +1,7 @@
 import numpy as np
 import scipy
 from scipy.spatial.distance import cdist
+from scalers import NormalizeScaler
 from sklearn import linear_model
 import warnings
 
