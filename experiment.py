@@ -12,6 +12,10 @@ from feature_space_measures import (
     compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs,
     feature_spaces_hidden_feature_reconstruction_errors
 )
+
+from scalers import NormalizeScaler
+from select_features import select_features
+
 from representation import compute_representations
 import numpy as np
 
@@ -22,6 +26,42 @@ import subprocess
 DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
+def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
+    """
+    Computes the FRE and FRD of features2 from features1 with a two-split
+
+    Parameters:
+    ----------
+    features1 (array): feature space X_F as in the paper, samples x features
+    features2 (array): feature space X_{F'} as in the paper, samples x features
+
+    Returns:
+    --------
+    double: FRE(X_{F},X_{F'}) scalar value
+    double: FRD(X_{F},X_{F'}) scalar value
+    """
+    np.random.seed(seed)
+    idx = np.arange(nb_samples)
+    np.random.shuffle(idx)
+    split_id = int(len(idx) * train_ratio)
+    return idx[:split_id], idx[split_id:]
+
+def standardize_features(features, train_idx=None):
+    if train_idx is None:
+        return NormalizeScaler().fit(features).transform(features)
+    return NormalizeScaler().fit(features[train_idx]).transform(features)
+
+def split_features(features, train_idx, test_idx):
+    if train_idx is None:
+        return (features, features)
+    return features[train_idx], features[test_idx]
+
+def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
+    features = standardize_features(features, train_idx)
+    if "feature_selection_parameters" in feature_hypers:
+        features_idx = select_features(features[train_idx], feature_hypers["feature_selection_parameters"])
+        features[:, features_idx] = features
+    return (features[train_idx], features[test_idx])
 
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
 def gfr_pairwise_experiment(
@@ -48,9 +88,18 @@ def gfr_pairwise_experiment(
     frames = read_dataset(dataset_name, nb_samples)
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
-    FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
-        two_split, train_ratio, seed, noise_removal, regularizer, feature_spaces1, feature_spaces2
-    )
+
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+    
+    for i in range(len(feature_spaces1)):
+        feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1, train_idx, test_idx)
+        feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers2, train_idx, test_idx)
+
+    print("Compute feature space reconstruction measures...", flush=True)
+    FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(
+                feature_spaces1, feature_spaces2, noise_removal=noise_removal, regularizer=regularizer )
+    print("Compute feature space reconstruction measures finished.", flush=True)
+
     print("Store results...", flush=True)
     store_results("gfre_mat-", experiment_id, FRE_matrix)
     store_results("gfrd_mat-", experiment_id, FRD_matrix)

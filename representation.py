@@ -4,7 +4,6 @@ import scipy
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
-from select_features import select_features
 
 
 def compute_representations(features_hypers, frames, center_atom_id_mask=None):
@@ -23,8 +22,6 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
             features = compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
-        if "feature_selection_parameters" in feature_hypers:
-            features = select_features(features, feature_hypers["feature_selection_parameters"])
         feature_spaces.append(features)
     print("Compute representations finished", flush=True)
     return feature_spaces

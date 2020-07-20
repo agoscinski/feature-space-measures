@@ -44,18 +44,17 @@ def select_fps(X, hypers, seed=0x5f3759df):
         #    return X[idx[:i], :]
 
     idx[-1] = new_id
-    print(idx)
-    return X[idx, :]
+    return idx
 
 
 def select_cur(X, hypers):
     requested = hypers['n_features']
 
     if requested > X.shape[1]:
-        return X
+        return np.arange(X.shape[1])
 
     cur = CUR(X, feature_select=True)
     cur.compute(requested)
 
     #print(X[:, cur.idx_c].shape)
-    return X[:, cur.idx_c]
+    return cur.idx_c

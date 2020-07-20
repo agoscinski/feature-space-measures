@@ -1,14 +1,10 @@
 import numpy as np
 import scipy
 from scipy.spatial.distance import cdist
-from scalers import NormalizeScaler
 from sklearn import linear_model
 import warnings
 
-
 def global_embed_cv(x1, x2):
-    # features1 = x1
-    # features2 = x1
     n = len(x1)
     # two-way split of the dataset
     x1a = x1[:n//2]; x1b = x1[n//2:]
@@ -45,7 +41,6 @@ def global_embed_cv(x1, x2):
     return np.exp(res.x)*2/(sa[0]+sb[0])
 
 
-
 def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6):
     """
     Computes the minimal weights reconstructing features2 from features1
@@ -59,8 +54,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    
-
     ##print("Computing weights...")
     #W = np.zeros((features1.shape[1],features2.shape[1]))
     #for i in range( features2.shape[1] ):
@@ -80,11 +73,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W
-
-def standardize_features(features, train_idx=None):
-    if train_idx is None:
-        return NormalizeScaler().fit(features).transform(features)
-    return NormalizeScaler().fit(features[train_idx]).transform(features)
 
 def feature_space_reconstruction_measures(
     features1,
@@ -109,11 +97,25 @@ def feature_space_reconstruction_measures(
     double: FRE(X_{F},X_{F'}) scalar value
     double: FRD(X_{F},X_{F'}) scalar value
     """
+    #import matplotlib.pyplot as plt
+    #fig, ax = plt.subplots(1,2)
+    #ax[0].imshow(features1[:,155:])
+    #im = ax[1].imshow(features2[:,155:])
+    #fig.colorbar(im)
+    #plt.show()
+
     if reconstruction_weights is None:
         if regularizer is np.nan:
             raise ValueError("If no reconstruction weights is given a regularizer has to be given.")
         features1 = standardize_features(features1)
         features2 = standardize_features(features2)
+        #import matplotlib.pyplot as plt
+        #fig, ax = plt.subplots(1,2)
+        #ax[0].imshow(features1[:,155:])
+        #im = ax[1].imshow(features2[:,155:])
+        #fig.colorbar(im)
+        #plt.show()
+
         reconstruction_weights = feature_space_reconstruction_weights(
             features1, features2, regularizer
         )
@@ -156,25 +158,6 @@ def feature_space_reconstruction_measures(
     return FRE, FRD
 
 
-def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
-    """
-    Computes the FRE and FRD of features2 from features1 with a two-split
-
-    Parameters:
-    ----------
-    features1 (array): feature space X_F as in the paper, samples x features
-    features2 (array): feature space X_{F'} as in the paper, samples x features
-
-    Returns:
-    --------
-    double: FRE(X_{F},X_{F'}) scalar value
-    double: FRD(X_{F},X_{F'}) scalar value
-    """
-    np.random.seed(seed)
-    idx = np.arange(nb_samples)
-    np.random.shuffle(idx)
-    split_id = int(len(idx) * train_ratio)
-    return idx[:split_id], idx[split_id:]
 
 def split_in_two(features1, features2, train_idx, test_idx):
     features1_train = features1[train_idx]
@@ -260,8 +243,6 @@ def two_split_reconstruction_measure_pairwise(
     feature_spaces1,
     feature_spaces2,
     svd_method="gesdd",
-    train_ratio=0.5,
-    seed=0x5F3759DF,
     noise_removal=False,
     regularizer=np.nan,
 ):
@@ -280,15 +261,10 @@ def two_split_reconstruction_measure_pairwise(
     FRE_matrix = np.zeros((2, len(feature_spaces1)))
     FRD_matrix = np.zeros((2, len(feature_spaces1)))
 
-
-    nb_samples = len(feature_spaces1[0])
-    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
-
     for i in range(len(feature_spaces1)):
-        features1 = standardize_features(feature_spaces1[i], train_idx)
-        features2 = standardize_features(feature_spaces2[i], train_idx)
-        features1_train, features2_train, features1_test, features2_test = split_in_two(
-                features1, features2, train_idx, test_idx)
+
+        features1_train, features2_train, features1_test, features2_test = feature_spaces1[i][0], feature_spaces2[i][0], feature_spaces1[i][1], feature_spaces2[i][1]
+
         reconstruction_weights = feature_space_reconstruction_weights(
             features1_train, features2_train, regularizer
         )
