@@ -56,11 +56,7 @@ def gfr_pairwise_experiment(
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-    return {
-        'hash': experiment_id,
-        'fre': FRE_matrix,
-        'frd': FRD_matrix,
-    }
+    return experiment_id
 
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
@@ -80,6 +76,7 @@ def gfr_all_pairs_experiment(
     store_results("gfre_mat-", experiment_id, FRE_matrix)
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
+    return experiment_id
 
 def lfre_pairwise_experiment(
     dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon
@@ -111,6 +108,7 @@ def lfre_pairwise_experiment(
     store_results("lfre_mat-", experiment_id, lfre_mat)
     store_results("lfrd_mat-", experiment_id, lfrd_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
+    return experiment_id
 
 def lfre_all_pairs_experiment(
     dataset_name, nb_samples, features_hypers, nb_local_envs, two_split, train_ratio, seed, regularizer
