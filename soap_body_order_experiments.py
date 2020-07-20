@@ -6,7 +6,7 @@ from experiment import gfr_all_pairs_experiment
 two_split = True
 if two_split:
     seed = 0x5f3759df
-    train_ratio = 0.5
+    train_ratio = 0.6
 else: 
     train_ratio = None
     seed = None
