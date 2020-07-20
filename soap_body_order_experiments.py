@@ -6,14 +6,14 @@ from experiment import gfr_all_pairs_experiment
 two_split = True
 if two_split:
     seed = 0x5f3759df
-    train_ratio = 0.6
+    train_ratio = 0.5
 else: 
     train_ratio = None
     seed = None
 
 noise_removal = False
 regularizer = "CV"
-nb_samples = 10000
+nb_samples = 4000
 
 ## Constant hyperparameters
 cutoff = 4
@@ -21,7 +21,7 @@ max_radial = 6
 max_angular = 4
 sigma = 0.5
 normalize = False
-
+experiment_ids = []
 ## Tested hyperparameters
 for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
     for radial_basis in ["GTO", "DVR"]:
@@ -46,5 +46,16 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
             #}
  
         } for soap_type in soap_types]
+        
+        nice_feature_hypers = {
+            "feature_type": "precomputed_NICE",
+            "feature_parameters": {
+                "file_root": "data/nice",
+                "dataset": dataset_name,
+            }
+        }
 
-        gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer)
+        features_hypers.append(nice_feature_hypers)
+
+        experiment_ids.append( gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer) )
+print(experiment_ids)
