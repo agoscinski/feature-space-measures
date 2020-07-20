@@ -6,7 +6,7 @@ from CUR import CUR
 def select_features(features, hypers):
     if hypers['n_features'] >= features.shape[1]:
         print("Warning: n_features >= nb_samples")
-        return np.arange(X.shape[1])
+        return np.arange(features.shape[1])
     if hypers['type'] == 'FPS':
         return select_fps(features.T, hypers)
     if hypers['type'] == 'CUR':
