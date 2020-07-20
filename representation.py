@@ -129,7 +129,7 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return -H.dot(squared_distance).dot(H) / 2
     elif kernel_type == "polynomial":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
-        return (1 + kernel_parameters["gamma"] * (-H.dot(squared_distance).dot(H) / 2))**kernel_parameters["degree"]
+        return (kernel_parameters["offset"] * (-H.dot(squared_distance).dot(H) / 2))**kernel_parameters["degree"]
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
