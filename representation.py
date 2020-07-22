@@ -7,7 +7,7 @@ from wasserstein import compute_squared_wasserstein_distance, compute_radial_spe
 from scalers import standardize_features
 
 
-def compute_representations(features_hypers, frames, train_idx, center_atom_id_mask=None):
+def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask=None):
     if center_atom_id_mask is None:
         # only first center
         center_atom_id_mask = [[0] for frame in frames]
