@@ -4,9 +4,10 @@ import scipy
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
+from scalers import standardize_features
 
 
-def compute_representations(features_hypers, frames, center_atom_id_mask=None):
+def compute_representations(features_hypers, frames, train_idx, center_atom_id_mask=None):
     if center_atom_id_mask is None:
         # only first center
         center_atom_id_mask = [[0] for frame in frames]
@@ -19,7 +20,7 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
-            features = compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask)
+            features = compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
         feature_spaces.append(features)
@@ -89,23 +90,24 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         raise ValueError("The feature_type=" + feature_hypers["feature_type"] + " is not known.")
 
 
-def compute_hilbert_space_features(feature_hypers, frames, center_atom_id_mask):
-    features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
+    features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
     return features
 
 
-def compute_squared_distance(feature_hypers, frames, center_atom_id_mask):
+def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask):
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
         features = compute_representation(feature_hypers, frames, center_atom_id_mask)
-        # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
-        return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
     elif distance_type == "wasserstein":
         raise ValueError("The distance_type='wasserstein' is not fully implemented yet.")
-        return compute_squared_wasserstein_distance(feature_hypers, frames)
+        features = compute_squared_wasserstein_distance(feature_hypers, frames)
     else:
         raise ValueError("The distance_type='" + distance_type + "' is not known.")
+    features = standardize_features(features, train_idx)
+    # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
+    return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
 
 
 def compute_features_from_kernel(kernel):
@@ -134,13 +136,13 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return -H.dot(squared_distance).dot(H) / 2
     elif kernel_type == "polynomial":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
-        return (1 + (-H.dot(squared_distance).dot(H) * kernel_parameters["gamma"] / np.mean(squared_distance)))**kernel_parameters["degree"]
+        return (1 + (-H.dot(squared_distance).dot(H) * kernel_parameters["gamma"] ))**kernel_parameters["degree"]
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
-        kernel = np.exp(-kernel_parameters["gamma"] * 1 / np.mean(squared_distance) * squared_distance)
+        kernel = np.exp(-kernel_parameters["gamma"] * squared_distance)
         return kernel
     elif kernel_type == "laplacian":
-        return np.exp(-kernel_parameters["gamma"] * 1 / np.mean(squared_distance) * np.sqrt(squared_distance))
+        return np.exp(-kernel_parameters["gamma"] * np.sqrt(squared_distance))
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")

@@ -53,3 +53,9 @@ class NormalizeScaler(TransformerMixin, BaseEstimator):
                 + " instance is not fitted yet. Call 'fit' with appropriate arguments before using this estimator."
             )
         return self.scale_ * (X - self.mean_)
+
+def standardize_features(features, train_idx=None):
+    if train_idx is None:
+        return NormalizeScaler().fit(features).transform(features)
+    return NormalizeScaler().fit(features[train_idx]).transform(features)
+

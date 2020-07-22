@@ -1,7 +1,7 @@
 import numpy as np
 import scipy
 from scipy.spatial.distance import cdist
-from scalers import NormalizeScaler
+from scalers import standardize_features
 from sklearn import linear_model
 import warnings
 
@@ -107,7 +107,8 @@ def feature_space_reconstruction_measures(
     reconstruction_weights=None,
     regularizer=np.nan,
     n_test=None,
-    compute_distortion = True
+    compute_distortion = True,
+    reduce_error_dimension="all"
 ):
     """
     Computes the FRE and FRD of features2 from features1
@@ -149,9 +150,17 @@ def feature_space_reconstruction_measures(
         n_test = features2.shape[0]
 
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
-    FRE = np.linalg.norm(
-        features1.dot(reconstruction_weights) - features2
-    ) / np.sqrt(n_test)
+    if reduce_error_dimension=="all":
+        FRE = np.linalg.norm(
+            features1.dot(reconstruction_weights) - features2
+        ) / np.sqrt(n_test)
+    elif reduce_error_dimension=="features":
+        FRE = np.sqrt(
+           np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
+        / n_test)
+    else:
+        raise ValueError("reduce_error_dimension="+reduce_error_dimension+" is not known.")
+
     if compute_distortion:
         # P = U S V, we use svd because it is more stable than eigendecomposition
         U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
@@ -184,7 +193,6 @@ def feature_space_reconstruction_measures(
     else:
         FRD = np.nan
     return FRE, FRD
-
 
 
 def split_in_two(features1, features2, train_idx, test_idx):
@@ -315,6 +323,66 @@ def two_split_reconstruction_measure_pairwise(
 
     return FRE_matrix, FRD_matrix
 
+def train_test_gfrm_pairwise(
+    feature_spaces1,
+    feature_spaces2,
+    svd_method="gesdd",
+    noise_removal=False,
+    regularizer=np.nan,
+    one_direction=False,
+    compute_distortion=True
+):
+    """
+    Computes the FRE and FRD of (feature_spaces1[i], feature_spaces2[i]) and (feature_spaces2[i], feature_spaces1[i]) pairs
+
+    Parameters:
+    ----------
+
+    Returns:
+    --------
+    array: a (2, len(feature_spaces1)) matrix containing the FRE(X_{H_i},Y_{H_i})
+    array: a (2, len(feature_spaces1)) matrix containing the FRD(X_{H_i},Y_{H_i})
+    """
+    assert len(feature_spaces1) == len(feature_spaces2)
+    for i in range(len(feature_spaces1)):
+        assert(len(feature_spaces1[i][0]) == len(feature_spaces2[i][0]))
+        assert(len(feature_spaces1[i][1]) == len(feature_spaces2[i][1]))
+    FRE_train_matrix = np.zeros((2, len(feature_spaces1[i][0]), len(feature_spaces1)))
+    FRE_test_matrix = np.zeros((2, len(feature_spaces1[i][1]), len(feature_spaces1)))
+    FRD_matrix = np.zeros((2, 2, len(feature_spaces1)))
+
+    for i in range(len(feature_spaces1)):
+
+        features1_train, features2_train, features1_test, features2_test = feature_spaces1[i][0], feature_spaces2[i][0], feature_spaces1[i][1], feature_spaces2[i][1]
+
+        reconstruction_weights = feature_space_reconstruction_weights(
+            features1_train, features2_train, regularizer
+        )
+        FRE_test_matrix[0,:,i], FRD_matrix[0, 0, i] = feature_space_reconstruction_measures(
+            features1_test, features2_test, reconstruction_weights=reconstruction_weights,
+            svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion, reduce_error_dimension="features"
+        )
+        FRE_train_matrix[0,:,i], FRD_matrix[0, 1, i] = feature_space_reconstruction_measures(
+            features1_train, features2_train, reconstruction_weights=reconstruction_weights,
+            svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion, reduce_error_dimension="features"
+        )
+
+        if one_direction:
+            FRE_matrix[1, i], FRD_matrix[1, i] = np.nan, np.nan
+        else:
+            reconstruction_weights = feature_space_reconstruction_weights(
+                features2_train, features1_train, regularizer
+            )
+            FRE_test_matrix[1,:, i], FRD_matrix[1,0, i] = feature_space_reconstruction_measures(
+                features2_test, features1_test, reconstruction_weights=reconstruction_weights,
+                svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion
+            )
+            FRE_train_matrix[1,:,i], FRD_matrix[1,1, i] = feature_space_reconstruction_measures(
+                features2_train, features1_train, reconstruction_weights=reconstruction_weights,
+                svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion
+            )
+
+    return FRE_train_matrix, FRE_test_matrix, FRD_matrix
 
 def reconstruction_measure_pairwise(
     feature_spaces1, feature_spaces2, svd_method="gesdd", noise_removal=False, regularizer=np.nan
