@@ -106,7 +106,8 @@ def feature_space_reconstruction_measures(
     noise_removal=False,
     reconstruction_weights=None,
     regularizer=np.nan,
-    n_test=None
+    n_test=None,
+    compute_distortion = True
 ):
     """
     Computes the FRE and FRD of features2 from features1
@@ -151,35 +152,37 @@ def feature_space_reconstruction_measures(
     FRE = np.linalg.norm(
         features1.dot(reconstruction_weights) - features2
     ) / np.sqrt(n_test)
+    if compute_distortion:
+        # P = U S V, we use svd because it is more stable than eigendecomposition
+        U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
 
-    # P = U S V, we use svd because it is more stable than eigendecomposition
-    U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
+        if noise_removal:
+            S[S < 1e-9] = 0
 
-    if noise_removal:
-        S[S < 1e-9] = 0
+        # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
+        # => \tilde{X}_{F'} V.T = X_F U S
+        # TODO here I am lacking a bit an intuitive reason why we do this, obviously keeping U S V on the right side will completely ignore the contribution of V when applying it in the procrustes problem, but this is does not explain why putting V.T on the right side is the way to go. Maybe this can be more explored in the paper supplementary
 
-    # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
-    # => \tilde{X}_{F'} V.T = X_F U S
-    # TODO here I am lacking a bit an intuitive reason why we do this, obviously keeping U S V on the right side will completely ignore the contribution of V when applying it in the procrustes problem, but this is does not explain why putting V.T on the right side is the way to go. Maybe this can be more explored in the paper supplementary
+        # X_F U
+        features1_U = features1.dot(U)[:, :len(S)]
+        # \tilde{X}_{F'} V.T = X_F U S
+        reconstructed_features2_VT = features1_U.dot(np.diag(S))
 
-    # X_F U
-    features1_U = features1.dot(U)[:, :len(S)]
-    # \tilde{X}_{F'} V.T = X_F U S
-    reconstructed_features2_VT = features1_U.dot(np.diag(S))
-
-    # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
-    U2, S2, V2 = scipy.linalg.svd(
-        features1_U.T.dot(reconstructed_features2_VT),
-        lapack_driver=svd_method
-    )
-    Q = U2.dot(V2)
-    # alpha is not important anymore because features are standardized 
-    ## see paper for derivation of alpha
-    #alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
-    #    features1_U.dot(features1_U.T)
-    #)
-    alpha = 1
-    FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
+        # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
+        U2, S2, V2 = scipy.linalg.svd(
+            features1_U.T.dot(reconstructed_features2_VT),
+            lapack_driver=svd_method
+        )
+        Q = U2.dot(V2)
+        # alpha is not important anymore because features are standardized 
+        ## see paper for derivation of alpha
+        #alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
+        #    features1_U.dot(features1_U.T)
+        #)
+        alpha = 1
+        FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
+    else:
+        FRD = np.nan
     return FRE, FRD
 
 
@@ -270,6 +273,8 @@ def two_split_reconstruction_measure_pairwise(
     svd_method="gesdd",
     noise_removal=False,
     regularizer=np.nan,
+    one_direction=False,
+    compute_distortion=True
 ):
     """
     Computes the FRE and FRD of (feature_spaces1[i], feature_spaces2[i]) and (feature_spaces2[i], feature_spaces1[i]) pairs
@@ -295,15 +300,18 @@ def two_split_reconstruction_measure_pairwise(
         )
         FRE_matrix[0, i], FRD_matrix[0, i] = feature_space_reconstruction_measures(
             features1_test, features2_test, reconstruction_weights=reconstruction_weights,
-            svd_method=svd_method, noise_removal=noise_removal
+            svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion
         )
-        reconstruction_weights = feature_space_reconstruction_weights(
-            features2_train, features1_train, regularizer
-        )
-        FRE_matrix[1, i], FRD_matrix[1, i] = feature_space_reconstruction_measures(
-            features2_test, features1_test, reconstruction_weights=reconstruction_weights,
-            svd_method=svd_method, noise_removal=noise_removal
-        )
+        if one_direction:
+            FRE_matrix[1, i], FRD_matrix[1, i] = np.nan, np.nan
+        else:
+            reconstruction_weights = feature_space_reconstruction_weights(
+                features2_train, features1_train, regularizer
+            )
+            FRE_matrix[1, i], FRD_matrix[1, i] = feature_space_reconstruction_measures(
+                features2_test, features1_test, reconstruction_weights=reconstruction_weights,
+                svd_method=svd_method, noise_removal=noise_removal, compute_distortion=compute_distortion
+            )
 
     return FRE_matrix, FRD_matrix
 

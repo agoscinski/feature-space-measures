@@ -26,6 +26,8 @@ def compute_representations(features_hypers, frames, center_atom_id_mask=None):
     print("Compute representations finished", flush=True)
     return feature_spaces
 
+def load_hydrogen_distance_dataset(feature_parameters, frames):
+    return np.array([frame.info["hydrogen_distance"] for frame in frames])[:,np.newaxis]
 
 def compute_representation(feature_hypers, frames, center_atom_id_mask):
     if feature_hypers["feature_type"] == "soap":
@@ -33,6 +35,9 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
+    elif feature_hypers["feature_type"] == "precomputed":
+        if feature_hypers["feature_parameters"]["dataset"] == "pulled_hydrogen_distance": 
+            return load_hydrogen_distance_dataset(feature_hypers["feature_parameters"], frames)
     elif feature_hypers["feature_type"] == "precomputed_NICE":
         nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
         parameters = feature_hypers['feature_parameters']
@@ -129,14 +134,7 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return -H.dot(squared_distance).dot(H) / 2
     elif kernel_type == "polynomial":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
-        plo = (1 + (-H.dot(squared_distance).dot(H) * kernel_parameters["gamma"] / np.mean(squared_distance)))**kernel_parameters["degree"]
-        print(np.linalg.matrix_rank(-H.dot(squared_distance).dot(H) ))
-        print(np.linalg.matrix_rank(plo))
-        import matplotlib.pyplot as plt
-        plt.imshow(plo)
-        plt.colorbar()
-        plt.show()
-        return plo
+        return (1 + (-H.dot(squared_distance).dot(H) * kernel_parameters["gamma"] / np.mean(squared_distance)))**kernel_parameters["degree"]
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":

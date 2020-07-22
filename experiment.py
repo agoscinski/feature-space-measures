@@ -4,7 +4,7 @@ import hashlib
 import json
 
 from feature_space_measures import (
-    two_split_reconstruction_measure_all_pairs,
+   two_split_reconstruction_measure_all_pairs,
     reconstruction_measure_all_pairs,
     two_split_reconstruction_measure_pairwise,
     reconstruction_measure_pairwise,
@@ -73,7 +73,9 @@ def gfr_pairwise_experiment(
     train_ratio,
     seed,
     noise_removal,
-    regularizer
+    regularizer,
+    one_direction=False,
+    compute_distortion=True
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -83,9 +85,14 @@ def gfr_pairwise_experiment(
         train_ratio,
         seed,
         noise_removal,
-        regularizer
+        regularizer,
+        one_direction=one_direction,
+        compute_distortion=compute_distortion
     )
     frames = read_dataset(dataset_name, nb_samples)
+    if (nb_samples) == "":
+        nb_samples = len(frames)
+
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
 
@@ -97,7 +104,7 @@ def gfr_pairwise_experiment(
 
     print("Compute feature space reconstruction measures...", flush=True)
     FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(
-                feature_spaces1, feature_spaces2, noise_removal=noise_removal, regularizer=regularizer )
+                feature_spaces1, feature_spaces2, noise_removal=noise_removal, regularizer=regularizer, one_direction=one_direction, compute_distortion=compute_distortion)
     print("Compute feature space reconstruction measures finished.", flush=True)
 
     print("Store results...", flush=True)
@@ -105,7 +112,7 @@ def gfr_pairwise_experiment(
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-    return experiment_id
+    return experiment_id, FRE_matrix
 
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
@@ -184,11 +191,24 @@ def ghfre_experiment(
         dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal=False, regularizer=regularizer, hidden_feature_name=hidden_feature_name)
     frames = read_dataset(dataset_name, nb_samples)
     hidden_feature = np.array([frame.info[hidden_feature_name] for frame in frames])[:,np.newaxis]
-    feature_spaces = compute_representations(features_hypers, frames)
+    feature_spaces1 = compute_representations(features_hypers, frames)
+
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+
+    for i in range(len(feature_spaces1)):
+        feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers[i], train_idx, test_idx)
+        feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers[i], train_idx, test_idx)
+
+    print("Compute feature space reconstruction measures...", flush=True)
+    FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(
+                feature_spaces1, feature_spaces2, noise_removal=False, regularizer=regularizer )
+    print("Compute feature space reconstruction measures finished.", flush=True)
+    
+
     print("Compute hidden feature reconstruction errors...", flush=True)
 
     FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
-        two_split, train_ratio, seed, False, regularizer, feature_spaces, [hidden_feature for _ in range(len(feature_spaces))]
+        two_split, train_ratio, seed, False, regularizer, feature_spaces1, [hidden_feature for _ in range(len(feature_spaces1))]
     )
 
     print("Store results...", flush=True)
@@ -216,7 +236,7 @@ def hfre_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None
+    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None, one_direction=None, compute_distortion=None
 ):
     metadata = {
         # Methane
@@ -242,7 +262,7 @@ def store_metadata(
         "git_last_commit_id": subprocess.check_output(["git", "describe", "--always"])
         .strip()
         .decode("utf-8"),
-        "additional_info": "CH4 environments, no lfrd computed",
+        "additional_info": "H5 environments, no lfrd computed",
     }
 
     # only relevant for hidden feature reconstruction error experiments
@@ -254,6 +274,10 @@ def store_metadata(
         metadata["inner_epsilon"] = inner_epsilon
     if outer_epsilon is not None:
         metadata["outer_epsilon"] = outer_epsilon
+    if one_direction is not None:
+        metadata["one_direction"] = one_direction
+    if compute_distortion is not None:
+        metadata["compute_distortion"] = compute_distortion
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
     output_hash = f"{sha}"
@@ -275,7 +299,7 @@ def read_dataset(dataset_name, nb_samples):
             frames[i].cell = np.eye(3) * 15
             frames[i].center()
             frames[i].wrap(eps=1e-11)
-            #frames[i].numbers = np.ones(len(frames[i]))
+            frames[i].numbers = np.ones(len(frames[i]))
     print("Load data finished.", flush=True)
     return frames
 
