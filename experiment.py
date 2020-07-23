@@ -131,13 +131,20 @@ def gfr_pairwise_experiment(
 
 # This experiment produces gfre and gfrd matrices for all pairs from features_hypers
 def gfr_all_pairs_experiment(
-    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer
+    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, compute_distortion=True
 ):
     metadata, experiment_id = store_metadata(
         dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer
     )
     frames = read_dataset(dataset_name, nb_samples)
-    feature_spaces = compute_representations(features_hypers, frames)
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+    feature_spaces = compute_representations(features_hypers, frames, train_idx)
+    for i in range(len(feature_spaces)):
+        feature_spaces[i] = postprocess_features(feature_spaces[i], features_hypers[i], train_idx, test_idx)
+    FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(
+                    feature_spaces,  noise_removal=noise_removal, regularizer=regularizer, compute_distortion=compute_distortion)
+
+
     FRE_matrix, FRD_matrix = compute_feature_space_reconstruction_measures(
         two_split, train_ratio, seed, noise_removal, regularizer, feature_spaces
     )
@@ -149,7 +156,7 @@ def gfr_all_pairs_experiment(
     return experiment_id
 
 def lfre_pairwise_experiment(
-    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon
+    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon, one_direction=False
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -162,7 +169,8 @@ def lfre_pairwise_experiment(
         regularizer=regularizer,
         nb_local_envs = nb_local_envs,
         inner_epsilon=inner_epsilon,
-        outer_epsilon=outer_epsilon
+        outer_epsilon=outer_epsilon,
+        one_direction=one_direction
     )
     frames = read_dataset(dataset_name, nb_samples)
     feature_spaces1 = compute_representations(features_hypers1, frames)
@@ -170,7 +178,7 @@ def lfre_pairwise_experiment(
     print("Compute local feature reconstruction errors...", flush=True)
 
     lfre_mat, lfrd_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon, outer_epsilon
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon, outer_epsilon, one_direction
     )
     print("Computation local feature reconstruction errors finished", flush=True)
 

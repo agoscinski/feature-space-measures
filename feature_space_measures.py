@@ -61,11 +61,6 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     split_id = int(len(idx) * train_ratio)
     return idx[:split_id], idx[split_id:]
 
-def standardize_features(features, train_idx=None):
-    if train_idx is None:
-        return NormalizeScaler().fit(features).transform(features)
-    return NormalizeScaler().fit(features[train_idx]).transform(features)
-
 def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6):
     """
     Computes the minimal weights reconstructing features2 from features1
@@ -205,7 +200,7 @@ def split_in_two(features1, features2, train_idx, test_idx):
     return features1_train, features2_train, features1_test, features2_test
 
 def two_split_reconstruction_measure_all_pairs(
-    feature_spaces, svd_method="gesdd", train_ratio=0.5, seed=0x5F3759DF, noise_removal=False, regularizer=np.nan
+    feature_spaces, svd_method="gesdd", train_ratio=0.5, seed=0x5F3759DF, noise_removal=False, regularizer=np.nan, compute_distortion=True
 ):
     """
     Computes the FRE and FRD of features2 from features1
@@ -226,10 +221,7 @@ def two_split_reconstruction_measure_all_pairs(
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
-            features1 = standardize_features(feature_spaces[i], train_idx)
-            features2 = standardize_features(feature_spaces[j], train_idx)
-            features1_train, features2_train, features1_test, features2_test = split_in_two(
-                    features1, features2, train_idx, test_idx)
+            features1_train, features2_train, features1_test, features2_test = feature_spaces[i][0], feature_spaces[j][0], feature_spaces[i][1], feature_spaces[j][1]
             reconstruction_weights = feature_space_reconstruction_weights(
                 features1_train, features2_train, regularizer
             )
@@ -242,6 +234,7 @@ def two_split_reconstruction_measure_all_pairs(
                     regularizer=regularizer,
                     svd_method=svd_method,
                     noise_removal=noise_removal,
+                    compute_distortion=compute_distortion
                 )
     return FRE_matrix, FRD_matrix
 
@@ -368,7 +361,9 @@ def train_test_gfrm_pairwise(
         )
 
         if one_direction:
-            FRE_matrix[1, i], FRD_matrix[1, i] = np.nan, np.nan
+            FRE_train_matrix[1,:,i] = np.nan
+            FRE_test_matrix[1,:,i] = np .nan
+            FRD_matrix[1, :, i] = np.nan
         else:
             reconstruction_weights = feature_space_reconstruction_weights(
                 features2_train, features1_train, regularizer
@@ -528,7 +523,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     return lfre_vec, lfrd_vec
 
 def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
-        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon=None, outer_epsilon=None):
+        feature_spaces1, feature_spaces2, nb_local_envs, two_split, train_ratio, seed, regularizer, inner_epsilon=None, outer_epsilon=None, one_direction=False):
     assert( len(feature_spaces1) == len(feature_spaces2) )
     for i in range(len(feature_spaces1)):
         assert( feature_spaces1[i].shape[0] == feature_spaces2[i].shape[0] )
@@ -547,10 +542,16 @@ def compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
             features1_test = features1
             features2_test = features2
             lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1_train, features2_train, features1_test, features2_test, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
-            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
+            if one_direction:
+                lfre_mat[2*i+1], lfrd_mat[2*i+1] =  np.nan, np.nan
+            else:
+                lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2_train, features1_train, features2_test, features1_test, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
         else:
             lfre_mat[2*i], lfrd_mat[2*i] = local_feature_reconstruction_error(nb_local_envs, features1, features2, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
-            lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
+            if one_direction:
+                lfre_mat[2*i+1], lfrd_mat[2*i+1] =  np.nan, np.nan
+            else:
+                lfre_mat[2*i+1], lfrd_mat[2*i+1] = local_feature_reconstruction_error(nb_local_envs, features2, features1, regularizer=regularizer, inner_epsilon=inner_epsilon, outer_epsilon=outer_epsilon)
     return lfre_mat, lfrd_mat
 
 def compute_local_feature_reconstruction_error_for_all_feature_spaces_pairs(
