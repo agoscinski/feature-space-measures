@@ -6,6 +6,14 @@ from sklearn import linear_model
 import warnings
 
 def global_embed_cv(x1, x2):
+    #import matplotlib.pyplot as plt
+    #plt.imshow(x1)
+    #plt.colorbar()
+    #plt.show()
+    #plt.imshow(x2)
+    #plt.colorbar()
+    #plt.show()
+
     n = len(x1)
     # two-way split of the dataset
     x1a = x1[:n//2]; x1b = x1[n//2:]
@@ -36,10 +44,20 @@ def global_embed_cv(x1, x2):
         loss_ab = (( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b)**2).sum()
         loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
         #print("loss ", thr, (loss_ab+loss_ba)/n)
+        #print('loss', (loss_ab+loss_ba)/n, 'lthr', lthr, 'reg', np.exp(lthr)*2/(sa[0]+sb[0]))
         return (loss_ab+loss_ba)/n
-    res = scipy.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds))
+    
+    #res = scipy.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds), options={'disp':True})
+    #x = res.x
     #print("Automatically determined rcond: ", np.exp(res.x)*2/(sa[0]+sb[0]))
-    return np.exp(res.x)*2/(sa[0]+sb[0])
+    #print('computed reg', np.exp(res.x)*2/(sa[0]+sb[0]))
+    #import matplotlib.pyplot as plt
+    #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
+    #plt.show()
+    range_logreg = np.arange(-16,0)
+    min_idx = np.argmin([thresh_cv_loss(x) for x in range_logreg])
+    x = range_logreg[min_idx]
+    return np.exp(x)*2/(sa[0]+sb[0])
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     """
