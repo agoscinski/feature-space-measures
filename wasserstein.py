@@ -87,15 +87,15 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
         return squareform(pdist(wasserstein_features))
 
 # 200 grid points is just chosen arbitrary to obtain an approximation which is accurate enough
-def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, nb_grid_points=200):
+def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     """Compute"""
     if  feature_paramaters["soap_parameters"]["soap_type"] != "RadialSpectrum":
         raise ValueError('Wasserstein features can be only computed for soap_type="RadialSpectrum".')
     if  feature_paramaters["soap_parameters"]["radial_basis"] != "DVR":
         raise ValueError('Wasserstein features can be only computed for radial_basis="DVR".')
 
-    nb_basis_functions = feature_paramaters["soap_parameters"]["max_radial"]
-    feature_paramaters["soap_parameters"]["max_radial"] = nb_grid_points
+    nb_basis_functions = feature_paramaters["nb_basis_functions"]
+    nb_grid_points = feature_paramaters["soap_parameters"]["max_radial"] 
     normalize_wasserstein_features = feature_paramaters["soap_parameters"]["normalize"]
     feature_paramaters["soap_parameters"]["normalize"] = False
     cutoff = feature_paramaters["soap_parameters"]["interaction_cutoff"]
@@ -134,7 +134,7 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames, nb_
     elif feature_paramaters["grid_type"] == "equispaced":
         interp_grid = np.linspace(0, 1, nb_basis_functions)
     else:
-        raise ValueError("The wasserstein grid_type="+feature_parameters["grid_type"] +" is not known.")
+        raise ValueError("The wasserstein grid_type="+feature_paramaters["grid_type"] +" is not known.")
 
     wasserstein_features = np.zeros((nb_envs*nb_species, nb_basis_functions))
     for i in np.where(nonzero_mask)[0]: # subset of nb_envs*nb_species
