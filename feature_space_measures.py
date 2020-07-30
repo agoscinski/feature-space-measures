@@ -54,9 +54,14 @@ def global_embed_cv(x1, x2):
     #import matplotlib.pyplot as plt
     #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
     #plt.show()
-    #range_logreg = np.arange(-16,0)
-    range_logreg = np.linspace(-16,1,50)
-    min_idx = np.argmin([thresh_cv_loss(x) for x in range_logreg])
+    #range_logreg = np.arange(-14,0)
+    range_logreg = np.linspace(-14,np.log(0.9),20)
+    loss = [thresh_cv_loss(x) for x in range_logreg]
+    #print(loss)
+    #import matplotlib.pyplot as plt
+    #plt.plot(range_logreg, loss)
+    #plt.show()
+    min_idx = np.argmin(loss)
     x = range_logreg[min_idx]
     return np.exp(x)*2/(sa[0]+sb[0])
 
