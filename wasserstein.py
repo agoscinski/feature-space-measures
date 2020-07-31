@@ -87,6 +87,7 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
             wasserstein_features /= np.linalg.norm(wasserstein_features,axis=1)[:,np.newaxis]
         return squareform(pdist(wasserstein_features))
 
+# integral from -1 to 0 exp(-1/(1-x^2)) = 0.221997
 bump_function_area = 0.221997
 def bump_function(grid, cdf, cutoff, delta_sigma):
     cdf = cdf.copy()
@@ -133,13 +134,14 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     #plt.show()
 
     if feature_paramaters["delta_normalization"]:
-        delta_sigma = feature_paramaters["delta_sigma"]
-        # integral from -1 to 0 exp(-1/(1-x^2)) = 0.221997
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points)
-        for i in range(nb_species):
-            cdf[:,i,:] = bump_function(density_grid, cdf[:,i,:], cutoff, delta_sigma)
-            #max_norm = np.max(cdf[:,i,-1])
-            #cdf[:,i,-1] += max_norm-cdf[:,i,-1]
+        delta_sigma = feature_paramaters["delta_sigma"]
+        if delta_sigma is None:
+            for i in range(nb_species):
+                cdf[:,i,-1] += np.max(cdf[:,i,-1])-cdf[:,i,-1]
+        else:
+            for i in range(nb_species):
+                cdf[:,i,:] = bump_function(density_grid, cdf[:,i,:], cutoff, delta_sigma)
         cdf = cdf.reshape(nb_envs * nb_species, nb_grid_points)
 
     #import matplotlib.pyplot as plt
