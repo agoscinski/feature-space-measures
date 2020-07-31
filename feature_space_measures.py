@@ -5,6 +5,30 @@ from scalers import standardize_features
 from sklearn import linear_model
 import warnings
 
+def regularizer_cv_folds(x1, x2, nb_folds):
+    fold_size = len(x1)//nb_folds
+    x1_folds = [x1[i*fold_size:(i+1)*fold_size] for i in range(nb_folds-1)]
+    x1_folds.append(x1[(nb_folds-1)*fold_size:])
+    x2_folds = [x2[i*fold_size:(i+1)*fold_size] for i in range(nb_folds-1)]
+    x2_folds.append(x2[(nb_folds-1)*fold_size:])
+    
+    def fold_test_error(regularizer):
+        test_error = np.zeros(nb_folds)
+        for i in range(nb_folds):
+            W = np.linalg.lstsq(x1_folds[i], x2_folds[i], rcond=regularizer)[0]
+            test_fold_idx = list(range(nb_folds))
+            test_fold_idx.remove(i)
+            x1_test = np.concatenate([x1_folds[j] for j in test_fold_idx], axis=0)
+            x2_test = np.concatenate([x2_folds[j] for j in test_fold_idx], axis=0)
+            test_error[i] = np.linalg.norm(
+                x1_test.dot(W) - x2_test
+            ) / np.sqrt(x1_test.shape[0])
+        return np.mean(test_error)
+    regularizers = 10**(np.linspace(-9, np.log(0.9),20))
+    loss = [fold_test_error(reg) for reg in regularizers]
+    min_idx = np.argmin(loss)
+    return regularizers[min_idx]
+
 def global_embed_cv(x1, x2):
     #import matplotlib.pyplot as plt
     #plt.imshow(x1)
@@ -55,7 +79,7 @@ def global_embed_cv(x1, x2):
     #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
     #plt.show()
     #range_logreg = np.arange(-14,0)
-    range_logreg = np.linspace(-14,np.log(0.9),20)
+    range_logreg = np.linspace(-9,np.log(0.9),20)
     loss = [thresh_cv_loss(x) for x in range_logreg]
     #print(loss)
     #import matplotlib.pyplot as plt
@@ -63,6 +87,12 @@ def global_embed_cv(x1, x2):
     #plt.show()
     min_idx = np.argmin(loss)
     x = range_logreg[min_idx]
+    #print(x)
+    #import matplotlib.pyplot as plt
+    #plt.imshow(x1)
+    #plt.show()
+    #plt.plot(range_logreg, loss)
+    #plt.show()
     return np.exp(x)*2/(sa[0]+sb[0])
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
@@ -111,8 +141,11 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
     #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
-    if regularizer == "CV":
-        regularizer = global_embed_cv(features1, features2)
+    if type("CV 2 fold") == type(regularizer):
+        regularizer_description = regularizer.split(" ")
+        # to catch the "CV" cases and switch to default 2 folds
+        nb_folds = int(regularizer_description[1]) if len(regularizer_description) > 1 else 2
+        regularizer = regularizer_cv_folds(features1, features2, nb_folds)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
