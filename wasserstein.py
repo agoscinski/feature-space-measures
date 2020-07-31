@@ -2,6 +2,7 @@ from rascal.representations import SphericalInvariants
 import numpy as np
 from scipy.spatial.distance import cdist, pdist, squareform
 from scipy.interpolate import interp1d
+import scipy
 
 def compute_squared_wasserstein_distance(feature_paramaters, frames):
     if feature_paramaters["feature_parameters"]["soap_type"] == "RadialSpectrum":
@@ -86,6 +87,17 @@ def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, fra
             wasserstein_features /= np.linalg.norm(wasserstein_features,axis=1)[:,np.newaxis]
         return squareform(pdist(wasserstein_features))
 
+bump_function_area = 0.221997
+def bump_function(grid, cdf, cutoff, delta_sigma):
+    cdf = cdf.copy()
+    diff = np.max(cdf[:,-1])-cdf[:,-1]
+    offset = cutoff-delta_sigma
+    delta_idx = grid > cutoff-delta_sigma
+    grid_standardized = (grid[delta_idx]-offset)/delta_sigma - 1
+    bump = np.exp(-1/(1-grid_standardized[np.newaxis,:]**2)) * diff[:,np.newaxis]/bump_function_area
+    cdf[:, delta_idx] += bump
+    return cdf
+
 # 200 grid points is just chosen arbitrary to obtain an approximation which is accurate enough
 def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     """Compute"""
@@ -110,22 +122,35 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     # DVR uses gaussian quadrature points as basis function, we reproduce the original grid points for the interpolation
     density_grid, density_weights = np.polynomial.legendre.leggauss(nb_grid_points)
     density_grid = density_grid*cutoff/2 + cutoff/2
-    density_grid = np.hstack((0, density_grid))
     densities /= np.sqrt(density_weights)
-    cdf = np.cumsum(densities, axis=1)
+    cdf = scipy.integrate.cumtrapz(densities, density_grid)
+    # insert the zero probabilty point at the beginning to help interpolating at the beginning
+    cdf = np.hstack((np.zeros((cdf.shape[0],1)), cdf))
+
+    #import matplotlib.pyplot as plt
+    #print("CDF")
+    #plt.plot(cdf[0].T)
+    #plt.show()
 
     if feature_paramaters["delta_normalization"]:
+        delta_sigma = feature_paramaters["delta_sigma"]
+        # integral from -1 to 0 exp(-1/(1-x^2)) = 0.221997
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points)
         for i in range(nb_species):
-            max_norm = np.max(cdf[:,i,-1])
-            cdf[:,i,-1] += max_norm-cdf[:,i,-1]
+            cdf[:,i,:] = bump_function(density_grid, cdf[:,i,:], cutoff, delta_sigma)
+            #max_norm = np.max(cdf[:,i,-1])
+            #cdf[:,i,-1] += max_norm-cdf[:,i,-1]
         cdf = cdf.reshape(nb_envs * nb_species, nb_grid_points)
+
+    import matplotlib.pyplot as plt
+    #print("CDF normalized")
+    #plt.plot(cdf[0].T)
+    #plt.show()
+    #print(cdf.shape)
 
     # normalize nonzero environments
     nonzero_mask = cdf[:,-1] != 0
     cdf[nonzero_mask] /= cdf[:,-1][nonzero_mask][:,np.newaxis]
-    # insert the zero probabilty point at the beginning to help interpolating at the beginning
-    cdf = np.concatenate((np.zeros((cdf.shape[0],1)),cdf),axis=1)
 
     # gaussian quadrature points as grid
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
@@ -141,12 +166,20 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
         cdf_i, cdf_idx = np.unique(cdf[i,:], return_index=True)
         interpolator = interp1d(cdf_i, density_grid[cdf_idx], assume_sorted=True, kind='slinear')
         wasserstein_features[i,:] = interpolator(interp_grid)
+        plt.plot(cdf_i)
+        plt.show()
+        plt.plot(wasserstein_features[i,:])
+        plt.show()
 
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
         wasserstein_features *= np.sqrt(interp_weights)
 
     wasserstein_features = wasserstein_features.reshape(nb_envs, nb_species * nb_basis_functions)
 
-    if  normalize_wasserstein_features:
+    if normalize_wasserstein_features:
         wasserstein_features /= np.linalg.norm(wasserstein_features,axis=1)[:,np.newaxis]
+    #import matplotlib.pyplot as plt
+    #print("ICDF")
+    #plt.plot(wasserstein_features[0].T)
+    #plt.show()
     return wasserstein_features
