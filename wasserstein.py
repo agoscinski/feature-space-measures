@@ -142,7 +142,7 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
             #cdf[:,i,-1] += max_norm-cdf[:,i,-1]
         cdf = cdf.reshape(nb_envs * nb_species, nb_grid_points)
 
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
     #print("CDF normalized")
     #plt.plot(cdf[0].T)
     #plt.show()
@@ -166,10 +166,10 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
         cdf_i, cdf_idx = np.unique(cdf[i,:], return_index=True)
         interpolator = interp1d(cdf_i, density_grid[cdf_idx], assume_sorted=True, kind='slinear')
         wasserstein_features[i,:] = interpolator(interp_grid)
-        plt.plot(cdf_i)
-        plt.show()
-        plt.plot(wasserstein_features[i,:])
-        plt.show()
+        #plt.plot(cdf_i)
+        #plt.show()
+        #plt.plot(wasserstein_features[i,:])
+        #plt.show()
 
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
         wasserstein_features *= np.sqrt(interp_weights)
