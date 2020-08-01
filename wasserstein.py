@@ -132,13 +132,18 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     #print("CDF")
     #plt.plot(cdf[0].T)
     #plt.show()
-
+    
     if feature_paramaters["delta_normalization"]:
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points)
+        #plt.hist(cdf[:,0,-1])
+        #plt.show()
         delta_sigma = feature_paramaters["delta_sigma"]
+        delta_offset_percentage = feature_paramaters["delta_offset_percentage"]
         if delta_sigma is None:
             for i in range(nb_species):
-                cdf[:,i,-1] += np.max(cdf[:,i,-1])-cdf[:,i,-1]
+                max_norm = np.max(cdf[:,i,-1])
+                max_norm += delta_offset_percentage*max_norm
+                cdf[:,i,-1] += max_norm-cdf[:,i,-1]
         else:
             for i in range(nb_species):
                 cdf[:,i,:] = bump_function(density_grid, cdf[:,i,:], cutoff, delta_sigma)
@@ -146,7 +151,7 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
 
     #import matplotlib.pyplot as plt
     #print("CDF normalized")
-    #plt.plot(cdf[0].T)
+    #plt.plot(cdf[:5].T)
     #plt.show()
     #print(cdf.shape)
 
@@ -168,10 +173,33 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
         cdf_i, cdf_idx = np.unique(cdf[i,:], return_index=True)
         interpolator = interp1d(cdf_i, density_grid[cdf_idx], assume_sorted=True, kind='slinear')
         wasserstein_features[i,:] = interpolator(interp_grid)
-        #plt.plot(cdf_i)
+        #import matplotlib.pyplot as plt
+        #print(np.max(wasserstein_features[i,:]))
+        #k = 0
+        #for j in range(len(wasserstein_features[i,:])):
+        #    if cutoff-1e-3 <= wasserstein_features[i,k]:
+        #        break
+        #    k+=1
+        ##print(np.sum(wasserstein_features > np.max(wasserstein_features[i,:])-1e-2))
+        #print("density_grid.shape",density_grid.shape)
+        #print("k", k)
+        #plt.plot(density_grid, wasserstein_features[i,:])
+        #plt.axvline(x=density_grid[k-1])
         #plt.show()
-        #plt.plot(wasserstein_features[i,:])
-        #plt.show()
+    #print(wasserstein_features.shape)
+    #plt.plot(wasserstein_features[:5].T)
+    #plt.show()
+
+    #import matplotlib.pyplot as plt
+    #print("ICDF")
+    #print(np.max(wasserstein_features))
+    ##print(np.sum(wasserstein_features > np.max(wasserstein_features)-1e-2))
+    #plt.plot(wasserstein_features[:5].T)
+    #plt.show()
+
+    # delta normalization 2 sets delta areas to 0 so they cannot be used as features
+    if feature_paramaters["delta_normalization"] == 2:
+        wasserstein_features[cutoff-1e-3 <= wasserstein_features] = 0
 
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
         wasserstein_features *= np.sqrt(interp_weights)
@@ -180,8 +208,5 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
 
     if normalize_wasserstein_features:
         wasserstein_features /= np.linalg.norm(wasserstein_features,axis=1)[:,np.newaxis]
-    #import matplotlib.pyplot as plt
-    #print("ICDF")
-    #plt.plot(wasserstein_features[0].T)
-    #plt.show()
+    
     return wasserstein_features
