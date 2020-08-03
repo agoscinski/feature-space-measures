@@ -151,7 +151,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
-            global_embed_cv(features1, features2)
+            regularizer = global_embed_cv(features1, features2)
         else:
             regularizer_description = regularizer.split(" ")
             # to catch the "CV" cases and switch to default 2 folds
