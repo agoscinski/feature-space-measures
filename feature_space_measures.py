@@ -87,7 +87,7 @@ def global_embed_cv(x1, x2):
     #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
     #plt.show()
     #range_logreg = np.arange(-14,0)
-    range_logreg = np.linspace(-9,np.log(0.9),20)
+    range_logreg = np.linspace(-9,np.log10(0.9),20)
     loss = [thresh_cv_loss(x) for x in range_logreg]
     #print(loss)
     #import matplotlib.pyplot as plt
@@ -101,7 +101,7 @@ def global_embed_cv(x1, x2):
     #plt.show()
     #plt.plot(range_logreg, loss)
     #plt.show()
-    return np.exp(x)*2/(sa[0]+sb[0])
+    return (10**x) * 2/(sa[0]+sb[0])
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     """
