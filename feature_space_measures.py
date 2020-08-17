@@ -73,8 +73,8 @@ def global_embed_cv(x1, x2):
         nb = len(np.where(sb/sb[0]>thr)[0])
         
         # error approximating x2b a-fitted model and vice versa
-        loss_ab = (( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b)**2).sum()
-        loss_ba = (( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a)**2).sum()
+        loss_ab = np.linalg.norm( (x1b_va[:,:na]*(1/sa[:na]))@uat_x2a[:na] - x2b )
+        loss_ba =  np.linalg.norm( (x1a_vb[:,:nb]*(1/sb[:nb]))@ubt_x2b[:nb] - x2a )
         #print("loss ", thr, (loss_ab+loss_ba)/n)
         #print('loss', (loss_ab+loss_ba)/n, 'lthr', lthr, 'reg', np.exp(lthr)*2/(sa[0]+sb[0]))
         return (loss_ab+loss_ba)/n
@@ -87,7 +87,7 @@ def global_embed_cv(x1, x2):
     #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
     #plt.show()
     #range_logreg = np.arange(-14,0)
-    range_logreg = np.linspace(-9,np.log10(0.9),20)
+    range_logreg = np.linspace(-9,np.log(0.9),20)
     loss = [thresh_cv_loss(x) for x in range_logreg]
     #print(loss)
     #import matplotlib.pyplot as plt
@@ -97,11 +97,10 @@ def global_embed_cv(x1, x2):
     x = range_logreg[min_idx]
     #print(x)
     #import matplotlib.pyplot as plt
-    #plt.imshow(x1)
-    #plt.show()
     #plt.plot(range_logreg, loss)
     #plt.show()
-    return (10**x) * 2/(sa[0]+sb[0])
+    return np.exp(x)#* 2/(sa[0]+sb[0])
+
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     """
@@ -212,18 +211,23 @@ def feature_space_reconstruction_measures(
     if n_test is None:
         n_test = features2.shape[0]
 
+    features1.dot(reconstruction_weights)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     if reduce_error_dimension=="all":
         FRE = np.linalg.norm(
             features1.dot(reconstruction_weights) - features2
         ) / np.sqrt(n_test)
-        #import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
         #err =  np.linalg.norm(
         #    features1.dot(reconstruction_weights) - features2, axis=1
         #) / np.sqrt(n_test)
         #plt.plot(err)
         #plt.show()
         #print(np.where(err>1))
+        plt.plot(features2[:5].T)
+        plt.show()
+        plt.plot(features1.dot(reconstruction_weights)[:5].T)
+        plt.show()
     elif reduce_error_dimension=="features":
         FRE = np.sqrt(
            np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
