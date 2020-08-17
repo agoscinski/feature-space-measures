@@ -1,15 +1,52 @@
 # coding: utf-8
 import numpy as np
 from ase import neighborlist
-
+import time
 
 def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
+    if np.sum(frames[0].pbc):
+        return compute_sorted_distances_with_pbc(feature_parameters, frames, center_atom_id_mask)
+    else:
+        return compute_sorted_distances_without_pbc(feature_parameters, frames, center_atom_id_mask)
+
+def compute_sorted_distances_without_pbc(feature_parameters, frames, center_atom_id_mask):
     print("Warning: Sorted distances only works for one species")
     cutoff = feature_parameters["interaction_cutoff"]
 
-    #white_ids = np.array(center_atom_id_mask)
-    #white_ids[1:] += np.array([len(env_ids) for env_ids in center_atom_id_mask])[:-1,np.newaxis]
-    #white_ids = white_ids.flatten()
+    max_neighbors = 0
+    for frame_id in range(len(frames)):
+        distances = frames[frame_id].get_all_distances()[center_atom_id_mask[frame_id]]
+        max_neighbors = max(max_neighbors, np.max(np.sum(distances < cutoff, axis=1)))
+
+    padding_type = feature_parameters["padding_type"]
+    if padding_type == "max":
+        max_distance = cutoff
+        #for frame_id in range(len(frames)):
+        #    distances = frames[frame_id].get_all_distances()[center_atom_id_mask[frame_id]]
+        #    max_distance = max(max_distance, np.max(distances[distances < cutoff]))
+        padding = max_distance
+    elif padding_type == "zero":
+        padding = 0
+    else:
+        raise("Error padding_type "+padding_type+" is not available.")
+
+    sorted_distances = np.ones( (sum([len(env_idx) for env_idx in center_atom_id_mask]), max_neighbors) ) * padding
+
+    k = 0
+    for frame_id in range(len(frames)):
+        distances = np.sort( frames[frame_id].get_all_distances()[center_atom_id_mask[frame_id]], axis=1)
+        distances[distances >= cutoff] = padding
+        sorted_distances[k:k+len(distances), :distances.shape[1]] = distances
+        k += len(distances)
+    #import matplotlib.pyplot as plt
+    #plt.plot(sorted_distances[:5].T)
+    #plt.show()
+    return sorted_distances
+
+
+def compute_sorted_distances_with_pbc(feature_parameters, frames, center_atom_id_mask):
+    print("Warning: Sorted distances only works for one species")
+    cutoff = feature_parameters["interaction_cutoff"]
 
     max_neighbors = 0
     for frame_id in range(len(frames)):
@@ -20,12 +57,12 @@ def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
 
     padding_type = feature_parameters["padding_type"]
     if padding_type == "max":
-        max_distance = 0
-        for frame_id in range(len(frames)):
-            frame = frames[frame_id]
-            atom_i, distances = neighborlist.neighbor_list('id', frame, cutoff)
-            for atom_id in center_atom_id_mask[frame_id]:
-                max_neighbors = max(max_neighbors, np.max(distances[atom_i == atom_id]))
+        max_distance = cutoff
+        #for frame_id in range(len(frames)):
+        #    frame = frames[frame_id]
+        #    atom_i, distances = neighborlist.neighbor_list('id', frame, cutoff)
+        #    for atom_id in center_atom_id_mask[frame_id]:
+        #       max_distance = max(max_distance, np.max(distances[atom_i == atom_id]))
         padding = max_distance
     elif padding_type == "zero":
         padding = 0
@@ -34,7 +71,6 @@ def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
 
     sorted_distances = np.ones( (sum([len(env_idx) for env_idx in center_atom_id_mask]), max_neighbors) ) * padding
 
-    print(max_neighbors)
     k = 0
     for frame_id in range(len(frames)):
         frame = frames[frame_id]
@@ -44,6 +80,9 @@ def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
             sorted_distances_env = np.sort(distances[atom_i == atom_id])
             sorted_distances[k, :len(sorted_distances_env)] = sorted_distances_env
         k += 1
+    #import matplotlib.pyplot as plt
+    #plt.plot(sorted_distances[:5].T)
+    #plt.show()
     return sorted_distances
 
 #        per_atom = True
