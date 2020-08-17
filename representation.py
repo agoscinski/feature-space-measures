@@ -4,6 +4,7 @@ import scipy
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
+from sorted_distances import compute_sorted_distances
 from scalers import standardize_features
 
 
@@ -23,6 +24,12 @@ def compute_representations(features_hypers, frames, train_idx=None, center_atom
             features = compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+        #import matplotlib.pyplot as plt
+        #print(feature_hypers)
+        #plt.imshow(features)
+        #plt.colorbar()
+        #plt.show()
+        #print(features.shape)
         feature_spaces.append(features)
     print("Compute representations finished", flush=True)
     return feature_spaces
@@ -36,6 +43,8 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
+    elif feature_hypers["feature_type"] == "sorted_distances":
+        return compute_sorted_distances(feature_hypers["feature_parameters"], frames, center_atom_id_mask)
     elif feature_hypers["feature_type"] == "precomputed":
         if feature_hypers["feature_parameters"]["dataset"] == "pulled_hydrogen_distance": 
             return load_hydrogen_distance_dataset(feature_hypers["feature_parameters"], frames)
@@ -132,6 +141,14 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
     print("Compute kernel.")
     kernel_type = kernel_parameters["kernel_type"]
     if kernel_type == "center":
+        #plt.plot(np.linspace(1,4,len(squared_distance[0])), np.sqrt(squared_distance[0]))
+        #plt.ylabel("W^scaling(p_0, p_{z_H})")
+        #plt.xlabel("z_H")
+        #plt.show()
+        #plt.plot(np.linspace(1,4,len(squared_distance[0])), np.sqrt(np.diag(squared_distance)))
+        #plt.ylabel("W^scaling(p_{z_H}, p_{z_H})")
+        #plt.xlabel("z_H")
+        #plt.show()
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
         return -H.dot(squared_distance).dot(H) / 2
     elif kernel_type == "polynomial":
