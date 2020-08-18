@@ -1,27 +1,38 @@
 #!/usr/bin/env python3
 # coding: utf-8
 from experiment import gfr_all_pairs_experiment
+import os
+
+os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4 
+os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=4
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1" # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=4
 
 ### Experiment metadata
+
+nb_samples = 4000
 two_split = True
 if two_split:
     seed = 0x5f3759df
-    train_ratio = 0.6
+    train_ratio = 0.5
 else: 
     train_ratio = None
     seed = None
-
 noise_removal = False
-regularizer = "CV"
-nb_samples = 4000
+regularizer = "CV 2 fold"
 
 ## Constant hyperparameters
 cutoff = 4
 max_radial = 6
 max_angular = 4
 sigma = 0.5
+cutoff_smooth_width = 0.5
 normalize = False
-experiment_ids = []
+
+empty_hash_values = ""
+bracket_hash_values = ""
+
 ## Tested hyperparameters
 for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
     for radial_basis in ["GTO", "DVR"]:
@@ -36,7 +47,7 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
                 "max_angular": max_angular,
                 "gaussian_sigma_constant": sigma,
                 "gaussian_sigma_type": "Constant",
-                "cutoff_smooth_width": 0.5,
+                "cutoff_smooth_width": cutoff_smooth_width,
                 "normalize": normalize
             },
             #"hilbert_space_parameters": {
@@ -54,8 +65,11 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
                 "dataset": dataset_name,
             }
         }
-
         features_hypers.append(nice_feature_hypers)
 
-        experiment_ids.append( gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer) )
-print(experiment_ids)
+        hash_values = [gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer)]
+        empty_hash_values += '"' + ' '.join(hash_values).replace(' ','" "' ) + '" '
+        bracket_hash_values += f'body_order_{radial_basis}_{dataset_name}_hash_value = '+'"' + ' '.join(hash_values).replace(' ','", "' ) + '"\n'
+
+print(empty_hash_values)
+print(bracket_hash_values )
