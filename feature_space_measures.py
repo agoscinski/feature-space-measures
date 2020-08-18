@@ -25,7 +25,8 @@ def regularizer_cv_folds(x1, x2, nb_folds):
             ) / np.sqrt(x1_test.shape[0])
         #print(test_error)
         return np.mean(test_error)
-    regularizers = 10**(np.linspace(-9, np.log10(0.9),10))
+    # be aware 1 means no regularization
+    regularizers = np.hstack( (np.geomspace(1e-9, 1e-1, 9), [0.5, 0.9, 1]) )
     loss = [fold_test_error(reg) for reg in regularizers]
     min_idx = np.argmin(loss)
     x = regularizers[min_idx]
@@ -87,7 +88,7 @@ def global_embed_cv(x1, x2):
     #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
     #plt.show()
     #range_logreg = np.arange(-14,0)
-    range_logreg = np.linspace(-9,np.log(0.9),20)
+    range_logreg = np.linspace(-10,np.log(0.9),20)
     loss = [thresh_cv_loss(x) for x in range_logreg]
     #print(loss)
     #import matplotlib.pyplot as plt
@@ -224,10 +225,10 @@ def feature_space_reconstruction_measures(
         #plt.plot(err)
         #plt.show()
         #print(np.where(err>1))
-        plt.plot(features2[:5].T)
-        plt.show()
-        plt.plot(features1.dot(reconstruction_weights)[:5].T)
-        plt.show()
+        #plt.plot(features2[:5].T)
+        #plt.show()
+        #plt.plot(features1.dot(reconstruction_weights)[:5].T)
+        #plt.show()
     elif reduce_error_dimension=="features":
         FRE = np.sqrt(
            np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
