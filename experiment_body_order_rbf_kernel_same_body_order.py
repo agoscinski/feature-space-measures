@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from experiment import gfr_all_pairs_experiment
+from src.experiment import gfr_all_pairs_experiment
 
 ### Experiment metadata
 

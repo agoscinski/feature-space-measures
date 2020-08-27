@@ -3,9 +3,9 @@ import scipy
 
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
-from wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
-from sorted_distances import compute_sorted_distances
-from scalers import standardize_features
+from src.wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
+from src.sorted_distances import compute_sorted_distances
+from src.scalers import standardize_features
 
 FEATURES_ROOT ="features"
 

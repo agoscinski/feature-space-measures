@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from experiment import gfr_pairwise_experiment
+from src.experiment import gfr_pairwise_experiment
 import numpy as np
 
 dataset_name = "displaced-methane-step_size=0.05-range=[0.5,4.5]-seed=None.extxyz"

@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from CUR import CUR
+from src.CUR import CUR
 
 
 def select_features(features, hypers):

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy
 from scipy.spatial.distance import cdist
-from scalers import standardize_features
+from src.scalers import standardize_features
 from sklearn import linear_model
 import warnings
 
