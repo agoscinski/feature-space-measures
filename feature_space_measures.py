@@ -107,19 +107,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    ##print("Computing weights...")
-    #W = np.zeros((features1.shape[1],features2.shape[1]))
-    #for i in range( features2.shape[1] ):
-    #    if i % int(features2.shape[1]/5) == 0:
-    #        print("weight step "+str(i)+"")
-    #    reg = linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer)
-    #    reg.fit(features1, features2[:,i])
-    #    W[:,i] = reg.coef_
-    ##print("Computing weights finished.")
-    #return W
-    #regs = [linear_model.BayesianRidge(alpha_1=regularizer, alpha_2=regularizer, lambda_1=regularizer, lambda_2=regularizer) for i in range(features2.shape[1])]
-    #[regs[i].fit(features1, features2[:,i]) for i in range(features2.shape[1])]
-    #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
             regularizer = regularizer_cv_folds_old(features1, features2)
@@ -128,10 +115,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
             # to catch the "CV" cases and switch to default 2 folds
             nb_folds = int(regularizer_description[1]) if len(regularizer_description) > 1 else 2
             regularizer = regularizer_cv_folds(features1, features2, nb_folds)
-    print("regularizer",regularizer)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
-    #print("regularizer", regularizer)
-    #print("np.linalg.norm(W)",np.linalg.norm(W))
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W

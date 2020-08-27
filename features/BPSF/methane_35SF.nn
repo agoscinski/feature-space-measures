@@ -1,0 +1,36 @@
+# n2p2/RuNNer input file snippet
+symfunction_short C 2 H 0.0178 0.000 7.500
+symfunction_short C 2 H 0.0338 0.000 7.500
+symfunction_short C 2 H 0.0644 0.000 7.500
+symfunction_short C 2 H 0.1226 0.000 7.500
+symfunction_short C 2 H 0.2335 0.000 7.500
+symfunction_short C 2 H 0.4444 0.000 7.500
+symfunction_short C 2 H 3.0823 1.500 7.500
+symfunction_short C 2 H 1.6191 2.070 7.500
+symfunction_short C 2 H 0.8505 2.855 7.500
+symfunction_short C 2 H 0.4468 3.940 7.500
+symfunction_short C 2 H 0.2347 5.436 7.500
+symfunction_short C 3 H H 0.0178  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0178  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0338  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0338 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0338  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0338 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0644  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0644 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0644  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0644 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1226  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1226 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1226  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1226 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2335  1.000 1.000 7.500
+symfunction_short C 3 H H 0.2335 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.2335  1.000 4.000 7.500
+symfunction_short C 3 H H 0.2335 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.4444  1.000 1.000 7.500
+symfunction_short C 3 H H 0.4444 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.4444  1.000 4.000 7.500
+symfunction_short C 3 H H 0.4444 -1.000 4.000 7.500

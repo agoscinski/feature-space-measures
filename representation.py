@@ -7,10 +7,12 @@ from wasserstein import compute_squared_wasserstein_distance, compute_radial_spe
 from sorted_distances import compute_sorted_distances
 from scalers import standardize_features
 
+FEATURES_ROOT ="features"
 
 def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask=None):
     if center_atom_id_mask is None:
         # only first center
+        print("WARNING only the first environments of all structures is computed. Other options are not supported by experiment input.")
         center_atom_id_mask = [[0] for frame in frames]
         # all centers
         #center_atom_id_mask = [list(range(len(frame))) for frame in frames]
@@ -28,8 +30,6 @@ def compute_representations(features_hypers, frames, train_idx=None, center_atom
     print("Compute representations finished", flush=True)
     return feature_spaces
 
-def load_hydrogen_distance_dataset(feature_parameters, frames):
-    return np.array([frame.info["hydrogen_distance"] for frame in frames])[:,np.newaxis]
 
 def compute_representation(feature_hypers, frames, center_atom_id_mask):
     if feature_hypers["feature_type"] == "soap":
@@ -41,58 +41,21 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         features = compute_sorted_distances(feature_hypers["feature_parameters"], frames, center_atom_id_mask)
         return features
     elif feature_hypers["feature_type"] == "precomputed":
-        if feature_hypers["feature_parameters"]["dataset"] == "pulled_hydrogen_distance": 
-            return load_hydrogen_distance_dataset(feature_hypers["feature_parameters"], frames)
-    elif feature_hypers["feature_type"] == "precomputed_NICE":
-        nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
+        print("WARNING we assume for the precomputed features that only one environment in each structure was computed.")
         parameters = feature_hypers['feature_parameters']
-        if parameters['dataset'] == "selection-10k.extxyz":
-            return np.load(f"{parameters['file_root']}/methane-allc.npy")[:nb_envs]
-        elif parameters['dataset'] == "C-VII-pp-wrapped.xyz":
-            return np.load(f"{parameters['file_root']}/carbon-first.npy")[:nb_envs]
-        else:
-            raise("Error dataset "+parameters['dataset']+" is not available")
-    elif feature_hypers["feature_type"] == "precomputed_BP":
         nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
+        if parameters["filetype"] == "npy":
+            pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
+            return np.load(pathname)[:nb_envs]
+        elif parameters["filetype"] == "txt":
+            pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
+            return np.loadtxt(pathname)[:nb_envs]
+        elif parameters["filetype"] == "frame_info":
+            return np.array([frame.info[parameters['feature_name']] for frame in frames])[:,np.newaxis][:nb_envs]
 
-        parameters = feature_hypers["feature_parameters"]
-        path = f"{parameters['file_root']}/{parameters['dataset']}/compute_features/{parameters['dataset']}_{parameters['SF_count']}SF"
-        data = np.zeros((nb_envs, parameters["SF_count"]))
-
-        if parameters['dataset'] == "methane":
-            # only C-centered envs are included in the BF feature, so we have
-            # env per frame
-            with open(path) as fd:
-                for i, line in enumerate(fd):
-                    # only the first 4000 frames are used
-                    data[i, :] = list(map(float, line.split()))
-                    if i >= nb_envs - 1:
-                        break
-                assert(i == nb_envs - 1)
-        elif parameters['dataset'] == "carbon":
-            # all envs are included in BP, but SOAP only compute the env for the
-            # first atom of the frame, so we need to skip some of them
-            count = 0
-            included_envs = []
-            for i in range(len(frames)):
-                included_envs.extend([count+id_mask for id_mask in center_atom_id_mask[i]])
-                count += len(frames[i])
-
-            with open(path) as fd:
-                i = 0
-                for line_i, line in enumerate(fd):
-                    if line_i in included_envs:
-                        data[i, :] = list(map(float, line.split()))
-                        i += 1
-                    if i >= nb_envs:
-                        break
-                assert(i == nb_envs)
-        else:
-            raise ValueError("unknown dataset " + parameters['dataset'])
-        return data
-    else:
-        raise ValueError("The feature_type=" + feature_hypers["feature_type"] + " is not known.")
-
+        # hardcoded case
+        elif parameters["feature_name"] == "displaced_hydrogen_distance": 
+            return load_hydrogen_distance_dataset(frames)[:nb_envs]
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
@@ -150,3 +113,6 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return np.exp(-kernel_parameters["gamma"] * np.sqrt(squared_distance))
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")
+
+def load_hydrogen_distance_dataset(frames):
+    return np.array([frame.info["hydrogen_distance"] for frame in frames])[:,np.newaxis]

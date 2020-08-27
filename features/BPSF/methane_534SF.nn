@@ -1,0 +1,535 @@
+# n2p2/RuNNer input file snippet
+symfunction_short C 2 H 0.0178 0.000 7.500
+symfunction_short C 2 H 0.0217 0.000 7.500
+symfunction_short C 2 H 0.0240 0.000 7.500
+symfunction_short C 2 H 0.0265 0.000 7.500
+symfunction_short C 2 H 0.0323 0.000 7.500
+symfunction_short C 2 H 0.0324 0.000 7.500
+symfunction_short C 2 H 0.0338 0.000 7.500
+symfunction_short C 2 H 0.0394 0.000 7.500
+symfunction_short C 2 H 0.0437 0.000 7.500
+symfunction_short C 2 H 0.0481 0.000 7.500
+symfunction_short C 2 H 0.0587 0.000 7.500
+symfunction_short C 2 H 0.0589 0.000 7.500
+symfunction_short C 2 H 0.0644 0.000 7.500
+symfunction_short C 2 H 0.0716 0.000 7.500
+symfunction_short C 2 H 0.0795 0.000 7.500
+symfunction_short C 2 H 0.0874 0.000 7.500
+symfunction_short C 2 H 0.1067 0.000 7.500
+symfunction_short C 2 H 0.1073 0.000 7.500
+symfunction_short C 2 H 0.1226 0.000 7.500
+symfunction_short C 2 H 0.1302 0.000 7.500
+symfunction_short C 2 H 0.1447 0.000 7.500
+symfunction_short C 2 H 0.1588 0.000 7.500
+symfunction_short C 2 H 0.1938 0.000 7.500
+symfunction_short C 2 H 0.1953 0.000 7.500
+symfunction_short C 2 H 0.2335 0.000 7.500
+symfunction_short C 2 H 0.2347 5.436 7.500
+symfunction_short C 2 H 0.2365 0.000 7.500
+symfunction_short C 2 H 0.2635 0.000 7.500
+symfunction_short C 2 H 0.2886 0.000 7.500
+symfunction_short C 2 H 0.3522 0.000 7.500
+symfunction_short C 2 H 0.3556 0.000 7.500
+symfunction_short C 2 H 0.4298 0.000 7.500
+symfunction_short C 2 H 0.4444 0.000 7.500
+symfunction_short C 2 H 0.4468 3.940 7.500
+symfunction_short C 2 H 0.4797 0.000 7.500
+symfunction_short C 2 H 0.5245 0.000 7.500
+symfunction_short C 2 H 0.6400 0.000 7.500
+symfunction_short C 2 H 0.6473 0.000 7.500
+symfunction_short C 2 H 0.7810 0.000 7.500
+symfunction_short C 2 H 0.8505 2.855 7.500
+symfunction_short C 2 H 0.8734 0.000 7.500
+symfunction_short C 2 H 0.9187 6.457 7.500
+symfunction_short C 2 H 0.9530 0.000 7.500
+symfunction_short C 2 H 10.0924 1.948 7.500
+symfunction_short C 2 H 10.3905 0.000 7.500
+symfunction_short C 2 H 1.1630 0.000 7.500
+symfunction_short C 2 H 1.1785 0.000 7.500
+symfunction_short C 2 H 11.8819 2.772 7.500
+symfunction_short C 2 H 1.2396 5.559 7.500
+symfunction_short C 2 H 12.6794 0.000 7.500
+symfunction_short C 2 H 13.6175 1.677 7.500
+symfunction_short C 2 H 1.4191 0.000 7.500
+symfunction_short C 2 H 14.4993 2.509 7.500
+symfunction_short C 2 H 15.4725 0.000 7.500
+symfunction_short C 2 H 1.5901 0.000 7.500
+symfunction_short C 2 H 1.6191 2.070 7.500
+symfunction_short C 2 H 1.6725 4.785 7.500
+symfunction_short C 2 H 1.7318 0.000 7.500
+symfunction_short C 2 H 17.6933 2.271 7.500
+symfunction_short C 2 H 18.3739 1.444 7.500
+symfunction_short C 2 H 18.8808 0.000 7.500
+symfunction_short C 2 H 1.9803 6.789 7.500
+symfunction_short C 2 H 2.1132 0.000 7.500
+symfunction_short C 2 H 2.1455 0.000 7.500
+symfunction_short C 2 H 21.5909 2.056 7.500
+symfunction_short C 2 H 2.2567 4.120 7.500
+symfunction_short C 2 H 23.0400 0.000 7.500
+symfunction_short C 2 H 2.4166 6.146 7.500
+symfunction_short C 2 H 24.7916 1.243 7.500
+symfunction_short C 2 H 2.5787 0.000 7.500
+symfunction_short C 2 H 26.3470 1.861 7.500
+symfunction_short C 2 H 2.8949 0.000 7.500
+symfunction_short C 2 H 2.9489 5.564 7.500
+symfunction_short C 2 H 3.0450 3.547 7.500
+symfunction_short C 2 H 3.0823 1.500 7.500
+symfunction_short C 2 H 3.1468 0.000 7.500
+symfunction_short C 2 H 32.1509 1.685 7.500
+symfunction_short C 2 H 33.4508 1.070 7.500
+symfunction_short C 2 H 3.5985 5.037 7.500
+symfunction_short C 2 H 3.8400 0.000 7.500
+symfunction_short C 2 H 3.9060 0.000 7.500
+symfunction_short C 2 H 39.2332 1.525 7.500
+symfunction_short C 2 H 4.1085 3.053 7.500
+symfunction_short C 2 H 4.3912 4.559 7.500
+symfunction_short C 2 H 45.1347 0.921 7.500
+symfunction_short C 2 H 4.6859 0.000 7.500
+symfunction_short C 2 H 47.8757 1.381 7.500
+symfunction_short C 2 H 5.2703 0.000 7.500
+symfunction_short C 2 H 5.3585 4.127 7.500
+symfunction_short C 2 H 5.5436 2.628 7.500
+symfunction_short C 2 H 5.7181 0.000 7.500
+symfunction_short C 2 H 6.5389 3.736 7.500
+symfunction_short C 2 H 6.9777 0.000 7.500
+symfunction_short C 2 H 7.1111 0.000 7.500
+symfunction_short C 2 H 7.4798 2.263 7.500
+symfunction_short C 2 H 7.9793 3.382 7.500
+symfunction_short C 2 H 8.5148 0.000 7.500
+symfunction_short C 2 H 9.7370 3.062 7.500
+symfunction_short C 3 H H 0.0178  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0178  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0178  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0178  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0178 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0217  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0217 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0217  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0217 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0217  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0217 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0217  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0217 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0240  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0240 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0240  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0240 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0240  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0240 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0265  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0265 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0265  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0265 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0265  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0265 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0265  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0265 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0323  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0323 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0323  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0323 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0323  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0323 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0323  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0323 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0324  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0324 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0324  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0324 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0324  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0324 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0338  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0338 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0338  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0338 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0394  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0394 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0394  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0394 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0394  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0394 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0394  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0394 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0437  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0437 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0437  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0437 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0437  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0437 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0481  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0481 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0481  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0481 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0481  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0481 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0481  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0481 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0587  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0587 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0587  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0587 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0587  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0587 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0587  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0587 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0589  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0589 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0589  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0589 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0589  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0589 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0644  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0644 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0644  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0644 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0716  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0716 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0716  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0716 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0716  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0716 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0716  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0716 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.0795  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0795 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0795  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0795 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0795  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0795 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0874  1.000 1.000 7.500
+symfunction_short C 3 H H 0.0874 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.0874  1.000 2.000 7.500
+symfunction_short C 3 H H 0.0874 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.0874  1.000 4.000 7.500
+symfunction_short C 3 H H 0.0874 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.0874  1.000 8.000 7.500
+symfunction_short C 3 H H 0.0874 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.1067  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1067 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1067  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1067 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1067  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1067 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1067  1.000 8.000 7.500
+symfunction_short C 3 H H 0.1067 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.1073  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1073 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1073  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1073 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1073  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1073 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1226  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1226 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1226  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1226 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1302  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1302 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1302  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1302 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1302  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1302 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1302  1.000 8.000 7.500
+symfunction_short C 3 H H 0.1302 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.1447  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1447 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1447  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1447 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1447  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1447 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1588  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1588 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1588  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1588 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1588  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1588 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1588  1.000 8.000 7.500
+symfunction_short C 3 H H 0.1588 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.1938  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1938 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1938  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1938 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1938  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1938 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.1938  1.000 8.000 7.500
+symfunction_short C 3 H H 0.1938 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.1953  1.000 1.000 7.500
+symfunction_short C 3 H H 0.1953 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.1953  1.000 2.000 7.500
+symfunction_short C 3 H H 0.1953 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.1953  1.000 4.000 7.500
+symfunction_short C 3 H H 0.1953 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2335  1.000 1.000 7.500
+symfunction_short C 3 H H 0.2335 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.2335  1.000 4.000 7.500
+symfunction_short C 3 H H 0.2335 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2365  1.000 1.000 7.500
+symfunction_short C 3 H H 0.2365 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.2365  1.000 2.000 7.500
+symfunction_short C 3 H H 0.2365 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.2365  1.000 4.000 7.500
+symfunction_short C 3 H H 0.2365 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2365  1.000 8.000 7.500
+symfunction_short C 3 H H 0.2365 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.2635  1.000 1.000 7.500
+symfunction_short C 3 H H 0.2635 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.2635  1.000 2.000 7.500
+symfunction_short C 3 H H 0.2635 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.2635  1.000 4.000 7.500
+symfunction_short C 3 H H 0.2635 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2886  1.000 1.000 7.500
+symfunction_short C 3 H H 0.2886 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.2886  1.000 2.000 7.500
+symfunction_short C 3 H H 0.2886 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.2886  1.000 4.000 7.500
+symfunction_short C 3 H H 0.2886 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.2886  1.000 8.000 7.500
+symfunction_short C 3 H H 0.2886 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.3522  1.000 1.000 7.500
+symfunction_short C 3 H H 0.3522 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.3522  1.000 2.000 7.500
+symfunction_short C 3 H H 0.3522 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.3522  1.000 4.000 7.500
+symfunction_short C 3 H H 0.3522 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.3522  1.000 8.000 7.500
+symfunction_short C 3 H H 0.3522 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.3556  1.000 1.000 7.500
+symfunction_short C 3 H H 0.3556 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.3556  1.000 2.000 7.500
+symfunction_short C 3 H H 0.3556 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.3556  1.000 4.000 7.500
+symfunction_short C 3 H H 0.3556 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.4298  1.000 1.000 7.500
+symfunction_short C 3 H H 0.4298 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.4298  1.000 2.000 7.500
+symfunction_short C 3 H H 0.4298 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.4298  1.000 4.000 7.500
+symfunction_short C 3 H H 0.4298 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.4298  1.000 8.000 7.500
+symfunction_short C 3 H H 0.4298 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.4444  1.000 1.000 7.500
+symfunction_short C 3 H H 0.4444 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.4444  1.000 4.000 7.500
+symfunction_short C 3 H H 0.4444 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.4797  1.000 1.000 7.500
+symfunction_short C 3 H H 0.4797 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.4797  1.000 2.000 7.500
+symfunction_short C 3 H H 0.4797 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.4797  1.000 4.000 7.500
+symfunction_short C 3 H H 0.4797 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.5245  1.000 1.000 7.500
+symfunction_short C 3 H H 0.5245 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.5245  1.000 2.000 7.500
+symfunction_short C 3 H H 0.5245 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.5245  1.000 4.000 7.500
+symfunction_short C 3 H H 0.5245 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.5245  1.000 8.000 7.500
+symfunction_short C 3 H H 0.5245 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.6400  1.000 1.000 7.500
+symfunction_short C 3 H H 0.6400 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.6400  1.000 2.000 7.500
+symfunction_short C 3 H H 0.6400 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.6400  1.000 4.000 7.500
+symfunction_short C 3 H H 0.6400 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.6400  1.000 8.000 7.500
+symfunction_short C 3 H H 0.6400 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.6473  1.000 1.000 7.500
+symfunction_short C 3 H H 0.6473 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.6473  1.000 2.000 7.500
+symfunction_short C 3 H H 0.6473 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.6473  1.000 4.000 7.500
+symfunction_short C 3 H H 0.6473 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.7810  1.000 1.000 7.500
+symfunction_short C 3 H H 0.7810 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.7810  1.000 2.000 7.500
+symfunction_short C 3 H H 0.7810 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.7810  1.000 4.000 7.500
+symfunction_short C 3 H H 0.7810 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.7810  1.000 8.000 7.500
+symfunction_short C 3 H H 0.7810 -1.000 8.000 7.500
+symfunction_short C 3 H H 0.8734  1.000 1.000 7.500
+symfunction_short C 3 H H 0.8734 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.8734  1.000 2.000 7.500
+symfunction_short C 3 H H 0.8734 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.8734  1.000 4.000 7.500
+symfunction_short C 3 H H 0.8734 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.9530  1.000 1.000 7.500
+symfunction_short C 3 H H 0.9530 -1.000 1.000 7.500
+symfunction_short C 3 H H 0.9530  1.000 2.000 7.500
+symfunction_short C 3 H H 0.9530 -1.000 2.000 7.500
+symfunction_short C 3 H H 0.9530  1.000 4.000 7.500
+symfunction_short C 3 H H 0.9530 -1.000 4.000 7.500
+symfunction_short C 3 H H 0.9530  1.000 8.000 7.500
+symfunction_short C 3 H H 0.9530 -1.000 8.000 7.500
+symfunction_short C 3 H H 10.3905  1.000 1.000 7.500
+symfunction_short C 3 H H 10.3905 -1.000 1.000 7.500
+symfunction_short C 3 H H 10.3905  1.000 2.000 7.500
+symfunction_short C 3 H H 10.3905 -1.000 2.000 7.500
+symfunction_short C 3 H H 10.3905  1.000 4.000 7.500
+symfunction_short C 3 H H 10.3905 -1.000 4.000 7.500
+symfunction_short C 3 H H 10.3905  1.000 8.000 7.500
+symfunction_short C 3 H H 10.3905 -1.000 8.000 7.500
+symfunction_short C 3 H H 1.1630  1.000 1.000 7.500
+symfunction_short C 3 H H 1.1630 -1.000 1.000 7.500
+symfunction_short C 3 H H 1.1630  1.000 2.000 7.500
+symfunction_short C 3 H H 1.1630 -1.000 2.000 7.500
+symfunction_short C 3 H H 1.1630  1.000 4.000 7.500
+symfunction_short C 3 H H 1.1630 -1.000 4.000 7.500
+symfunction_short C 3 H H 1.1630  1.000 8.000 7.500
+symfunction_short C 3 H H 1.1630 -1.000 8.000 7.500
+symfunction_short C 3 H H 1.1785  1.000 1.000 7.500
+symfunction_short C 3 H H 1.1785 -1.000 1.000 7.500
+symfunction_short C 3 H H 1.1785  1.000 2.000 7.500
+symfunction_short C 3 H H 1.1785 -1.000 2.000 7.500
+symfunction_short C 3 H H 1.1785  1.000 4.000 7.500
+symfunction_short C 3 H H 1.1785 -1.000 4.000 7.500
+symfunction_short C 3 H H 12.6794  1.000 1.000 7.500
+symfunction_short C 3 H H 12.6794 -1.000 1.000 7.500
+symfunction_short C 3 H H 12.6794  1.000 2.000 7.500
+symfunction_short C 3 H H 12.6794 -1.000 2.000 7.500
+symfunction_short C 3 H H 12.6794  1.000 4.000 7.500
+symfunction_short C 3 H H 12.6794 -1.000 4.000 7.500
+symfunction_short C 3 H H 12.6794  1.000 8.000 7.500
+symfunction_short C 3 H H 12.6794 -1.000 8.000 7.500
+symfunction_short C 3 H H 1.4191  1.000 1.000 7.500
+symfunction_short C 3 H H 1.4191 -1.000 1.000 7.500
+symfunction_short C 3 H H 1.4191  1.000 2.000 7.500
+symfunction_short C 3 H H 1.4191 -1.000 2.000 7.500
+symfunction_short C 3 H H 1.4191  1.000 4.000 7.500
+symfunction_short C 3 H H 1.4191 -1.000 4.000 7.500
+symfunction_short C 3 H H 1.4191  1.000 8.000 7.500
+symfunction_short C 3 H H 1.4191 -1.000 8.000 7.500
+symfunction_short C 3 H H 15.4725  1.000 1.000 7.500
+symfunction_short C 3 H H 15.4725 -1.000 1.000 7.500
+symfunction_short C 3 H H 15.4725  1.000 2.000 7.500
+symfunction_short C 3 H H 15.4725 -1.000 2.000 7.500
+symfunction_short C 3 H H 15.4725  1.000 4.000 7.500
+symfunction_short C 3 H H 15.4725 -1.000 4.000 7.500
+symfunction_short C 3 H H 15.4725  1.000 8.000 7.500
+symfunction_short C 3 H H 15.4725 -1.000 8.000 7.500
+symfunction_short C 3 H H 1.5901  1.000 1.000 7.500
+symfunction_short C 3 H H 1.5901 -1.000 1.000 7.500
+symfunction_short C 3 H H 1.5901  1.000 2.000 7.500
+symfunction_short C 3 H H 1.5901 -1.000 2.000 7.500
+symfunction_short C 3 H H 1.5901  1.000 4.000 7.500
+symfunction_short C 3 H H 1.5901 -1.000 4.000 7.500
+symfunction_short C 3 H H 1.7318  1.000 1.000 7.500
+symfunction_short C 3 H H 1.7318 -1.000 1.000 7.500
+symfunction_short C 3 H H 1.7318  1.000 2.000 7.500
+symfunction_short C 3 H H 1.7318 -1.000 2.000 7.500
+symfunction_short C 3 H H 1.7318  1.000 4.000 7.500
+symfunction_short C 3 H H 1.7318 -1.000 4.000 7.500
+symfunction_short C 3 H H 1.7318  1.000 8.000 7.500
+symfunction_short C 3 H H 1.7318 -1.000 8.000 7.500
+symfunction_short C 3 H H 18.8808  1.000 1.000 7.500
+symfunction_short C 3 H H 18.8808 -1.000 1.000 7.500
+symfunction_short C 3 H H 18.8808  1.000 2.000 7.500
+symfunction_short C 3 H H 18.8808 -1.000 2.000 7.500
+symfunction_short C 3 H H 18.8808  1.000 4.000 7.500
+symfunction_short C 3 H H 18.8808 -1.000 4.000 7.500
+symfunction_short C 3 H H 18.8808  1.000 8.000 7.500
+symfunction_short C 3 H H 18.8808 -1.000 8.000 7.500
+symfunction_short C 3 H H 2.1132  1.000 1.000 7.500
+symfunction_short C 3 H H 2.1132 -1.000 1.000 7.500
+symfunction_short C 3 H H 2.1132  1.000 2.000 7.500
+symfunction_short C 3 H H 2.1132 -1.000 2.000 7.500
+symfunction_short C 3 H H 2.1132  1.000 4.000 7.500
+symfunction_short C 3 H H 2.1132 -1.000 4.000 7.500
+symfunction_short C 3 H H 2.1132  1.000 8.000 7.500
+symfunction_short C 3 H H 2.1132 -1.000 8.000 7.500
+symfunction_short C 3 H H 2.1455  1.000 1.000 7.500
+symfunction_short C 3 H H 2.1455 -1.000 1.000 7.500
+symfunction_short C 3 H H 2.1455  1.000 2.000 7.500
+symfunction_short C 3 H H 2.1455 -1.000 2.000 7.500
+symfunction_short C 3 H H 2.1455  1.000 4.000 7.500
+symfunction_short C 3 H H 2.1455 -1.000 4.000 7.500
+symfunction_short C 3 H H 23.0400  1.000 1.000 7.500
+symfunction_short C 3 H H 23.0400 -1.000 1.000 7.500
+symfunction_short C 3 H H 23.0400  1.000 2.000 7.500
+symfunction_short C 3 H H 23.0400 -1.000 2.000 7.500
+symfunction_short C 3 H H 23.0400  1.000 4.000 7.500
+symfunction_short C 3 H H 23.0400 -1.000 4.000 7.500
+symfunction_short C 3 H H 23.0400  1.000 8.000 7.500
+symfunction_short C 3 H H 23.0400 -1.000 8.000 7.500
+symfunction_short C 3 H H 2.5787  1.000 1.000 7.500
+symfunction_short C 3 H H 2.5787 -1.000 1.000 7.500
+symfunction_short C 3 H H 2.5787  1.000 2.000 7.500
+symfunction_short C 3 H H 2.5787 -1.000 2.000 7.500
+symfunction_short C 3 H H 2.5787  1.000 4.000 7.500
+symfunction_short C 3 H H 2.5787 -1.000 4.000 7.500
+symfunction_short C 3 H H 2.5787  1.000 8.000 7.500
+symfunction_short C 3 H H 2.5787 -1.000 8.000 7.500
+symfunction_short C 3 H H 2.8949  1.000 1.000 7.500
+symfunction_short C 3 H H 2.8949 -1.000 1.000 7.500
+symfunction_short C 3 H H 2.8949  1.000 2.000 7.500
+symfunction_short C 3 H H 2.8949 -1.000 2.000 7.500
+symfunction_short C 3 H H 2.8949  1.000 4.000 7.500
+symfunction_short C 3 H H 2.8949 -1.000 4.000 7.500
+symfunction_short C 3 H H 3.1468  1.000 1.000 7.500
+symfunction_short C 3 H H 3.1468 -1.000 1.000 7.500
+symfunction_short C 3 H H 3.1468  1.000 2.000 7.500
+symfunction_short C 3 H H 3.1468 -1.000 2.000 7.500
+symfunction_short C 3 H H 3.1468  1.000 4.000 7.500
+symfunction_short C 3 H H 3.1468 -1.000 4.000 7.500
+symfunction_short C 3 H H 3.1468  1.000 8.000 7.500
+symfunction_short C 3 H H 3.1468 -1.000 8.000 7.500
+symfunction_short C 3 H H 3.8400  1.000 1.000 7.500
+symfunction_short C 3 H H 3.8400 -1.000 1.000 7.500
+symfunction_short C 3 H H 3.8400  1.000 2.000 7.500
+symfunction_short C 3 H H 3.8400 -1.000 2.000 7.500
+symfunction_short C 3 H H 3.8400  1.000 4.000 7.500
+symfunction_short C 3 H H 3.8400 -1.000 4.000 7.500
+symfunction_short C 3 H H 3.8400  1.000 8.000 7.500
+symfunction_short C 3 H H 3.8400 -1.000 8.000 7.500
+symfunction_short C 3 H H 3.9060  1.000 1.000 7.500
+symfunction_short C 3 H H 3.9060 -1.000 1.000 7.500
+symfunction_short C 3 H H 3.9060  1.000 2.000 7.500
+symfunction_short C 3 H H 3.9060 -1.000 2.000 7.500
+symfunction_short C 3 H H 3.9060  1.000 4.000 7.500
+symfunction_short C 3 H H 3.9060 -1.000 4.000 7.500
+symfunction_short C 3 H H 4.6859  1.000 1.000 7.500
+symfunction_short C 3 H H 4.6859 -1.000 1.000 7.500
+symfunction_short C 3 H H 4.6859  1.000 2.000 7.500
+symfunction_short C 3 H H 4.6859 -1.000 2.000 7.500
+symfunction_short C 3 H H 4.6859  1.000 4.000 7.500
+symfunction_short C 3 H H 4.6859 -1.000 4.000 7.500
+symfunction_short C 3 H H 4.6859  1.000 8.000 7.500
+symfunction_short C 3 H H 4.6859 -1.000 8.000 7.500
+symfunction_short C 3 H H 5.2703  1.000 1.000 7.500
+symfunction_short C 3 H H 5.2703 -1.000 1.000 7.500
+symfunction_short C 3 H H 5.2703  1.000 2.000 7.500
+symfunction_short C 3 H H 5.2703 -1.000 2.000 7.500
+symfunction_short C 3 H H 5.2703  1.000 4.000 7.500
+symfunction_short C 3 H H 5.2703 -1.000 4.000 7.500
+symfunction_short C 3 H H 5.7181  1.000 1.000 7.500
+symfunction_short C 3 H H 5.7181 -1.000 1.000 7.500
+symfunction_short C 3 H H 5.7181  1.000 2.000 7.500
+symfunction_short C 3 H H 5.7181 -1.000 2.000 7.500
+symfunction_short C 3 H H 5.7181  1.000 4.000 7.500
+symfunction_short C 3 H H 5.7181 -1.000 4.000 7.500
+symfunction_short C 3 H H 5.7181  1.000 8.000 7.500
+symfunction_short C 3 H H 5.7181 -1.000 8.000 7.500
+symfunction_short C 3 H H 6.9777  1.000 1.000 7.500
+symfunction_short C 3 H H 6.9777 -1.000 1.000 7.500
+symfunction_short C 3 H H 6.9777  1.000 2.000 7.500
+symfunction_short C 3 H H 6.9777 -1.000 2.000 7.500
+symfunction_short C 3 H H 6.9777  1.000 4.000 7.500
+symfunction_short C 3 H H 6.9777 -1.000 4.000 7.500
+symfunction_short C 3 H H 6.9777  1.000 8.000 7.500
+symfunction_short C 3 H H 6.9777 -1.000 8.000 7.500
+symfunction_short C 3 H H 7.1111  1.000 1.000 7.500
+symfunction_short C 3 H H 7.1111 -1.000 1.000 7.500
+symfunction_short C 3 H H 7.1111  1.000 2.000 7.500
+symfunction_short C 3 H H 7.1111 -1.000 2.000 7.500
+symfunction_short C 3 H H 7.1111  1.000 4.000 7.500
+symfunction_short C 3 H H 7.1111 -1.000 4.000 7.500
+symfunction_short C 3 H H 8.5148  1.000 1.000 7.500
+symfunction_short C 3 H H 8.5148 -1.000 1.000 7.500
+symfunction_short C 3 H H 8.5148  1.000 2.000 7.500
+symfunction_short C 3 H H 8.5148 -1.000 2.000 7.500
+symfunction_short C 3 H H 8.5148  1.000 4.000 7.500
+symfunction_short C 3 H H 8.5148 -1.000 4.000 7.500
+symfunction_short C 3 H H 8.5148  1.000 8.000 7.500
+symfunction_short C 3 H H 8.5148 -1.000 8.000 7.500

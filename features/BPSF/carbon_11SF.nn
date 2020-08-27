@@ -1,0 +1,12 @@
+# n2p2/RuNNer input file snippet
+symfunction_short C 2 C 0.0178 0.000 7.500
+symfunction_short C 2 C 0.0356 0.000 7.500
+symfunction_short C 2 C 0.0711 0.000 7.500
+symfunction_short C 2 C 0.2072 5.303 7.500
+symfunction_short C 2 C 0.4145 3.750 7.500
+symfunction_short C 3 C C 0.0178  1.000 1.000 7.500
+symfunction_short C 3 C C 0.0178 -1.000 1.000 7.500
+symfunction_short C 3 C C 0.0356  1.000 1.000 7.500
+symfunction_short C 3 C C 0.0356 -1.000 1.000 7.500
+symfunction_short C 3 C C 0.0711  1.000 1.000 7.500
+symfunction_short C 3 C C 0.0711 -1.000 1.000 7.500

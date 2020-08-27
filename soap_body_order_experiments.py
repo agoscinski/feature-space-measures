@@ -24,8 +24,8 @@ regularizer = "CV 2 fold"
 
 ## Constant hyperparameters
 cutoff = 4
-max_radial = 6
-max_angular = 4
+max_radial = 4
+max_angular = 2
 sigma = 0.5
 cutoff_smooth_width = 0.5
 normalize = False
@@ -58,11 +58,16 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
  
         } for soap_type in soap_types]
         
+        if dataset_name == "selection-10k.extxyz":
+            filename = "methane-allc.npy"
+        elif dataset_name == "C-VII-pp-wrapped.xyz":
+            filename = "carbon-first.npy"
         nice_feature_hypers = {
-            "feature_type": "precomputed_NICE",
+            "feature_type": "precomputed",
             "feature_parameters": {
-                "file_root": "data/nice",
-                "dataset": dataset_name,
+                "feature_name": "NICE",
+                "filename": filename,
+                "filetype": "npy"
             }
         }
         features_hypers.append(nice_feature_hypers)

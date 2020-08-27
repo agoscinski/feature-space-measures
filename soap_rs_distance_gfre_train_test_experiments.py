@@ -73,8 +73,8 @@ features_hypers1.append({
 features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
-            "file_root": "data/",
-            "dataset": "pulled_hydrogen_distance",
+            "feature_name": "hydrogen_distance",
+            "filetype": "frame_info"
         }} for _ in range(len(features_hypers1))]
 
 hash_values = []

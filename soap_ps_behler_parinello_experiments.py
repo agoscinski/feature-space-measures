@@ -34,7 +34,7 @@ bracket_hash_values = ""
 experiment_ids = []
 for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
     if dataset_name == "selection-10k.extxyz":
-        precomputed_name = 'methane'
+        dataset_shorthand = "methane"
         BP_sizes = [35, 191, 534, 1147]
         ## max_radials_angulars sizes are 36, 192, 540, 1152
         max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5)]
@@ -42,7 +42,7 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
         # max_radials_angulars sizes are 36, 192, 540, 1152
         #max_radials_angulars = [(8, 5)]
     elif dataset_name == "C-VII-pp-wrapped.xyz":
-        precomputed_name = 'carbon'
+        dataset_shorthand = "carbon"
         BP_sizes = [11, 61, 181, 377, 699]
         max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5), (10, 6)]
 
@@ -89,13 +89,14 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
     #    },
     #    #"feature_selection_parameters" : {"nb_features": nb_features}
     #} for max_radial, max_angular in max_radials_angulars]
+    
 
     features_hypers2 = [{
-        "feature_type": "precomputed_BPSF",
+        "feature_type": "precomputed",
         "feature_parameters": {
-            "file_root": "features/BPSF",
-            "dataset": precomputed_name,
-            "SF_count": count,
+            "feature_name": "BPSF",
+            "filename": f"{dataset_shorthand}_{count}SF",
+            "filetype": "txt"
         },
         #"hilbert_space_parameters": {
         #    "distance_parameters": {"distance_type": "euclidean"},
