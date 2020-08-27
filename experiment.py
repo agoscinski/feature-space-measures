@@ -41,11 +41,21 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
     double: FRE(X_{F},X_{F'}) scalar value
     double: FRD(X_{F},X_{F'}) scalar value
     """
-    np.random.seed(seed)
-    idx = np.arange(nb_samples)
-    np.random.shuffle(idx)
-    split_id = int(len(idx) * train_ratio)
-    return idx[:split_id], idx[split_id:]
+    if type(train_ratio) == str:
+        train_ratio_strings = train_ratio.split(" ")
+        if train_ratio_strings[0] == "equispaced":
+            shift = int(train_ratio_strings[1])
+            idx = np.arange(nb_samples)
+            print(idx[::shift].shape)
+            return idx[::shift], idx
+        else:
+            raise ValueError(f"train_ration {train_ratio} is not known.")
+    else:
+        np.random.seed(seed)
+        idx = np.arange(nb_samples)
+        np.random.shuffle(idx)
+        split_id = int(len(idx) * train_ratio)
+        return idx[:split_id], idx[split_id:]
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
@@ -116,7 +126,7 @@ def gfr_pairwise_experiment(
         store_results("gfre_test_mat-", experiment_id, FRE_test_matrix)
         store_results("gfrd_train_test_mat-", experiment_id, FRD_matrix)
         print(f"Store results finished. Hash value {experiment_id}", flush=True)
-        return experiment_id
+        return experiment_id, FRE_train_matrix
     else:
         FRE_matrix, FRD_matrix = two_split_reconstruction_measure_pairwise(
                     feature_spaces1, feature_spaces2, noise_removal=noise_removal, regularizer=regularizer, one_direction=one_direction, compute_distortion=compute_distortion)
@@ -264,8 +274,8 @@ def store_metadata(
         # Methane
         # datasets "selection-10k.extxyz" -  random-methane
         # datasets "manif-minus.extxyz" + "manif-plus.extxyz" -  degenerated manifold
-        # datasets "dragged_methane.extxyz" - methane with one hydrogen dragged away from the center
-        # Carbon
+        # datasets "pulled-1H-methane-step_size=PLACE_HOLDER-range=PLACE_HOLDER-seed=PLACE_HOLDER.extxyz" - methane with one hydrogen pulled away from the center
+        # Carbon structures
         # datasets "C-VII-pp-wrapped.xyz" -
         "dataset": dataset_name,
         # the hypers of targeted features spaces for the experiment

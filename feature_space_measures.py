@@ -30,23 +30,10 @@ def regularizer_cv_folds(x1, x2, nb_folds):
     loss = [fold_test_error(reg) for reg in regularizers]
     min_idx = np.argmin(loss)
     x = regularizers[min_idx]
-    #print(loss)
-    #print(regularizers)
-    #print(x)
-    #import matplotlib.pyplot as plt
-    #plt.plot(np.log10(regularizers), loss)
-    #plt.show()
     return x
 
-def global_embed_cv(x1, x2):
-    #import matplotlib.pyplot as plt
-    #plt.imshow(x1)
-    #plt.colorbar()
-    #plt.show()
-    #plt.imshow(x2)
-    #plt.colorbar()
-    #plt.show()
-
+# old version, which only supports 2 fold, but is faster
+def regularizer_cv_folds_old(x1, x2):
     n = len(x1)
     # two-way split of the dataset
     x1a = x1[:n//2]; x1b = x1[n//2:]
@@ -80,27 +67,11 @@ def global_embed_cv(x1, x2):
         #print('loss', (loss_ab+loss_ba)/n, 'lthr', lthr, 'reg', np.exp(lthr)*2/(sa[0]+sb[0]))
         return (loss_ab+loss_ba)/n
     
-    #res = scipy.optimize.minimize_scalar(thresh_cv_loss, bracket = np.log(bounds), method='Bounded', bounds=np.log(bounds), options={'disp':True})
-    #x = res.x
-    #print("Automatically determined rcond: ", np.exp(res.x)*2/(sa[0]+sb[0]))
-    #print('computed reg', np.exp(res.x)*2/(sa[0]+sb[0]))
-    #import matplotlib.pyplot as plt
-    #plt.plot(np.arange(-11,0), [thresh_cv_loss(x) for x in np.arange(-11,0)])
-    #plt.show()
-    #range_logreg = np.arange(-14,0)
     range_logreg = np.linspace(-10,np.log(0.9),20)
     loss = [thresh_cv_loss(x) for x in range_logreg]
-    #print(loss)
-    #import matplotlib.pyplot as plt
-    #plt.plot(range_logreg, loss)
-    #plt.show()
     min_idx = np.argmin(loss)
     x = range_logreg[min_idx]
-    #print(x)
-    #import matplotlib.pyplot as plt
-    #plt.plot(range_logreg, loss)
-    #plt.show()
-    return np.exp(x)#* 2/(sa[0]+sb[0])
+    return np.exp(x)
 
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
@@ -151,13 +122,16 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #return np.array( [regs[i].coef_ for i in range(features2.shape[1])] ).T
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
-            regularizer = global_embed_cv(features1, features2)
+            regularizer = regularizer_cv_folds_old(features1, features2)
         else:
             regularizer_description = regularizer.split(" ")
             # to catch the "CV" cases and switch to default 2 folds
             nb_folds = int(regularizer_description[1]) if len(regularizer_description) > 1 else 2
             regularizer = regularizer_cv_folds(features1, features2, nb_folds)
+    print("regularizer",regularizer)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
+    #print("regularizer", regularizer)
+    #print("np.linalg.norm(W)",np.linalg.norm(W))
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W
@@ -187,24 +161,12 @@ def feature_space_reconstruction_measures(
     double: FRE(X_{F},X_{F'}) scalar value
     double: FRD(X_{F},X_{F'}) scalar value
     """
-    #import matplotlib.pyplot as plt
-    #fig, ax = plt.subplots(1,2)
-    #ax[0].imshow(features1[:,155:])
-    #im = ax[1].imshow(features2[:,155:])
-    #fig.colorbar(im)
-    #plt.show()
 
     if reconstruction_weights is None:
         if regularizer is np.nan:
             raise ValueError("If no reconstruction weights is given a regularizer has to be given.")
         features1 = standardize_features(features1)
         features2 = standardize_features(features2)
-        #import matplotlib.pyplot as plt
-        #fig, ax = plt.subplots(1,2)
-        #ax[0].imshow(features1[:,155:])
-        #im = ax[1].imshow(features2[:,155:])
-        #fig.colorbar(im)
-        #plt.show()
 
         reconstruction_weights = feature_space_reconstruction_weights(
             features1, features2, regularizer
@@ -218,17 +180,6 @@ def feature_space_reconstruction_measures(
         FRE = np.linalg.norm(
             features1.dot(reconstruction_weights) - features2
         ) / np.sqrt(n_test)
-        import matplotlib.pyplot as plt
-        #err =  np.linalg.norm(
-        #    features1.dot(reconstruction_weights) - features2, axis=1
-        #) / np.sqrt(n_test)
-        #plt.plot(err)
-        #plt.show()
-        #print(np.where(err>1))
-        #plt.plot(features2[:5].T)
-        #plt.show()
-        #plt.plot(features1.dot(reconstruction_weights)[:5].T)
-        #plt.show()
     elif reduce_error_dimension=="features":
         FRE = np.sqrt(
            np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
@@ -375,11 +326,6 @@ def two_split_reconstruction_measure_pairwise(
     for i in range(len(feature_spaces1)):
 
         features1_train, features2_train, features1_test, features2_test = feature_spaces1[i][0], feature_spaces2[i][0], feature_spaces1[i][1], feature_spaces2[i][1]
-        #import matplotlib.pyplot as plt
-        #plt.imshow(features1_train)
-        #plt.show()
-        #plt.imshow(features1_test)
-        #plt.show()
 
         reconstruction_weights = feature_space_reconstruction_weights(
             features1_train, features2_train, regularizer
