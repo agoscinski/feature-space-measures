@@ -1,103 +1,100 @@
-### SOAP CONVERGENCE
+### SOAP CONVERGENCE EXPERIMENTS
 
 # data for Fig. 1
 echo "\n##########################"
-echo "# max radial experiments #"
+echo "# radial convergence experiment #"
 echo "##########################\n"
-taskset -c 0 python soap_ps_max_radial_experiments.py --option
+taskset -c 0 python experiment_soap_max_radial.py --option
 
 # data for Fig. 1
 echo "\n###########################"
-echo "# max angular experiments #"
+echo "# angular convergence experiment #"
 echo "###########################\n"
-taskset -c 0 python soap_ps_max_angular_experiments.py --option
+taskset -c 0 python experiment_soap_max_angular.py --option
 
 # data for Fig. 1
 echo "\n###########################"
-echo "# radial bases experiments #"
+echo "# radial basis convergence experiment #"
 echo "###########################\n"
-taskset -c 0 python soap_ps_radial_basis_experiments.py --option
+taskset -c 0 python experiment_soap_radial_basis.py --option
 
-### SOAP DENSITY PLOTS
+### SOAP PARAMETERS COMPARISON EXPERIMENTS
 
 # data for Fig. 2
 echo "\n###########################"
-echo "# ps sigma experiments #"
+echo "# smearing sigma experiment #"
 echo "###########################\n"
-taskset -c 0 python soap_ps_sigma_experiments.py --option
+taskset -c 0 python experiment_soap_sigma.py --option
 
 # data for Fig. 2
 echo "\n###########################"
-echo "# radial scaling experiments #"
+echo "# radial scaling experiment #"
 echo "###########################\n"
-taskset -c 0 python soap_ps_radial_scaling_experiments.py --option
+taskset -c 0 python experiment_soap_radial_scaling.py --option
 
 # data for Fig. 2
 echo "\n###########################"
-echo "# radial scaling experiments #"
+echo "# cutoff experiment #"
 echo "###########################\n"
-taskset -c 0 python soap_ps_cutoff_experiments.py --option
+taskset -c 0 python experiment_soap_cutoff.py --option
 
-### SOAP BPSF
+### SOAP BPSF COMPARISON EXPERIMENTS
 
 # data for Fig. 3
 echo "\n##########################"
-echo "# behler parinello #"
+echo "# experiment_soap vs behler parinello comparison #"
 echo "##########################\n"
-taskset -c 0 python soap_ps_behler_parinello_experiments.py --option
+taskset -c 0 python experiment_soap_behler_parinello.py --option
 
 # data for Fig. 4
 echo "\n##########################"
-echo "# behler parinello fs #"
+echo "# experiment_soap vs behler parinello comparison with feature selection #"
 echo "##########################\n"
-taskset -c 0 python soap_ps_behler_parinello_self_feature_selection_experiments.py --option
+taskset -c 0 python experiment_soap_behler_parinello_self_feature_selection.py --option
 
-### SOAP BODY ORDER
+### SYMMETRIZED ATOM DENSITY BODY ORDER EXPERIMENTS
 
 # data for Fig. 5
 echo "\n###########################"
-echo "# body order gfrm experiments #"
+echo "# body order gfre experiment on methane dataset #"
 echo "###########################\n"
-taskset -c 0 python soap_body_order_experiments.py --option
+taskset -c 0 python experiment_body_order_gfre_methane.py --option
 
 # data for Fig. 6
-echo "\n#################"
-echo "# body order lfre #"
-echo "###################\n"
-taskset -c 0 python soap_body_order_lfre_experiments.py --option
-
-
-### DEGENERATED MANIFOLD 
+echo "###########################\n"
+echo "# body order lfre experiment on methane dataset #"
+echo "###########################\n"
+taskset -c 0 python experiment_body_order_lfre_methane.py --option
 
 # data for Fig. 7
 echo "\n###########################"
-echo "# lfre #"
+echo "# body order lfre experiment on degenerate manifol dataset #"
 echo "###########################\n"
-taskset -c 0 python soap_degenerated_manifold_lfre_experiments.py --option
+taskset -c 0 python experiment_body_order_lfre_degenerated_manifold.py --option
 
 
-### RBF KERNEL
+### RBF KERNEL EXPERIMENTS
 
 # data for Fig. 8
 echo "\n#################"
-echo "# body order rbf pair plot #"
+echo "# body order rbf gamma density #"
 echo "###################\n"
-taskset -c 0 python soap_ps_kernel_gammas_experiments.py --option
+taskset -c 0 python experiment_body_order_rbf_kernel_same_body_order.py --option
 
 # data for Fig. 9
 echo "\n#################"
-echo "# body order rbf gamma plot #"
+echo "# body order rbf gamma linear #"
 echo "###################\n"
-taskset -c 0 python soap_ps_kernel_gammas_body_order_experiments.py --option
+taskset -c 0 python experiment_body_order_rbf_kernel_higher_body_order.py --option
 
 
-### WASSERSTEIN DISTANCE
+### DISTANCE EXPERIMENTS
 
 # data for Fig. 10
 echo "\n###########################"
-echo "# samplewise error plot#"
+echo "# pointwise gfre wasserstein vs euclidean comparison on displaced methane #"
 echo "###########################\n"
-taskset -c 0 python soap_rs_distance_gfre_train_test_experiments.py --option
+taskset -c 0 python experiment_pair_correlation_distance_pointwise_gfre.py --option
 
 # data for Fig. 11
 echo "\n###########################"
@@ -107,6 +104,6 @@ taskset -c 0 python compute_density_mat.py --option
 
 # data for Fig. 12
 echo "\n###########################"
-echo "# gfrm distance comparison #"
+echo "# gfre wasserstein vs euclidean comparison on carbon dataset #"
 echo "###########################\n"
-taskset -c 0 python soap_rs_distance_gfrm_pair_experiments.py --option
+taskset -c 0 python experiment_pair_correlation_distance_gfre_carbon.py --option

@@ -24,8 +24,8 @@ regularizer = "CV 2 fold"
 
 ## Constant hyperparameters
 cutoff = 4
-max_radial = 4
-max_angular = 2
+max_radial = 6
+max_angular = 4
 sigma = 0.5
 cutoff_smooth_width = 0.5
 normalize = False
@@ -50,12 +50,6 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
                 "cutoff_smooth_width": cutoff_smooth_width,
                 "normalize": normalize
             },
-            #"hilbert_space_parameters": {
-            #    "distance_parameters": {"distance_type": "euclidean"},
-            #    #"kernel_parameters": {"kernel_type": "center"}
-            #    "kernel_parameters": {"kernel_type": "rbf", "gamma": 1}
-            #}
- 
         } for soap_type in soap_types]
         
         if dataset_name == "selection-10k.extxyz":

@@ -70,26 +70,6 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
         #"feature_selection_parameters" : {"nb_features": nb_features}
     } for max_radial, max_angular in max_radials_angulars]
 
-    #features_hypers2 = [{
-    #    "feature_type": "soap",
-    #    "feature_parameters": {
-    #        "soap_type": "PowerSpectrum",
-    #        "radial_basis": "GTO",
-    #        "interaction_cutoff": cutoff,
-    #        "max_radial": max_radial,
-    #        "max_angular": max_angular,
-    #        "gaussian_sigma_constant": sigma,
-    #        "gaussian_sigma_type": "Constant",
-    #        "cutoff_smooth_width": cutoff_smooth_width,
-    #        "normalize": normalize
-    #    },
-    #    "hilbert_space_parameters": {
-    #        "distance_parameters": {"distance_type": "euclidean"},
-    #        "kernel_parameters": {"kernel_type": "rbf", "gamma": 15}
-    #    },
-    #    #"feature_selection_parameters" : {"nb_features": nb_features}
-    #} for max_radial, max_angular in max_radials_angulars]
-    
 
     features_hypers2 = [{
         "feature_type": "precomputed",
