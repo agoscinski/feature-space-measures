@@ -68,9 +68,9 @@ taskset -c 0 python experiment_body_order_lfre_methane.py --option
 
 # data for Fig. 7
 echo "\n###########################"
-echo "# body order lfre experiment on degenerate manifol dataset #"
+echo "# body order lfre experiment on degenerate manifold dataset #"
 echo "###########################\n"
-taskset -c 0 python experiment_body_order_lfre_degenerated_manifold.py --option
+taskset -c 0 python experiment_body_order_lfre_degenerate_manifold.py --option
 
 
 ### RBF KERNEL EXPERIMENTS
