@@ -272,11 +272,11 @@ def store_metadata(
 ):
     metadata = {
         # Methane
-        # datasets "selection-10k.extxyz" -  random-methane
-        # datasets "manif-minus.extxyz" + "manif-plus.extxyz" -  degenerated manifold
-        # datasets "pulled-1H-methane-step_size=PLACE_HOLDER-range=PLACE_HOLDER-seed=PLACE_HOLDER.extxyz" - methane with one hydrogen pulled away from the center
+        # datasets `selection-10k.extxyz` -  random methane
+        # datasets `manif-minus-plus.extxyz` -  degenerate manifold
+        # datasets `displaced-methane-step_size=PLACE_HOLDER-range=PLACE_HOLDER-seed=PLACE_HOLDER.extxyz` - displaced methane
         # Carbon structures
-        # datasets "C-VII-pp-wrapped.xyz" -
+        # datasets "C-VII-pp-wrapped.xyz" - carbon dataset
         "dataset": dataset_name,
         # the hypers of targeted features spaces for the experiment
         "features_hypers": features_hypers,

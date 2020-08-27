@@ -56,7 +56,7 @@ def plot(densitymat, title, file_name):
     plt.savefig(file_name+".pdf", bbox_inches='tight')
     plt.show()
 
-frames = read_dataset("pulled-1H-methane-step_size=0.01-range=[0.5,4.5]-seed=None.extxyz", "")
+frames = read_dataset("displaced-methane-step_size=0.01-range=[0.5,4.5]-seed=None.extxyz", "")
 nb_samples = 401
 train_idx = np.arange(nb_samples)
 args = np.argsort( [frame.info["hydrogen_distance"] for frame in frames] )

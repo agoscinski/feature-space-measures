@@ -3,7 +3,7 @@
 from experiment import gfr_pairwise_experiment
 import numpy as np
 
-dataset_name = "pulled-1H-methane-step_size=0.05-range=[0.5,4.5]-seed=None.extxyz"
+dataset_name = "displaced-methane-step_size=0.05-range=[0.5,4.5]-seed=None.extxyz"
 two_split = True
 if two_split:
     seed = 0x5f3759df

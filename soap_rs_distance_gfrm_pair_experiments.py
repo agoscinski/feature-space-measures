@@ -29,7 +29,7 @@ max_radial = 200
 sigmas_wasserstein = [0.1, 0.5, 0.1, 0.5]
 sigmas_euclidean = [0.1, 0.1, 0.5, 0.5]
 
-seeds = [seed + i for i in range(20)] # seed creator
+#seeds = [seed + i for i in range(20)] # seed creator
 seeds = [1597463007]
 hash_values = []
 #"C-VII-pp-wrapped.xyz", "selection-10k.extxyz"
