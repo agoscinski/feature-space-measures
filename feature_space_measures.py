@@ -75,19 +75,6 @@ def regularizer_cv_folds_old(x1, x2):
 
 
 def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
-    """
-    Computes the FRE and FRD of features2 from features1 with a two-split
-
-    Parameters:
-    ----------
-    features1 (array): feature space X_F as in the paper, samples x features
-    features2 (array): feature space X_{F'} as in the paper, samples x features
-
-    Returns:
-    --------
-    double: FRE(X_{F},X_{F'}) scalar value
-    double: FRD(X_{F},X_{F'}) scalar value
-    """
     np.random.seed(seed)
     idx = np.arange(nb_samples)
     np.random.shuffle(idx)
@@ -217,19 +204,6 @@ def split_in_two(features1, features2, train_idx, test_idx):
 def two_split_reconstruction_measure_all_pairs(
     feature_spaces, svd_method="gesdd", train_ratio=0.5, seed=0x5F3759DF, noise_removal=False, regularizer=np.nan, compute_distortion=True
 ):
-    """
-    Computes the FRE and FRD of features2 from features1
-
-    Parameters:
-    ----------
-    feature_spaces (list): a list of feature spaces [X_{H_1}, ..., X_{H_n}]
-
-    Returns:
-    --------
-    array: a matrix containing the FRE(X_{H_i},X_{H_j})
-    array: a matrix containing the FRD(X_{H_i},X_{H_j})
-    """
-
     FRE_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     nb_samples = len(feature_spaces[0])
@@ -340,17 +314,6 @@ def train_test_gfrm_pairwise(
     one_direction=False,
     compute_distortion=True
 ):
-    """
-    Computes the FRE and FRD of (feature_spaces1[i], feature_spaces2[i]) and (feature_spaces2[i], feature_spaces1[i]) pairs
-
-    Parameters:
-    ----------
-
-    Returns:
-    --------
-    array: a (2, len(feature_spaces1)) matrix containing the FRE(X_{H_i},Y_{H_i})
-    array: a (2, len(feature_spaces1)) matrix containing the FRD(X_{H_i},Y_{H_i})
-    """
     assert len(feature_spaces1) == len(feature_spaces2)
     for i in range(len(feature_spaces1)):
         assert(len(feature_spaces1[i][0]) == len(feature_spaces2[i][0]))
