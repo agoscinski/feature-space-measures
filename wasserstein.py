@@ -12,6 +12,7 @@ def compute_squared_wasserstein_distance(feature_paramaters, frames):
     else:
         raise ValueError("The soap_type="+feature_paramaters["feature_parameters"]["soap_type"]+" is not known.")
 
+# old version for directly computing distance DEPRECATED
 def compute_squared_radial_spectrum_wasserstein_distance(feature_paramaters, frames, nb_grid_points=200):
     if  feature_paramaters["feature_parameters"]["soap_type"] != "RadialSpectrum":
         raise ValueError('Wasserstein features can be only computed for soap_type="RadialSpectrum".')
@@ -99,7 +100,6 @@ def bump_function(grid, cdf, cutoff, delta_sigma):
     cdf[:, delta_idx] += bump
     return cdf
 
-# 200 grid points is just chosen arbitrary to obtain an approximation which is accurate enough
 def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     """Compute"""
     if  feature_paramaters["soap_parameters"]["soap_type"] != "RadialSpectrum":
@@ -108,7 +108,7 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
         raise ValueError('Wasserstein features can be only computed for radial_basis="DVR".')
 
     nb_basis_functions = feature_paramaters["nb_basis_functions"]
-    nb_grid_points = feature_paramaters["soap_parameters"]["max_radial"] 
+    nb_grid_points = feature_paramaters["soap_parameters"]["max_radial"]
     normalize_wasserstein_features = feature_paramaters["soap_parameters"]["normalize"]
     feature_paramaters["soap_parameters"]["normalize"] = False
     cutoff = feature_paramaters["soap_parameters"]["interaction_cutoff"]
@@ -125,30 +125,12 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     density_grid = density_grid*cutoff/2 + cutoff/2
     densities /= np.sqrt(density_weights)
 
-    #import matplotlib.pyplot as plt
-    #print("PDF")
-    #plt.plot(densities[348,100:], label="348")
-    #plt.plot(densities[349,100:], label="349")
-    #plt.plot(densities[350,100:], label="350")
-    #plt.legend()
-    #plt.show()
-
     cdf = scipy.integrate.cumtrapz(densities, density_grid)
     # insert the zero probabilty point at the beginning to help interpolating at the beginning
     cdf = np.hstack((np.zeros((cdf.shape[0],1)), cdf))
 
-    #import matplotlib.pyplot as plt
-    #print("CDF")
-    #plt.plot(cdf[348,100:], label="348")
-    #plt.plot(cdf[349,100:], label="349")
-    #plt.plot(cdf[350,100:], label="350")
-    #plt.legend()
-    #plt.show()
-    
     if feature_paramaters["delta_normalization"]:
         cdf = cdf.reshape(nb_envs, nb_species, nb_grid_points)
-        #plt.hist(cdf[:,0,-1])
-        #plt.show()
         delta_sigma = feature_paramaters["delta_sigma"]
         delta_offset_percentage = feature_paramaters["delta_offset_percentage"]
         if delta_sigma is None:
@@ -165,15 +147,6 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
     nonzero_mask = cdf[:,-1] != 0
     cdf[nonzero_mask] /= cdf[:,-1][nonzero_mask][:,np.newaxis]
 
-    #import matplotlib.pyplot as plt
-    #print("CDF normalized")
-    #plt.plot(cdf[348,],label="348")
-    #plt.plot(cdf[349,],label="349")
-    #plt.plot(cdf[350,],label="350")
-    #plt.legend()
-    #plt.show()
-
-
     # gaussian quadrature points as grid
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
         interp_grid, interp_weights = np.polynomial.legendre.leggauss(nb_basis_functions)
@@ -184,77 +157,16 @@ def compute_radial_spectrum_wasserstein_features(feature_paramaters, frames):
         raise ValueError("The wasserstein grid_type="+feature_paramaters["grid_type"] +" is not known.")
 
     wasserstein_features = np.zeros((nb_envs*nb_species, nb_basis_functions))
-    # jitter for uniqueness
+    # add jitter for uniqueness
     jitter = np.finfo(0.1).tiny * np.arange(cdf.shape[1])
     cdf += jitter[np.newaxis, :]
-    #print("CDF jittered")
-    #plt.plot(cdf[348,],label="348")
-    #plt.plot(cdf[349,],label="349")
-    #plt.plot(cdf[350,],label="350")
-    #plt.legend()
-    #plt.show()
     for i in np.where(nonzero_mask)[0]: # subset of nb_envs*nb_species
-        #cdf_i, cdf_idx = np.unique(cdf[i,:], return_index=True)
-        #interpolator = interp1d(cdf_i, density_grid[cdf_idx], assume_sorted=True, kind='slinear')
         interpolator = interp1d(cdf[i], density_grid, assume_sorted=True, kind='linear')
         wasserstein_features[i,:] = interpolator(interp_grid)
-    #    if (i == 348) or (i == 349) or (i == 350):
-    #        plt.plot(density_grid[cdf_idx], cdf_i,label="348")
-    #        plt.plot(density_grid[cdf_idx], cdf_i,label="349")
-    #        plt.plot(density_grid[cdf_idx], cdf_i,label="350")
-    #plt.legend()
-    #plt.show()
-
-        #import matplotlib.pyplot as plt
-        #print(np.max(wasserstein_features[i,:]))
-        #k = 0
-        #for j in range(len(wasserstein_features[i,:])):
-        #    if cutoff-1e-3 <= wasserstein_features[i,k]:
-        #        break
-        #    k+=1
-        ##print(np.sum(wasserstein_features > np.max(wasserstein_features[i,:])-1e-2))
-        #print("density_grid.shape",density_grid.shape)
-        #print("k", k)
-        #plt.plot(density_grid, wasserstein_features[i,:])
-        #plt.axvline(x=density_grid[k-1])
-        #plt.show()
-    #print(wasserstein_features.shape)
-    #plt.plot(wasserstein_features[:5].T)
-    #plt.show()
-    #import matplotlib.pyplot as plt
-    #import matplotlib.pylab as pl
-    #n = 25
-    #colors = pl.cm.jet(np.linspace(0,1,len(wasserstein_features[0::n])))
-    ##alphas = np.linspace(0.25,0.6,len(wasserstein_features[0::n]))
-    #for i in range(len(wasserstein_features[0::n])):
-    #    #plt.plot(np.linspace(0,1, wasserstein_features.shape[1]), wasserstein_features[i*n], color=colors[i])
-    #    plt.plot(density_grid, cdf[i*n], color=colors[i])
-    #plt.show()
-
-
-    #import matplotlib.pyplot as plt
-    #print("ICDF")
-    #print(np.max(wasserstein_features))
-    ##print(np.sum(wasserstein_features > np.max(wasserstein_features)-1e-2))
-    #plt.plot(wasserstein_features[:5].T)
-    #plt.show()
-
-    #import matplotlib.pyplot as plt
-    #print("ICDF")
-    #plt.plot(wasserstein_features[348,],label="348")
-    #plt.plot(wasserstein_features[349,],label="349")
-    #plt.plot(wasserstein_features[350,],label="350")
-    #plt.legend()
-    #plt.show()
-
 
     # delta normalization 2 sets delta areas to 0 so they cannot be used as features
     if feature_paramaters["delta_normalization"] == 2:
         wasserstein_features[cutoff-1e-3 <= wasserstein_features] = 0
-
-    #import matplotlib.pyplot as plt
-    #plt.plot(wasserstein_features[:5].T)
-    #plt.show()
 
     if feature_paramaters["grid_type"] == "gaussian_quadrature":
         wasserstein_features *= np.sqrt(interp_weights)

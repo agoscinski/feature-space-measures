@@ -1,7 +1,6 @@
 # coding: utf-8
 import numpy as np
 from ase import neighborlist
-import time
 
 def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
     if np.sum(frames[0].pbc):
@@ -9,6 +8,7 @@ def compute_sorted_distances(feature_parameters, frames, center_atom_id_mask):
     else:
         return compute_sorted_distances_without_pbc(feature_parameters, frames, center_atom_id_mask)
 
+# more efficient but not including periodic structures 
 def compute_sorted_distances_without_pbc(feature_parameters, frames, center_atom_id_mask):
     print("Warning: Sorted distances only works for one species")
     cutoff = feature_parameters["interaction_cutoff"]
@@ -38,12 +38,10 @@ def compute_sorted_distances_without_pbc(feature_parameters, frames, center_atom
         distances[distances >= cutoff] = padding
         sorted_distances[k:k+len(distances), :distances.shape[1]] = distances
         k += len(distances)
-    #import matplotlib.pyplot as plt
-    #plt.plot(sorted_distances[:5].T)
-    #plt.show()
     return sorted_distances
 
 
+# Simplified version of the old code, but works only for one species
 def compute_sorted_distances_with_pbc(feature_parameters, frames, center_atom_id_mask):
     print("Warning: Sorted distances only works for one species")
     cutoff = feature_parameters["interaction_cutoff"]
@@ -80,11 +78,9 @@ def compute_sorted_distances_with_pbc(feature_parameters, frames, center_atom_id
             sorted_distances_env = np.sort(distances[atom_i == atom_id])
             sorted_distances[k, :len(sorted_distances_env)] = sorted_distances_env
         k += 1
-    #import matplotlib.pyplot as plt
-    #plt.plot(sorted_distances[:5].T)
-    #plt.show()
     return sorted_distances
 
+# Old code
 #        per_atom = True
 #        environments = sum((len(frame) for frame in frames), 0)
 #
