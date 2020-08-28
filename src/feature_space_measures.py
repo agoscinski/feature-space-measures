@@ -107,46 +107,6 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
     return W
 
-def gfre(features1, features2, reconstruction_weights):
-    return np.linalg.norm(
-            features1.dot(reconstruction_weights) - features2
-        ) / np.sqrt(n_test)
-
-def pointwise_gfre(features1, features2, reconstruction_weights):
-    # returns a gfre for each sample
-    return np.sqrt(
-           np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
-        / n_test)
-
-def gfrd(features1, features2, reconstruction_weights):
-    # P = U S V, we use svd because it is more stable than eigendecomposition
-    U, S, V = scipy.linalg.svd(reconstruction_weights)
-
-    # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
-    # => \tilde{X}_{F'} V.T = X_F U S
-
-    # X_F U
-    features1_U = features1.dot(U)[:, :len(S)]
-    # \tilde{X}_{F'} V.T = X_F U S
-    reconstructed_features2_VT = features1_U.dot(np.diag(S))
-
-    # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
-    U2, S2, V2 = scipy.linalg.svd(
-        features1_U.T.dot(reconstructed_features2_VT),
-        lapack_driver=svd_method
-    )
-    Q = U2.dot(V2)
-    # alpha is not important anymore because features are standardized
-    ## see paper for derivation of alpha
-    #alpha = np.trace(features1_U.dot(Q).T.dot(reconstructed_features2_VT)) / np.trace(
-    #    features1_U.dot(features1_U.T)
-    #)
-    alpha = 1
-    FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
-
-
-def lfre 
-
 def feature_space_reconstruction_measures(
     features1,
     features2,
@@ -188,6 +148,9 @@ def feature_space_reconstruction_measures(
     features1.dot(reconstruction_weights)
     # (\|X_{F'} - (X_F)P \|) / (\|X_F\|)
     if reduce_error_dimension=="all":
+        FRE = np.linalg.norm(
+            features1.dot(reconstruction_weights) - features2
+        ) / np.sqrt(n_test)
     elif reduce_error_dimension=="features":
         FRE = np.sqrt(
            np.sum((features1.dot(reconstruction_weights) - features2)**2, axis=1)
@@ -196,6 +159,27 @@ def feature_space_reconstruction_measures(
         raise ValueError("reduce_error_dimension="+reduce_error_dimension+" is not known.")
 
     if compute_distortion:
+        # P = U S V, we use svd because it is more stable than eigendecomposition
+        U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
+
+        if noise_removal:
+            S[S < 1e-9] = 0
+
+        # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
+        # => \tilde{X}_{F'} V.T = X_F U S
+        # X_F U
+        features1_U = features1.dot(U)[:, :len(S)]
+        # \tilde{X}_{F'} V.T = X_F U S
+        reconstructed_features2_VT = features1_U.dot(np.diag(S))
+
+        # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
+        U2, S2, V2 = scipy.linalg.svd(
+            features1_U.T.dot(reconstructed_features2_VT),
+            lapack_driver=svd_method
+        )
+        Q = U2.dot(V2)
+        alpha = 1
+        FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
     else:
         FRD = np.nan
     return FRE, FRD
