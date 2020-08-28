@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-from experiment import gfr_pairwise_experiment
+from src.experiment import gfr_pairwise_experiment
 import numpy as np
 import os
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
