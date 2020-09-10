@@ -160,7 +160,8 @@ def feature_space_reconstruction_measures(
 
     if compute_distortion:
         # P = U S V, we use svd because it is more stable than eigendecomposition
-        U, S, V = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
+        U, S, _ = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
+
 
         if noise_removal:
             S[S < 1e-9] = 0
@@ -168,8 +169,17 @@ def feature_space_reconstruction_measures(
         # The reconstruction \tilde{X}_{F'} = X_F P = X_F U S V
         # => \tilde{X}_{F'} V.T = X_F U S
         # X_F U
-        features1_U = features1.dot(U)[:, :len(S)]
         # \tilde{X}_{F'} V.T = X_F U S
+
+        #if len(U) > len(V):
+        #    S = np.hstack((S, np.zeros(max(len(U), len(V))- len(S)) ))
+        #    #V = np.block([[V, np.zeros((len(V), len(U)-len(V)))], [np.zeros((len(U)-len(V), len(V))), np.zeros((len(U)-len(V), len(U)-len(V)))]])
+        #features1_U = features1.dot(U)
+        if (features1.shape[1] > features2.shape[1]):
+            S = np.hstack( (S, np.zeros(features1.shape[1]-features2.shape[1])) )
+
+        features1_U = features1.dot(U)
+
         reconstructed_features2_VT = features1_U.dot(np.diag(S))
 
         # Solve procrustes problem see https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
@@ -428,6 +438,13 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
     #features2_test_sq_sum = np.sum(features2_test**2, axis=1)
     #squared_dist = features2_test_sq_sum[:,np.newaxis] + features2_test_sq_sum - 2 * features2_test.dot(features2_test.T)
     squared_dist = np.sum(features1_train**2, axis=1) + np.sum(features1_test**2, axis=1)[:,np.newaxis] - 2 * features1_test.dot(features1_train.T)
+    np.save('squared_dist', squared_dist)
+    print(features1_train.shape, features2_train.shape)
+    np.save('features1_train', features1_train)
+    np.save('features1_test', features1_test)
+    np.save('features2_train', features2_train)
+    np.save('features2_test', features2_test)
+
     for i in range(n_test):
         if i % int(n_test/10) == 0:
             print("step "+str(i)+"")
