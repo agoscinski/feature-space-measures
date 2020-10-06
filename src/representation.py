@@ -12,7 +12,7 @@ FEATURES_ROOT ="features"
 def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask=None):
     if center_atom_id_mask is None:
         # only first center
-        print("WARNING only the first environments of all structures is computed. Other options are not supported by experiment input.")
+        print("WARNING only the first environment of all structures is computed. Other options are not supported by experiment input.")
         center_atom_id_mask = [[0] for frame in frames]
         # all centers
         #center_atom_id_mask = [list(range(len(frame))) for frame in frames]
