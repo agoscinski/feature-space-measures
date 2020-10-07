@@ -88,7 +88,8 @@ def gfr_pairwise_experiment(
     regularizer,
     one_direction=False,
     compute_distortion=True,
-    train_test_gfrm=False
+    train_test_gfrm=False,
+    set_methane_dataset_to_same_species=True
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -103,7 +104,7 @@ def gfr_pairwise_experiment(
         compute_distortion=compute_distortion,
         train_test_gfrm=train_test_gfrm
     )
-    frames = read_dataset(dataset_name, nb_samples)
+    frames = read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species)
     if (nb_samples) == "":
         nb_samples = len(frames)
 
@@ -322,7 +323,7 @@ def store_metadata(
     return metadata, output_hash
 
 
-def read_dataset(dataset_name, nb_samples):
+def read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species=True):
     print("Load data...", flush=True)
     frames = ase.io.read(DATASET_FOLDER + dataset_name, ":" + str(nb_samples))
     if  dataset_name == "C-VII-pp-wrapped.xyz":
@@ -334,7 +335,8 @@ def read_dataset(dataset_name, nb_samples):
             frames[i].cell = np.eye(3) * 15
             frames[i].center()
             frames[i].wrap(eps=1e-11)
-            frames[i].numbers = np.ones(len(frames[i]))
+            if (set_methane_dataset_to_same_species):
+                frames[i].numbers = np.ones(len(frames[i]))
     print("Load data finished.", flush=True)
     return frames
 

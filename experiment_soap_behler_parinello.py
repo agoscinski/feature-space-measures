@@ -89,7 +89,7 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
     gfre_mat = np.zeros((2,len(max_radials_angulars),len(seeds)))
     i=0
     for seed in seeds:
-        hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer)
+        hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False)
         hash_values.append(hash_value)
         gfre_mat[:,:,i] = gfre_vec
         i += 1
