@@ -93,7 +93,8 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
             train_ratio=train_ratio,
             seed=seed,
             noise_removal=False,
-            regularizer=regularizer
+            regularizer=regularizer,
+            set_methane_dataset_to_same_species=False
         )
 
         hash_values.append(hash_value)
@@ -134,7 +135,8 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
             train_ratio=train_ratio,
             seed=seed,
             noise_removal=False,
-            regularizer=regularizer
+            regularizer=regularizer,
+            set_methane_dataset_to_same_species=False
         )
         hash_values.append(hash_value)
 

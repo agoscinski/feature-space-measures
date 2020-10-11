@@ -167,8 +167,7 @@ def gfr_all_pairs_experiment(
     return experiment_id
 
 def lfre_pairwise_experiment(
-    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon, one_direction=False
-):
+    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon, one_direction=False, set_methane_dataset_to_same_species=True):
     metadata, experiment_id = store_metadata(
         dataset_name,
         nb_samples,
@@ -181,9 +180,9 @@ def lfre_pairwise_experiment(
         nb_local_envs = nb_local_envs,
         inner_epsilon=inner_epsilon,
         outer_epsilon=outer_epsilon,
-        one_direction=one_direction
+        one_direction=one_direction 
     )
-    frames = read_dataset(dataset_name, nb_samples)
+    frames = read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species)
     feature_spaces1 = compute_representations(features_hypers1, frames)
     feature_spaces2 = compute_representations(features_hypers2, frames)
     print("Compute local feature reconstruction errors...", flush=True)
