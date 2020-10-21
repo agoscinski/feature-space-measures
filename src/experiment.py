@@ -46,7 +46,7 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
         if train_ratio_strings[0] == "equispaced":
             shift = int(train_ratio_strings[1])
             idx = np.arange(nb_samples)
-            print(idx[::shift].shape)
+            #print(idx[::shift].shape)
             return idx[::shift], idx
         else:
             raise ValueError(f"train_ration {train_ratio} is not known.")
@@ -71,10 +71,10 @@ def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
     features = standardize_features(features, train_idx)
     features = standardize_features(features, train_idx)
     if "feature_selection_parameters" in feature_hypers:
-        features_idx = select_features(features[train_idx], feature_hypers["feature_selection_parameters"])
-        features = features[:, features_idx]
+        features = select_features(features, features[train_idx], feature_hypers["feature_selection_parameters"])
     return (features[train_idx], features[test_idx])
 
+# TODO rename nb_samples to nb_structures as input, to rename
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs
 def gfr_pairwise_experiment(
     dataset_name,
@@ -89,7 +89,8 @@ def gfr_pairwise_experiment(
     one_direction=False,
     compute_distortion=True,
     train_test_gfrm=False,
-    set_methane_dataset_to_same_species=True
+    set_methane_dataset_to_same_species=True,
+    center_atom_id_mask_description="first environment"
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -102,16 +103,21 @@ def gfr_pairwise_experiment(
         regularizer,
         one_direction=one_direction,
         compute_distortion=compute_distortion,
-        train_test_gfrm=train_test_gfrm
+        train_test_gfrm=train_test_gfrm,
+        center_atom_id_mask_description=center_atom_id_mask_description
     )
     frames = read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species)
-    if (nb_samples) == "":
-        nb_samples = len(frames)
 
-    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+    if center_atom_id_mask_description == "first environment":
+        nb_samples_ = len(frames)
+    elif center_atom_id_mask_description == "all environments":
+        nb_samples_ = sum([frame.get_global_number_of_atoms() for frame in frames])
 
-    feature_spaces1 = compute_representations(features_hypers1, frames, train_idx)
-    feature_spaces2 = compute_representations(features_hypers2, frames, train_idx)
+
+    train_idx, test_idx = generate_two_split_idx(nb_samples_, train_ratio, seed)
+
+    feature_spaces1 = compute_representations(features_hypers1, frames, train_idx, center_atom_id_mask_description)
+    feature_spaces2 = compute_representations(features_hypers2, frames, train_idx, center_atom_id_mask_description)
 
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
@@ -167,7 +173,8 @@ def gfr_all_pairs_experiment(
     return experiment_id
 
 def lfre_pairwise_experiment(
-    dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon, outer_epsilon, one_direction=False, set_methane_dataset_to_same_species=True):
+        dataset_name, nb_samples, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon=None, outer_epsilon=None, one_direction=False, set_methane_dataset_to_same_species=True, center_atom_id_mask_description="first environment"):
+
     metadata, experiment_id = store_metadata(
         dataset_name,
         nb_samples,
@@ -180,11 +187,18 @@ def lfre_pairwise_experiment(
         nb_local_envs = nb_local_envs,
         inner_epsilon=inner_epsilon,
         outer_epsilon=outer_epsilon,
-        one_direction=one_direction 
+        one_direction=one_direction,
+        center_atom_id_mask_description=center_atom_id_mask_description
     )
+
+
     frames = read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species)
-    feature_spaces1 = compute_representations(features_hypers1, frames)
-    feature_spaces2 = compute_representations(features_hypers2, frames)
+    feature_spaces1 = compute_representations(features_hypers1, frames, center_atom_id_mask_description=center_atom_id_mask_description)
+    feature_spaces2 = compute_representations(features_hypers2, frames, center_atom_id_mask_description=center_atom_id_mask_description)
+
+    for i in range(len(feature_spaces1)):
+        feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], np.arange(feature_spaces1[i].shape[0]), [])[0]
+        feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers2[i], np.arange(feature_spaces2[i].shape[0]), [])[0]
     print("Compute local feature reconstruction errors...", flush=True)
 
     lfre_mat, lfrd_mat = compute_local_feature_reconstruction_error_for_pairwise_feature_spaces(
@@ -196,7 +210,7 @@ def lfre_pairwise_experiment(
     store_results("lfre_mat-", experiment_id, lfre_mat)
     store_results("lfrd_mat-", experiment_id, lfrd_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
-    return experiment_id
+    return experiment_id, lfre_mat
 
 def lfre_all_pairs_experiment(
     dataset_name, nb_samples, features_hypers, nb_local_envs, two_split, train_ratio, seed, regularizer
@@ -268,7 +282,7 @@ def hfre_experiment(
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None, one_direction=None, compute_distortion=None, train_test_gfrm=None
+    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None, one_direction=None, compute_distortion=None, train_test_gfrm=None, center_atom_id_mask_description=None
 ):
     metadata = {
         # Methane
@@ -312,6 +326,9 @@ def store_metadata(
         metadata["compute_distortion"] = compute_distortion
     if train_test_gfrm is not None:
         metadata["train_test_gfrm"] = train_test_gfrm 
+    if center_atom_id_mask_description is not None:
+        metadata["center_atom_id_mask_description "] = "first environment"
+        
 
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
@@ -325,13 +342,13 @@ def store_metadata(
 def read_dataset(dataset_name, nb_samples, set_methane_dataset_to_same_species=True):
     print("Load data...", flush=True)
     frames = ase.io.read(DATASET_FOLDER + dataset_name, ":" + str(nb_samples))
-    if  dataset_name == "C-VII-pp-wrapped.xyz":
+    if dataset_name == "C-VII-pp-wrapped.xyz":
         for i in range(len(frames)):
             frames[i].pbc=True
             frames[i].wrap(eps=1e-11)
-    else:
+    elif dataset_name == "random-ch4-10k.extxyz" or dataset_name == "selection-10k.extxyz" or dataset_name == 'qm9.db':
         for i in range(len(frames)):
-            frames[i].cell = np.eye(3) * 15
+            frames[i].cell = np.eye(3) * 20
             frames[i].center()
             frames[i].wrap(eps=1e-11)
             if (set_methane_dataset_to_same_species):

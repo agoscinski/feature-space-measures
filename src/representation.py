@@ -9,13 +9,14 @@ from src.scalers import standardize_features
 
 FEATURES_ROOT ="features"
 
-def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask=None):
-    if center_atom_id_mask is None:
-        # only first center
-        print("WARNING only the first environment of all structures is computed. Other options are not supported by experiment input.")
+def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask_description="first environment"):
+    if center_atom_id_mask_description == "first environment":
+        print("WARNING only the first environment of all structures is computed. Please use center_atom_id_mask_description='all environments' if you want to use all environments")
         center_atom_id_mask = [[0] for frame in frames]
-        # all centers
-        #center_atom_id_mask = [list(range(len(frame))) for frame in frames]
+    elif center_atom_id_mask_description  == "all environments":
+        center_atom_id_mask = [list(range(len(frame))) for frame in frames]
+    else:
+        raise ValueError("The center_atom_id_mask_description "+center_atom_id_mask_description+" is not available")
     for i in range(len(frames)):
         # masks the atom such that only the representation of the first environment is computed
         mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
@@ -41,17 +42,16 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         features = compute_sorted_distances(feature_hypers["feature_parameters"], frames, center_atom_id_mask)
         return features
     elif feature_hypers["feature_type"] == "precomputed":
-        print("WARNING we assume for the precomputed features that only one environment in each structure was computed.")
         parameters = feature_hypers['feature_parameters']
-        nb_envs = sum([len(structure_mask) for structure_mask in center_atom_id_mask])
+        nb_samples = sum([len(structure_mask) for structure_mask in center_atom_id_mask]) if "nb_samples" not in parameters.keys() else parameters["nb_samples"]
         if parameters["filetype"] == "npy":
             pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
-            return np.load(pathname)[:nb_envs]
+            return np.load(pathname)[:nb_samples]
         elif parameters["filetype"] == "txt":
             pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
-            return np.loadtxt(pathname)[:nb_envs]
+            return np.loadtxt(pathname)[:nb_samples]
         elif parameters["filetype"] == "frame_info":
-            return np.array([frame.info[parameters['feature_name']] for frame in frames])[:,np.newaxis][:nb_envs]
+            return np.array([frame.info[parameters['feature_name']] for frame in frames])[:,np.newaxis][:nb_samples]
 
         # hardcoded case
         elif parameters["feature_name"] == "displaced_hydrogen_distance": 

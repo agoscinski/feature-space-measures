@@ -3,14 +3,20 @@ import scipy
 from src.CUR import CUR
 
 
-def select_features(features, hypers):
-    if hypers['n_features'] >= features.shape[1]:
+def select_features(features, features_train, hypers):
+    if hypers['n_features'] >= features_train.shape[1]:
         print("Warning: n_features >= nb_samples")
-        return np.arange(features.shape[1])
+        features_idx = np.arange(features_train.shape[1])
+        return features[:, features_idx]
     if hypers['type'] == 'FPS':
-        return select_fps(features.T, hypers)
-    if hypers['type'] == 'CUR':
-        return select_cur(features, hypers)
+        features_idx = select_fps(features_train.T, hypers)
+        return features[:, features_idx]
+    elif hypers['type'] == 'CUR':
+        features_idx = select_cur(features_train, hypers)
+        return features[:, features_idx]
+    elif hypers['type'] == 'PCA':
+        pca = select_pca(features_train, hypers)
+        return pca.transform(features)
     else:
         raise ValueError('unknown feature selection type ' + hypers['type'])
 
@@ -55,3 +61,9 @@ def select_cur(X, hypers):
 
     #print(X[:, cur.idx_c].shape)
     return cur.idx_c
+
+def select_pca(X, hypers):
+    import sklearn.decomposition
+    return sklearn.decomposition.PCA(n_components=hypers['n_features']).fit(X)
+
+

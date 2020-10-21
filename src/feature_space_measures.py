@@ -5,6 +5,19 @@ from src.scalers import standardize_features
 from sklearn import linear_model
 import warnings
 
+def compute_gfre_from_pointwise_gfre(pointwise_gfre):
+    return np.sqrt( np.sum(pointwise_gfre**2, axis=1) / pointwise_gfre.shape[1] )
+
+def compute_gfre_from_deprecated_pointwise_gfre(pointwise_gfre):
+    return np.sqrt( np.sum(pointwise_gfre**2 * pointwise_gfre.shape[1], axis=1) / pointwise_gfre.shape[1] )
+
+def compute_lfre_from_pointwise_lfre(pointwise_lfre):
+    return np.linalg.norm(pointwise_lfre, axis=1)/np.sqrt(pointwise_lfre.shape[1])
+
+def compute_lfre_from_deprecated_pointwise_lfre(pointwise_lfre):
+    return np.linalg.norm(np.sqrt(pointwise_lfre), axis=1)/np.sqrt(pointwise_lfre.shape[1])
+
+
 def regularizer_cv_folds(x1, x2, nb_folds):
     fold_size = len(x1)//nb_folds
     x1_folds = [x1[i*fold_size:(i+1)*fold_size] for i in range(nb_folds-1)]
@@ -470,7 +483,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             reconstruction_weights = feature_space_reconstruction_weights(
                 local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
             )
-            # \|x_i' - \tilde{x}_i' \|^2 / n_test
+            # \|x_i' - \tilde{x}_i' \|^2 
             lfre_vec[i] = np.linalg.norm(
                 (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
                 - features2_test[i,:][np.newaxis,:]
@@ -492,7 +505,7 @@ def local_feature_reconstruction_error(nb_local_envs, features1_train, features2
             reconstruction_weights = feature_space_reconstruction_weights(
                 local_features1_train - local_features1_train_mean, local_features2_train - local_features2_train_mean, regularizer
             )
-            # \|x_i' - \tilde{x}_i' \|^2 / n_test
+            # \|x_i' - \tilde{x}_i' \|^2
             lfre_vec[i] = np.linalg.norm(
                 (features1_test[i,:][np.newaxis,:] - local_features1_train_mean).dot(reconstruction_weights) + local_features2_train_mean
                 - features2_test[i,:][np.newaxis,:]
