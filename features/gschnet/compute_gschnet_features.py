@@ -24,8 +24,8 @@ def compute_gschnet_features_for_qm9(nb_structures):
     print("Number of interaction blocks:", len(model.representation.interactions))
     print("Gaussian width used for expanison is ", list(model.representation.distance_expansion.named_buffers())[0][1][0])
     for interaction_layer in range(len(model.representation.interactions)):
-        print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network)
-                "cutoff "+ str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
+        print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network) +
+               " cutoff " + str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
     model.representation.return_intermediate = True
 
     # schnet increases the number of environments to the structure with the maximum number of environments.
@@ -48,7 +48,7 @@ def compute_gschnet_features_for_qm9(nb_structures):
 
 def main():
     # gschnet qm9 has 9 interaction blocks
-    nb_structures = 10000
+    nb_structures = 10
     features = compute_gschnet_features_for_qm9(nb_structures)
     for layer in range(features.shape[1]):
         np.save('gschnet_qm9_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features)

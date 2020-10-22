@@ -21,8 +21,8 @@ def compute_schnet_features_for_qm9(nb_structures, structure_property = 'energy_
     print("Number of interaction blocks:", len(model.representation.interactions))
     print(model.representation.distance_expansion.named_buffers)
     for interaction_layer in range(len(model.representation.interactions)):
-        print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network)
-                "cutoff "+ str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
+        print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network) +
+               " cutoff "+ str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
     model.representation.return_intermediate = True
 
     # schnet increases the number of environments to the structure with the maximum number of environments.
