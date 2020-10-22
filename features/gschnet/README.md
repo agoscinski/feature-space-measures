@@ -1,7 +1,10 @@
-Clone and create gschnet conda environment, as described in G-Schnet repository https://github.com/atomistic-machine-learning/G-SchNet/tree/74cea9b00bf27e62f7c324e4e6f3a7b6f1f45e23
+Clone and create gschnet conda environment, as described in G-Schnet repository:
 The following commands will create a new conda environment called _"gschnet"_ and install all dependencies (tested on Ubuntu 18.04):
 
-    git clone https://github.com/atomistic-machine-learning/G-SchNet/tree/74cea9b00bf27e62f7c324e4e6f3a7b6f1f45e23
+    git clone https://github.com/atomistic-machine-learning/G-SchNet.git
+    cd G-SchNet
+    git checkout 74cea9b00b
+    cd ..
     conda create -n gschnet python=3.7 pytorch=1.5.0 torchvision cudatoolkit=10.2 ase=3.19.0 openbabel=2.4.1 rdkit=2019.09.2.0 -c pytorch -c openbabel -c defaults -c conda-forge
     conda activate gschnet
     pip install 'schnetpack==0.3'

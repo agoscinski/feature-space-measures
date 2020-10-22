@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
 from src.experiment import gfr_pairwise_experiment
+import numpy as np
 import os
 
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
@@ -9,16 +10,20 @@ os.environ["MKL_NUM_THREADS"] = "1" # export MKL_NUM_THREADS=4
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1" # export VECLIB_MAXIMUM_THREADS=4
 os.environ["NUMEXPR_NUM_THREADS"] = "1" # export NUMEXPR_NUM_THREADS=4
 
-# Experiment metadata
-nb_samples = 500
 # Constant hyperparameters
-cutoff = 4
-sigma = 0.5
-cutoff_smooth_width = 0.5
+cutoff = 10 # schnet, gschnet
+
+sigma = 0.2041 # schnet
+cutoff_smooth_width = 10 # schnet
+#sigma = 0.4167 # gschnet
+#cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
+
 normalize = False
+
 
 # Experiment metadata
 dataset_name = "qm9.db"
+nb_samples = 100
 two_split = True
 if two_split:
     seed = 0x5f4759df
@@ -29,15 +34,20 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-for soap_type in ["RadialSpectrum"]:
+polynomial_degrees = [1,2]#[1,2,3,4,5,6]
+
+hash_values = [] 
+gfre_mat = np.zeros( (len(polynomial_degrees), 2) )
+i = 0
+for degree in polynomial_degrees:
     features_hypers1 = [{
         "feature_type": "soap",
         "feature_parameters": {
-            "soap_type": soap_type,
+            "soap_type": "RadialSpectrum",
             "radial_basis": "GTO",
             "interaction_cutoff": cutoff,
-            "max_radial": 4,
-            "max_angular": 3,
+            "max_radial": 12,
+            "max_angular": 0,
             "gaussian_sigma_constant": sigma,
             "gaussian_sigma_type": "Constant",
             "cutoff_smooth_width": cutoff_smooth_width,
@@ -48,26 +58,28 @@ for soap_type in ["RadialSpectrum"]:
             "n_features": 128,
         },
         "hilbert_space_parameters": {
-            "computation_type ": "explicit",
+            "computation_type": "explicit",
             "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2}
+            "kernel_parameters": {"kernel_type": "polynomial", "degree": degree}
         }
-        #"hilbert_space_parameters": {
-        #    "distance_parameters": {"distance_type": "euclidean"},
-        #    "kernel_parameters": {"kernel_type": "poly", "degree": 2}
-        #}
     }]
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "schnet",
-            "filename": "schnet_qm9_energy_U0_nb_structures=10000_layer=0.npy",
+            "filename": "schnet_qm9_energy_U0_nb_structures=10000_layer="+str(degree)+".npy",
             "filetype": "npy",
         }
     }]
 
-    hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
-
+    hash_value, gfre_vec = gfr_pairwise_experiment(dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, compute_distortion=False, one_direction=True, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
+    hash_values.append(hash_value)
+    gfre_mat[i] = gfre_vec.reshape(-1)
     print(hash_value)
     print(gfre_vec)
     print()
+    i += 1
+
+print(hash_values)
+print("GFRE( (n,l) , (n+2,l+1) )", gfre_mat[:,0])
+print("GFRE( (n+2,l+1) , (n,l) )", gfre_mat[:,1])

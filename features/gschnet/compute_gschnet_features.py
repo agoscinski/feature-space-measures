@@ -2,13 +2,16 @@ import schnetpack as spk
 import torch
 import numpy as np
 import ase.io
+import sys
+
+sys.path.insert(0,'./G-SchNet')
 
 DEVICE = 'cpu'
 DATA_PATH = '../../data'
 MODEL_PATH = 'gschnet'
 FEATURE_SIZE = 128
 
-def compute_schnet_features_for_qm9(nb_structures):
+def compute_gschnet_features_for_qm9(nb_structures):
     model_filename = MODEL_PATH+'/best_model'
     qm9_filename = DATA_PATH+'/qm9.db'
 
@@ -19,6 +22,10 @@ def compute_schnet_features_for_qm9(nb_structures):
 
     model = torch.load(model_filename, map_location=torch.device(DEVICE))
     print("Number of interaction blocks:", len(model.representation.interactions))
+    print("Gaussian width used for expanison is ", list(model.representation.distance_expansion.named_buffers())[0][1][0])
+    for interaction_layer in range(len(model.representation.interactions)):
+        print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network)
+                "cutoff "+ str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
     model.representation.return_intermediate = True
 
     # schnet increases the number of environments to the structure with the maximum number of environments.
@@ -34,16 +41,17 @@ def compute_schnet_features_for_qm9(nb_structures):
         loaded_data = list(loader)[0]
         # shape: num_structures x num_envs x num_features
         features_i = model.representation(loaded_data)[1]
-        for interaction_layer in range(1+len(model.representation.interactions)):
+        for layer in range(1+len(model.representation.interactions)):
             # reshape (num_structures * num_envs) x num_features 
-            features[struc_to_env_idx[i]:struc_to_env_idx[i+1], interaction_layer] = features_i[interaction_layer].reshape(-1, FEATURE_SIZE)
+            features[struc_to_env_idx[i]:struc_to_env_idx[i+1], layer] = features_i[layer].reshape(-1, FEATURE_SIZE)
     return features.detach().numpy()
 
 def main():
     # gschnet qm9 has 9 interaction blocks
     nb_structures = 10000
-    features = compute_schnet_features_for_qm9(nb_structures)
-    np.save('gschnet_qm9_nb_structures='+str(nb_structures)+'.npy', features)
+    features = compute_gschnet_features_for_qm9(nb_structures)
+    for layer in range(features.shape[1]):
+        np.save('gschnet_qm9_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features)
 
 if __name__ == "__main__":
     # execute only if run as a script

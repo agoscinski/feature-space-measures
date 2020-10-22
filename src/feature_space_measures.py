@@ -80,7 +80,7 @@ def regularizer_cv_folds_old(x1, x2):
         #print('loss', (loss_ab+loss_ba)/n, 'lthr', lthr, 'reg', np.exp(lthr)*2/(sa[0]+sb[0]))
         return (loss_ab+loss_ba)/n
     
-    range_logreg = np.linspace(-10,np.log(0.9),20)
+    range_logreg = np.linspace(-10,np.log(0.9),10)
     loss = [thresh_cv_loss(x) for x in range_logreg]
     min_idx = np.argmin(loss)
     x = range_logreg[min_idx]
@@ -107,6 +107,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
+    print("Compute reconstruction weight...")
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
             regularizer = regularizer_cv_folds_old(features1, features2)
@@ -118,6 +119,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
+    print("Compute reconstruction weight finished")
     return W
 
 def feature_space_reconstruction_measures(
@@ -146,6 +148,7 @@ def feature_space_reconstruction_measures(
     double: FRD(X_{F},X_{F'}) scalar value
     """
 
+    print("Compute GFRE...")
     if reconstruction_weights is None:
         if regularizer is np.nan:
             raise ValueError("If no reconstruction weights is given a regularizer has to be given.")
@@ -170,8 +173,10 @@ def feature_space_reconstruction_measures(
         / n_test)
     else:
         raise ValueError("reduce_error_dimension="+reduce_error_dimension+" is not known.")
+    print("Compute GFRE finished")
 
     if compute_distortion:
+        print("Compute GFRD...")
         # P = U S V, we use svd because it is more stable than eigendecomposition
         U, S, _ = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
 
@@ -203,6 +208,7 @@ def feature_space_reconstruction_measures(
         Q = U2.dot(V2)
         alpha = 1
         FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
+        print("Compute GFRD finished")
     else:
         FRD = np.nan
     return FRE, FRD

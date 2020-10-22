@@ -43,6 +43,7 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         return features
     elif feature_hypers["feature_type"] == "precomputed":
         parameters = feature_hypers['feature_parameters']
+        # TODO parameter case seems to useless, probably can be removed 
         nb_samples = sum([len(structure_mask) for structure_mask in center_atom_id_mask]) if "nb_samples" not in parameters.keys() else parameters["nb_samples"]
         if parameters["filetype"] == "npy":
             pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
@@ -52,14 +53,48 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
             return np.loadtxt(pathname)[:nb_samples]
         elif parameters["filetype"] == "frame_info":
             return np.array([frame.info[parameters['feature_name']] for frame in frames])[:,np.newaxis][:nb_samples]
-
+        # TODO is deprecated??
         # hardcoded case
         elif parameters["feature_name"] == "displaced_hydrogen_distance": 
-            return load_hydrogen_distance_dataset(frames)[:nb_envs]
+            return load_hydrogen_distance_dataset(frames)[:nb_samples]
+
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
-    features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]
+    if computation_type == "implicit_distance":
+        features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    elif computation_type == "explicit":
+        features = compute_explicit_features(feature_hypers, frames, train_idx, center_atom_id_mask)
     return features
+
+def compute_explicit_features(feature_hypers, frames, train_idx, center_atom_id_mask):
+    features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+    kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
+    kernel_type = kernel_parameters["kernel_type"]
+    if kernel_type == "polynomial":
+        return compute_explicit_polynomial_features(features, kernel_parameters["degree"])
+    else:
+        raise ValueError("The kernel_type=" + kernel_type + " is not known.")
+
+def compute_explicit_polynomial_features(features, degree):
+    # Based on https://en.wikipedia.org/wiki/Multinomial_theorem#Theorem 
+    # degree = n
+    # nb_features = m 
+    features = np.hstack( (features, np.ones(len(features))[:,np.newaxis]) )
+    nb_features = features.shape[1]
+    # https://en.wikipedia.org/wiki/Multinomial_theorem#Number_of_multinomial_coefficients
+    nb_polynomial_features = int(scipy.special.comb(degree+nb_features-1, nb_features-1))
+    polynomial_features = np.zeros( (features.shape[0], nb_polynomial_features) )
+    #from sympy.ntheory import multinomial_coefficients
+    #from sympy.ntheory.multinomial import multinomial_coefficients
+    from sympy.ntheory.multinomial import multinomial_coefficients_iterator
+    i = 0
+    for k_indices, multinomial_coeff in multinomial_coefficients_iterator(nb_features, degree):
+        np.sqrt(multinomial_coeff)
+        for t in range(len(k_indices)):
+            polynomial_features[:,i] *= features[:,t]**k_indices[t]
+        i += 1
+    return polynomial_features
 
 
 def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask):
