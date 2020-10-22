@@ -51,7 +51,7 @@ def main():
     nb_structures = 10
     features = compute_gschnet_features_for_qm9(nb_structures)
     for layer in range(features.shape[1]):
-        np.save('gschnet_qm9_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features)
+        np.save('gschnet_qm9_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 
 if __name__ == "__main__":
     # execute only if run as a script

@@ -48,7 +48,7 @@ def main():
     nb_structures = 500
     features = compute_schnet_features_for_qm9(nb_structures)
     for layer in range(features.shape[1]):
-        np.save('schnet_qm9_energy_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features)
+        np.save('schnet_qm9_energy_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 
 if __name__ == "__main__":
     # execute only if run as a script
