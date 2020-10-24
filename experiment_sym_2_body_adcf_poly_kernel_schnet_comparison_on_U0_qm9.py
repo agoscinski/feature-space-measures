@@ -60,11 +60,12 @@ for degree in polynomial_degrees:
             "gaussian_sigma_type": "Constant",
             "cutoff_smooth_width": cutoff_smooth_width,
             "normalize": normalize
-            "feature_selection_parameters": {
-                "type": "PCA",
-                "explained_variance_ratio": 0.99,
-                #"n_features": 128,
-            },
+        },
+        "feature_selection_parameters":{
+            "type": "PCA",
+            "explained_variance_ratio": 0.99,
+            #"n_features": 128,
+        },
         "hilbert_space_parameters": {
             "computation_type": "explicit",
             "distance_parameters": {"distance_type": "euclidean"},
