@@ -45,10 +45,12 @@ def compute_schnet_features_for_qm9(nb_structures, structure_property = 'energy_
 
 def main():
     # schnet qm9 U0 has 6 interaction blocks
-    nb_structures = 1000
+    nb_structures = 500
     features = compute_schnet_features_for_qm9(nb_structures)
-    for layer in range(features.shape[1]):
-        np.save('schnet_qm9_energy_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
+    property_keys = ["dipole_moment" , "isotropic_polarizability" , "homo" , "lumo" , "electronic_spatial_extent" , "zpve" , "energy_U0" , "energy_U" , "enthalpy_H" , "free_energy" , "heat_capacity"]
+    for structure_property in property_keys:
+        for layer in range(features.shape[1]):
+            np.save('schnet_'+structure_property+'_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 
 if __name__ == "__main__":
     # execute only if run as a script

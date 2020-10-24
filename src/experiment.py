@@ -72,7 +72,6 @@ def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
     standardization_error = np.linalg.norm(standardized_features-features)/len(features) 
     print("Standardization error:",standardization_error)
     features = standardized_features
-    print("feature_hypers", feature_hypers)
     if "feature_selection_parameters" in feature_hypers:
         features = select_features(features, features[train_idx], feature_hypers["feature_selection_parameters"])
     return (features[train_idx], features[test_idx])
