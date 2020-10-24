@@ -1,7 +1,7 @@
 import numpy as np
 import scipy
 from src.CUR import CUR
-from src.kpcovr import KPCovR
+#from src.kpcovr import KPCovR
 
 
 def select_features(features, features_train, hypers, Y=None):
