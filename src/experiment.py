@@ -68,8 +68,11 @@ def split_features(features, train_idx, test_idx):
     return features[train_idx], features[test_idx]
 
 def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
-    features = standardize_features(features, train_idx)
-    features = standardize_features(features, train_idx)
+    standardized_features = standardize_features(features, train_idx)
+    standardization_error = np.linalg.norm(standardized_features-features)/len(features) 
+    print("Standardization error:",standardization_error)
+    features = standardized_features
+    print("feature_hypers", feature_hypers)
     if "feature_selection_parameters" in feature_hypers:
         features = select_features(features, features[train_idx], feature_hypers["feature_selection_parameters"])
     return (features[train_idx], features[test_idx])
@@ -117,6 +120,7 @@ def gfr_pairwise_experiment(
     train_idx, test_idx = generate_two_split_idx(nb_samples_, train_ratio, seed)
 
     feature_spaces1 = compute_representations(features_hypers1, frames, train_idx, center_atom_id_mask_description)
+    print("feature_spaces1[0].shape",feature_spaces1[0].shape)
     feature_spaces2 = compute_representations(features_hypers2, frames, train_idx, center_atom_id_mask_description)
 
     for i in range(len(feature_spaces1)):

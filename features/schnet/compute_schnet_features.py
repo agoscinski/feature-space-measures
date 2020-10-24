@@ -45,7 +45,7 @@ def compute_schnet_features_for_qm9(nb_structures, structure_property = 'energy_
 
 def main():
     # schnet qm9 U0 has 6 interaction blocks
-    nb_structures = 500
+    nb_structures = 1000
     features = compute_schnet_features_for_qm9(nb_structures)
     for layer in range(features.shape[1]):
         np.save('schnet_qm9_energy_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])

@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+import scipy.special
 
 from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
@@ -63,12 +64,28 @@ def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_ato
     computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]
     if computation_type == "implicit_distance":
         features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    elif computation_type == "sparse_implicit_distance":
+        features = compute_sparse_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    elif computation_type == "implicit_kernel":
+        features = compute_features_from_kernel(compute_kernel(feature_hypers, frames, train_idx, center_atom_id_mask))
     elif computation_type == "explicit":
         features = compute_explicit_features(feature_hypers, frames, train_idx, center_atom_id_mask)
+    else:
+        raise ValueError("The computation_type=" + computation_type + " is not known.")
     return features
+
+def compute_kernel(feature_hypers, frames, train_idx, center_atom_id_mask):
+    features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+    features = standardize_features(features, train_idx)
+    kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
+    kernel_type = kernel_parameters["kernel_type"]
+    if kernel_type == "polynomial":
+        return (1 + features.dot(features.T))**kernel_parameters["degree"]
+
 
 def compute_explicit_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+    features = standardize_features(features, train_idx)
     kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
     kernel_type = kernel_parameters["kernel_type"]
     if kernel_type == "polynomial":
@@ -89,11 +106,13 @@ def compute_explicit_polynomial_features(features, degree):
     #from sympy.ntheory.multinomial import multinomial_coefficients
     from sympy.ntheory.multinomial import multinomial_coefficients_iterator
     i = 0
-    for k_indices, multinomial_coeff in multinomial_coefficients_iterator(nb_features, degree):
-        np.sqrt(multinomial_coeff)
+    print(f"Computation of explicit features nb_features={nb_features} degree={degree}...")
+    for k_indices, multinomial_coeff in multinomial_coefficients_iterator(nb_features, degree): 
+        polynomial_features[:,i] = np.sqrt(multinomial_coeff)
         for t in range(len(k_indices)):
             polynomial_features[:,i] *= features[:,t]**k_indices[t]
         i += 1
+    print("Computation of explicit features finished")
     return polynomial_features
 
 
@@ -115,10 +134,44 @@ def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_m
 def compute_features_from_kernel(kernel):
     print("Compute features from kernel...")
     # SVD is more numerical stable than eigh
-    U, s, _ = scipy.linalg.svd(kernel)
+    #U, s, _ = scipy.linalg.svd(kernel)
+    #return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
     # reorder eigvals and eigvectors such that largest eigvenvectors and eigvals start in the fist column
+    d, A = scipy.linalg.eigh(kernel)
     print("Compute features from kernel finished.")
-    return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
+    if np.min(d) < 0:
+        print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error')
+        d[d < 0] = 0
+    return A.dot(np.diag(np.sqrt(d)))
+
+def compute_sparse_features_from_kernel(kernel):
+    print("Compute features from kernel...")
+    from sklearn.utils.extmath import randomized_svd
+    from sklearn.utils.validation import check_random_state
+    i = 0
+    total_explained_variance_ratio_  = 0
+    total_var = np.var(kernel, ddof=1, axis=0)
+    while(total_explained_variance_ratio_ < 0.99):
+        random_state = check_random_state(None)
+        iterated_power='auto'
+        # TODO the 1000+(500*i) is hacked for experiments, make this hyperparameters
+        U, S, V = randomized_svd(kernel, n_components=min(1000+(500*i),len(kernel)),
+                                 n_iter=iterated_power,
+                                 flip_sign=True,
+                                 random_state=random_state)
+        # altered copy from
+        # https://github.com/scikit-learn/scikit-learn/blob/0fb307bf3/sklearn/decomposition/_pca.py#L552-L556
+        explained_variance_ = (S ** 2) / (len(kernel) - 1)
+        total_explained_variance_ratio_ = np.sum(explained_variance_ / total_var.sum())
+        i += 1
+    print("number of kernel features:", 500*i) 
+
+    print("Compute features from kernel finished.")
+    # if one wants to sort features according to the eigvals descending
+    #idx = np.argsort(S)[::-1]
+    #U = U[:,idx]
+    #S = S[idx]
+    return U.dot(np.diag(np.sqrt(S)))
 
 # use this implementation to check for negative eigenvalues for debugging
 # def compute_features_from_kernel(kernel):
@@ -138,7 +191,7 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
         return -H.dot(squared_distance).dot(H) / 2
     elif kernel_type == "polynomial":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
-        return (1 + (-H.dot(squared_distance).dot(H) * kernel_parameters["gamma"] ))**kernel_parameters["degree"]
+        return (1 + (-H.dot(squared_distance).dot(H)/2 * kernel_parameters["gamma"]))**kernel_parameters["degree"]
     elif kernel_type == "negative_distance":
         return -squared_distance ** (kernel_parameters["degree"] / 2)
     elif kernel_type == "rbf":
@@ -149,5 +202,6 @@ def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
     else:
         raise ValueError("The kernel_type=" + kernel_type + " is not known.")
 
+# TODO deprecated
 def load_hydrogen_distance_dataset(frames):
     return np.array([frame.info["hydrogen_distance"] for frame in frames])[:,np.newaxis]

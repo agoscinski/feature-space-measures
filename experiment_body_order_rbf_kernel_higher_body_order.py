@@ -67,6 +67,7 @@ for dataset_name in ["selection-10k.extxyz"]:
                 "normalize": normalize
             },
             "hilbert_space_parameters": {
+                "computation_type" : "implicit_distance",
                 "distance_parameters": {"distance_type": "euclidean"},
                 "kernel_parameters": {"kernel_type": "rbf", "gamma": gamma}
             }} for gamma in gammas])

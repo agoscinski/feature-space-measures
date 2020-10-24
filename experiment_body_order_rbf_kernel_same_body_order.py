@@ -58,12 +58,13 @@ for dataset_name in ["selection-10k.extxyz"]:
                 "normalize": normalize
             },
             "hilbert_space_parameters": {
+                "computation_type" : "implicit_distance",
                 "distance_parameters": {"distance_type": "euclidean"},
                 "kernel_parameters": {"kernel_type": "rbf", "gamma": gamma}
             }
         } for gamma in gammas])
 
-        hash_value = gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer)
+        hash_value = gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, compute_distortion=False)
         hash_values.append(hash_value)
         print(f"dataset_name={dataset_name} soap_type={soap_type} hash_value={hash_value}")
 print('"' + ' '.join(hash_values).replace(' ','" "' ) + '" ')
