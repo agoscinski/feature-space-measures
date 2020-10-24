@@ -19,7 +19,7 @@ def compute_schnet_features_for_qm9(nb_structures, structure_property = 'energy_
 
     model = torch.load(model_filename, map_location=torch.device(DEVICE))
     print("Number of interaction blocks:", len(model.representation.interactions))
-    print(model.representation.distance_expansion.named_buffers)
+    print("Gaussian width used for expanison is ", list(model.representation.distance_expansion.named_buffers())[0][1][0])
     for interaction_layer in range(len(model.representation.interactions)):
         print( "Interaction layer "+str(interaction_layer)+". has cutoff type " + str(model.representation.interactions[0].cutoff_network) +
                " cutoff "+ str(list(model.representation.interactions[4].cutoff_network.named_buffers())[0][1][0]) +" AA" )
@@ -46,9 +46,9 @@ def compute_schnet_features_for_qm9(nb_structures, structure_property = 'energy_
 def main():
     # schnet qm9 U0 has 6 interaction blocks
     nb_structures = 500
-    features = compute_schnet_features_for_qm9(nb_structures)
-    property_keys = ["dipole_moment" , "isotropic_polarizability" , "homo" , "lumo" , "electronic_spatial_extent" , "zpve" , "energy_U0" , "energy_U" , "enthalpy_H" , "free_energy" , "heat_capacity"]
+    property_keys = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
     for structure_property in property_keys:
+        features = compute_schnet_features_for_qm9(nb_structures)
         for layer in range(features.shape[1]):
             np.save('schnet_'+structure_property+'_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 

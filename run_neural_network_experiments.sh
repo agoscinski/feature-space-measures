@@ -30,7 +30,6 @@ taskset -c 4 python experiment_sym_2_body_adcf_poly_kernel_schnet_comparison_on_
 #echo "##########################\n"
 #taskset -c 0 python experiment_soap_schnet_on_all_properties_qm9.py --option
 
-
 # TODO
 #echo "\n##########################"
 #echo "#  #"
