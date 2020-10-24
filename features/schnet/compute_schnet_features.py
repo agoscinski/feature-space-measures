@@ -48,7 +48,7 @@ def main():
     nb_structures = 500
     property_keys = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
     for structure_property in property_keys:
-        features = compute_schnet_features_for_qm9(nb_structures)
+        features = compute_schnet_features_for_qm9(nb_structures, structure_property)
         for layer in range(features.shape[1]):
             np.save('schnet_'+structure_property+'_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 
