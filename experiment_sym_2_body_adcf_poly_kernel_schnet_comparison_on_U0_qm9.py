@@ -64,10 +64,9 @@ for degree in polynomial_degrees:
         "feature_selection_parameters":{
             "type": "PCA",
             "explained_variance_ratio": 0.99,
-            #"n_features": 128,
         },
         "hilbert_space_parameters": {
-            "computation_type": "explicit",
+            "computation_type": "sparse_implicit_distance",
             "distance_parameters": {"distance_type": "euclidean"},
             "kernel_parameters": {"kernel_type": "polynomial", "degree": degree, "gamma":1}
         }

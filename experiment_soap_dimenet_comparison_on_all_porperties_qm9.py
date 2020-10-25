@@ -18,12 +18,10 @@ memory_limit(8e+11)
 
 
 # Constant hyperparameters
-cutoff = 10 # schnet, gschnet
+cutoff = 5 # dimenet
 
 sigma = 0.2041 # schnet
-cutoff_smooth_width = 10 # schnet
-#sigma = 0.4167 # gschnet
-#cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
+cutoff_smooth_width = 4.1 # dimenet
 
 normalize = False
 
@@ -40,7 +38,7 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-properties_key = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
+properties_key = ['mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U0', 'U', 'H', 'G', 'Cv']
 hash_values = []
 for key in properties_key:
     features_hypers1 = [{
@@ -65,7 +63,7 @@ for key in properties_key:
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "schnet",
-            "filename": "schnet_"+key+"_U0_nb_structures=10000_layer=6.npy",
+            "filename": "dimenet_qm9_"+key+"_nb_structures=10000_layer=6.npy",
             "filetype": "npy",
         }
     }]

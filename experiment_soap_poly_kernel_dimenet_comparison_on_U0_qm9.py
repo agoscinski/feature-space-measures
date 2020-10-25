@@ -18,13 +18,9 @@ memory_limit(8e+11)
 
 
 # Constant hyperparameters
-cutoff = 10 # schnet, gschnet
-
+cutoff = 5 # dimenet
 sigma = 0.2041 # schnet
-cutoff_smooth_width = 10 # schnet
-#sigma = 0.4167 # gschnet
-#cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
-
+cutoff_smooth_width = 4.1 # dimenet
 normalize = False
 
 # Experiment metadata
@@ -40,9 +36,10 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-properties_key = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
+polynomial_degrees = [1,2,3,4,5,6,7]
+
 hash_values = []
-for key in properties_key:
+for degree in polynomial_degrees:
     features_hypers1 = [{
         "feature_type": "soap",
         "feature_parameters": {
@@ -60,12 +57,17 @@ for key in properties_key:
             "type": "PCA",
             "explained_variance_ratio": 0.99,
         },
+        "hilbert_space_parameters": {
+            "computation_type": "sparse_implicit_distance",
+            "distance_parameters": {"distance_type": "euclidean"},
+            "kernel_parameters": {"kernel_type": "polynomial", "degree": degree, "gamma":1}
+        }
     }]
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "schnet",
-            "filename": "schnet_"+key+"_U0_nb_structures=10000_layer=6.npy",
+            "filename": "dimenet_qm9_U0_nb_structures=10000_layer=6.npy",
             "filetype": "npy",
         }
     }]

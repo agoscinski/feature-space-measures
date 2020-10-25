@@ -50,7 +50,7 @@ def main():
     for structure_property in property_keys:
         features = compute_schnet_features_for_qm9(nb_structures, structure_property)
         for layer in range(features.shape[1]):
-            np.save('schnet_'+structure_property+'_U0_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
+            np.save('schnet_qm9_'+structure_property+'_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
 
 if __name__ == "__main__":
     # execute only if run as a script
