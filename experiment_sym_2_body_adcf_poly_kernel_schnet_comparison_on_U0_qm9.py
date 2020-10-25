@@ -42,7 +42,7 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-polynomial_degrees = [1,2]
+polynomial_degrees = [1,2,3,4,5,6,7]
 
 hash_values = [] 
 gfre_mat = np.zeros( (len(polynomial_degrees), 2) )
@@ -61,7 +61,7 @@ for degree in polynomial_degrees:
             "cutoff_smooth_width": cutoff_smooth_width,
             "normalize": normalize
         },
-        "feature_selection_parameters":{
+        "feature_selection_parameters": {
             "type": "PCA",
             "explained_variance_ratio": 0.99,
         },

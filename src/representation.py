@@ -132,20 +132,20 @@ def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_m
 
 
 def compute_features_from_kernel(kernel):
-    print("Compute features from kernel...")
+    print("Compute features from kernel...", flush=True)
     # SVD is more numerical stable than eigh
     #U, s, _ = scipy.linalg.svd(kernel)
     #return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
     # reorder eigvals and eigvectors such that largest eigvenvectors and eigvals start in the fist column
     d, A = scipy.linalg.eigh(kernel)
-    print("Compute features from kernel finished.")
+    print("Compute features from kernel finished.", flush=True)
     if np.min(d) < 0:
-        print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error')
+        print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
         d[d < 0] = 0
     return A.dot(np.diag(np.sqrt(d)))
 
 def compute_sparse_features_from_kernel(kernel):
-    print("Compute features from kernel...")
+    print("Compute features from kernel...", flush=True)
     from sklearn.utils.extmath import randomized_svd
     from sklearn.utils.validation import check_random_state
     i = 0
@@ -174,9 +174,9 @@ def compute_sparse_features_from_kernel(kernel):
         explained_variance_ = (S ** 2) / (n_samples - 1)
         total_explained_variance_ratio_ = np.sum(explained_variance_ / total_var)
         i += 1
-    print("number of kernel features:", 1000*500*(i-1)) 
+    print("number of kernel features:", 1000*500*(i-1), flush=True) 
 
-    print("Compute features from kernel finished.")
+    print("Compute features from kernel finished.", flush=True)
     # if one wants to sort features according to the eigvals descending
     #idx = np.argsort(S)[::-1]
     #U = U[:,idx]
