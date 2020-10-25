@@ -65,7 +65,7 @@ for key in properties_key:
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "schnet",
-            "filename": "schnet_"+key+"_U0_nb_structures=10000_layer=6.npy",
+            "filename": "schnet_"+key+"_U0_nb_structures=20000_layer=6.npy",
             "filetype": "npy",
         }
     }]

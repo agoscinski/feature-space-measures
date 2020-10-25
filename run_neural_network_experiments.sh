@@ -28,7 +28,7 @@ taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_soap_schnet_on_all_proper
 echo "\n##########################"
 echo "#  #"
 echo "##########################\n"
-taskset -c 0 python experiment_dimenet_convergence_on_U0_qm9.py --option
+taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_dimenet_convergence_on_U0_qm9.py --option
 
 echo "\n##########################"
 echo "#  #"
