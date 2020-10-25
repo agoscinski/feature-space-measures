@@ -10,7 +10,7 @@ from src.scalers import standardize_features
 
 FEATURES_ROOT ="features"
 
-def compute_representations(features_hypers, frames, train_idx=None, center_atom_id_mask_description="first environment"):
+def compute_representations(features_hypers, frames, environments_train_idx=None, center_atom_id_mask_description="first environment", train_test_structures_idx=None):
     if center_atom_id_mask_description == "first environment":
         print("WARNING only the first environment of all structures is computed. Please use center_atom_id_mask_description='all environments' if you want to use all environments")
         center_atom_id_mask = [[0] for frame in frames]
@@ -25,18 +25,20 @@ def compute_representations(features_hypers, frames, train_idx=None, center_atom
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
-            features = compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask)
+            features = compute_hilbert_space_features(feature_hypers, frames, environments_train_idx, center_atom_id_mask)
         else:
-            features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+            features = compute_representation(feature_hypers, frames, environments_train_idx, center_atom_id_mask, train_test_structures_idx)
         feature_spaces.append(features)
     print("Compute representations finished", flush=True)
     return feature_spaces
 
 
-def compute_representation(feature_hypers, frames, center_atom_id_mask):
+def compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask, train_test_structures_idx=None):
     if feature_hypers["feature_type"] == "soap":
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         return representation.transform(frames).get_features(representation)
+    elif feature_hypers["feature_type"] == "nice":
+        return compute_nice_features(feature_hypers["feature_parameters"], frames, train_idx, center_atom_id_mask, train_test_structures_idx)
     elif feature_hypers["feature_type"] == "wasserstein":
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
     elif feature_hypers["feature_type"] == "sorted_distances":
@@ -59,6 +61,49 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
         elif parameters["feature_name"] == "displaced_hydrogen_distance": 
             return load_hydrogen_distance_dataset(frames)[:nb_samples]
 
+def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask, train_test_structures_idx):
+    import copy
+    from nice.blocks import StandardSequence, StandardBlock, ThresholdExpansioner, CovariantsPurifierBoth, IndividualLambdaPCAsBoth, ThresholdExpansioner, InvariantsPurifier, InvariantsPCA, InitialScaler
+
+    from nice.utilities import get_spherical_expansion, make_structural_features
+    all_species = np.unique(np.concatenate([frame.numbers for frame in frames]))
+    train_coefficients = get_spherical_expansion([frames[idx] for idx in train_test_structures_idx['train']], feature_hypers['spherical_coeffs'], all_species)
+    coefficients = get_spherical_expansion(frames, feature_hypers['spherical_coeffs'], all_species)
+
+    invariant_nice_calculator = StandardSequence([
+        StandardBlock(ThresholdExpansioner(num_expand=150),
+                      CovariantsPurifierBoth(max_take=10),
+                      IndividualLambdaPCAsBoth(n_components=50),
+                      ThresholdExpansioner(num_expand=300, mode='invariants'),
+                      InvariantsPurifier(max_take=50),
+                      InvariantsPCA(n_components=200)),
+        StandardBlock(ThresholdExpansioner(num_expand=150),
+                      CovariantsPurifierBoth(max_take=10),
+                      IndividualLambdaPCAsBoth(n_components=50),
+                      ThresholdExpansioner(num_expand=300, mode='invariants'),
+                      InvariantsPurifier(max_take=50),
+                      InvariantsPCA(n_components=200)),
+        StandardBlock(None, None, None,
+                      ThresholdExpansioner(num_expand=300, mode='invariants'),
+                      InvariantsPurifier(max_take=50),
+                      InvariantsPCA(n_components=200))
+    ],
+                        initial_scaler=InitialScaler(
+                            mode='signal integral', individually=True))
+
+    nice_calculator = {}
+    features = {}
+    print(train_coefficients.keys())
+    for species in all_species:
+        print("species ",species)
+        print(train_coefficients[species].shape)
+        nice_calculator[species] = copy.deepcopy(invariant_nice_calculator)
+        nice_calculator[species].fit(train_coefficients[species])
+        features[species] = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
+    features = make_structural_features(features, frames, all_species)
+    cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
+    features_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(cumulative_env_idx))] )
+    return features[features_idx]
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]
@@ -75,7 +120,7 @@ def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_ato
     return features
 
 def compute_kernel(feature_hypers, frames, train_idx, center_atom_id_mask):
-    features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+    features = compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask)
     features = standardize_features(features, train_idx)
     kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
     kernel_type = kernel_parameters["kernel_type"]
@@ -84,7 +129,7 @@ def compute_kernel(feature_hypers, frames, train_idx, center_atom_id_mask):
 
 
 def compute_explicit_features(feature_hypers, frames, train_idx, center_atom_id_mask):
-    features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+    features = compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask)
     features = standardize_features(features, train_idx)
     kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
     kernel_type = kernel_parameters["kernel_type"]
@@ -120,7 +165,7 @@ def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_m
     print("Compute distance.")
     distance_type = feature_hypers["hilbert_space_parameters"]["distance_parameters"]["distance_type"]
     if distance_type == "euclidean":
-        features = compute_representation(feature_hypers, frames, center_atom_id_mask)
+        features = compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask)
     elif distance_type == "wasserstein":
         raise ValueError("The distance_type='wasserstein' is not fully implemented yet.")
         features = compute_squared_wasserstein_distance(feature_hypers, frames)
@@ -194,7 +239,7 @@ def compute_sparse_features_from_kernel(kernel):
 
 
 def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
-    print("Compute kernel.", flush=True)
+    print("Compute kernel...", flush=True)
     kernel_type = kernel_parameters["kernel_type"]
     if kernel_type == "center":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)

@@ -1,14 +1,15 @@
-out
+out1.1
 #echo "\n##########################"
 #echo "# GFRE/GFRD symmetrized 2-body atomic density function convergence experiment #"
 #echo "##########################\n"
 #taskset -c 4 python experiment_sym_2_body_adcf_convergence_on_U0_qm9.py 10000 --option
 #
+out1.2
 #echo "\n##########################"
 #echo "# GFRE/GFRD schnet convergence experiment #"
 #echo "##########################\n"
 #taskset -c 4 python experiment_schnet_convergence_on_U0_qm9.py 10000 --option
-#
+out1.3
 # [(2, 2), (4, 3), (6, 4)]  (8,5) is missing
 #echo "\n##########################"
 #echo "# GFRE/GFRD SOAP convergence experiment #"
@@ -58,17 +59,22 @@ echo "# experiment_dimenet_convergence_on_U0_qm9.py #"
 echo "##########################\n"
 taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_dimenet_convergence_on_U0_qm9.py 10000 --option
 
+##########################
+out8 srv7
 echo "\n##########################"
 echo "#  #"
 echo "##########################\n"
 taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_schnet_dimenet_comparison_on_U0_qm9.py 10000 --option
 
+##########################
+out9 srv8
 echo "\n##########################"
 echo "#  #"
 echo "##########################\n"
 taskset --cpu-list 33,34,35,36,37,38 python experiment_soap_dimenet_comparison_on_all_porperties_qm9.py 10000 --option
 
 ##########################
+out10.2500
 echo "\n##########################"
 echo "# experiment_soap_poly_kernel_dimenet_comparison_on_U0_qm9.py  #"
 echo "##########################\n"5
@@ -76,8 +82,8 @@ taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_soap_poly_kernel_dimenet_
 
 
 ########################### NICE
-
-#taskset -c 0 python experiment_soap_nice_schnet_gschnet_comparison_on_qm9.py --option
+out11
+taskset -c 0 python experiment_soap_nice_schnet_gschnet_comparison_on_qm9.py --option
 
 
 ########################### LFRE

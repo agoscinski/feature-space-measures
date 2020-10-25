@@ -27,7 +27,7 @@ import subprocess
 DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
-def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
+def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, frames=None):
     """
     Computes the FRE and FRD of features2 from features1 with a two-split
 
@@ -51,11 +51,23 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF):
         else:
             raise ValueError(f"train_ration {train_ratio} is not known.")
     else:
-        np.random.seed(seed)
-        idx = np.arange(nb_samples)
-        np.random.shuffle(idx)
-        split_id = int(len(idx) * train_ratio)
-        return idx[:split_id], idx[split_id:]
+        if frames is None:
+            np.random.seed(seed)
+            idx = np.arange(nb_samples)
+            np.random.shuffle(idx)
+            split_id = int(len(idx) * train_ratio)
+            return idx[:split_id], idx[split_id:], None
+        # choose structures instead of environments
+        else:
+            np.random.seed(seed)
+            struc_idx = np.arange(len(frames))
+            np.random.shuffle(struc_idx)
+            split_id = int(len(struc_idx) * train_ratio)
+            train_struc_idx, test_struc_idx = struc_idx[:split_id], struc_idx[split_id:]
+            train_env_idx = np.array([len(frames[idx]) for idx in train_struc_idx])
+            test_env_idx = np.array([len(frames[idx]) for idx in test_struc_idx])
+            train_test_struc_idx = {'train':train_struc_idx, 'test':test_struc_idx}
+            return train_env_idx, test_env_idx, train_test_struc_idx
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
@@ -116,11 +128,11 @@ def gfr_pairwise_experiment(
         nb_samples_ = sum([frame.get_global_number_of_atoms() for frame in frames])
 
 
-    train_idx, test_idx = generate_two_split_idx(nb_samples_, train_ratio, seed)
+    train_idx, test_idx, train_test_structures_idx = generate_two_split_idx(nb_samples_, train_ratio, seed, frames)
 
-    feature_spaces1 = compute_representations(features_hypers1, frames, train_idx, center_atom_id_mask_description)
+    feature_spaces1 = compute_representations(features_hypers1, frames, train_idx, center_atom_id_mask_description, train_test_structures_idx)
     print("feature_spaces1[0].shape",feature_spaces1[0].shape)
-    feature_spaces2 = compute_representations(features_hypers2, frames, train_idx, center_atom_id_mask_description)
+    feature_spaces2 = compute_representations(features_hypers2, frames, train_idx, center_atom_id_mask_description, train_test_structures_idx)
 
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
