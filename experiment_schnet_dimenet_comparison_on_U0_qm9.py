@@ -43,7 +43,7 @@ for layer in layers:
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
-            "feature_name": "schnet",
+            "feature_name": "dimenet",
             "filename": "dimenet_qm9_energy_U0_nb_structures=10000_layer="+str(layer)".npy",
             "filetype": "npy",
         }

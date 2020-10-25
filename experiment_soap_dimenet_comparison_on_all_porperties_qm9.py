@@ -62,7 +62,7 @@ for key in properties_key:
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
-            "feature_name": "schnet",
+            "feature_name": "dimenet",
             "filename": "dimenet_qm9_"+key+"_nb_structures=10000_layer=6.npy",
             "filetype": "npy",
         }
