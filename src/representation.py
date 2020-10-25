@@ -66,6 +66,9 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
     from nice.blocks import StandardSequence, StandardBlock, ThresholdExpansioner, CovariantsPurifierBoth, IndividualLambdaPCAsBoth, ThresholdExpansioner, InvariantsPurifier, InvariantsPCA, InitialScaler
 
     from nice.utilities import get_spherical_expansion, make_structural_features
+    print("WARNING: nice species hack, set species 9 to 8 because 9 is barely present")
+    for frame in frames:
+        frame.numbers[frame.numbers==9] = 8
     all_species = np.unique(np.concatenate([frame.numbers for frame in frames]))
     train_coefficients = get_spherical_expansion([frames[idx] for idx in train_test_structures_idx['train']], feature_hypers['spherical_coeffs'], all_species)
     coefficients = get_spherical_expansion(frames, feature_hypers['spherical_coeffs'], all_species)

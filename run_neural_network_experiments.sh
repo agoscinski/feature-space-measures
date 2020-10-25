@@ -33,6 +33,8 @@ taskset --cpu-list 33,34,35,36,37,38  python experiment_sym_2_body_adcf_poly_ker
 ##########################
 
 out4 with updated totial variance of sparse kernel
+out.5k
+out.2500
 echo "\n##########################"
 echo "# GFRE/GFRD symmetrized 2-body atomic density function poly kernel comparison with schnet experiment #"
 echo "##########################\n"
@@ -75,17 +77,25 @@ taskset --cpu-list 33,34,35,36,37,38 python experiment_soap_dimenet_comparison_o
 
 ##########################
 out10.2500
+out10.5k
 echo "\n##########################"
 echo "# experiment_soap_poly_kernel_dimenet_comparison_on_U0_qm9.py  #"
 echo "##########################\n"5
-taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_soap_poly_kernel_dimenet_comparison_on_U0_qm9.py 10000 --opti5on
+taskset --cpu-list 0,1,2,3,4,5,6,7,8 python experiment_soap_poly_kernel_dimenet_comparison_on_U0_qm9.py 5000 --opti5on
 
 
 ########################### NICE
 out11
-taskset -c 0 python experiment_soap_nice_schnet_gschnet_comparison_on_qm9.py --option
+taskset -c 0 python experiment_soap_nice_schnet_gschnet_comparison_on_qm9.py 10000 --option
 
+out11.1
+taskset -c 0 python experiment_nice_gschnet_comparison_on_qm9.py 10000 --option
 
+out11.2
+taskset -c 0 python experiment_soap_gschnet_comparison_on_qm9.py 10000 --option
+
+out11.3
+taskset -c 0 python experiment_schnet_gschnet_comparison_on_qm9.py 10000 --option
 ########################### LFRE
 
 #echo "\n##########################"
