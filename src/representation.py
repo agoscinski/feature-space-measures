@@ -106,13 +106,13 @@ def compute_explicit_polynomial_features(features, degree):
     #from sympy.ntheory.multinomial import multinomial_coefficients
     from sympy.ntheory.multinomial import multinomial_coefficients_iterator
     i = 0
-    print(f"Computation of explicit features nb_features={nb_features} degree={degree}...")
+    print(f"Computation of explicit features nb_features={nb_features} degree={degree}...", flush=True)
     for k_indices, multinomial_coeff in multinomial_coefficients_iterator(nb_features, degree): 
         polynomial_features[:,i] = np.sqrt(multinomial_coeff)
         for t in range(len(k_indices)):
             polynomial_features[:,i] *= features[:,t]**k_indices[t]
         i += 1
-    print("Computation of explicit features finished")
+    print("Computation of explicit features finished", flush=True)
     return polynomial_features
 
 
@@ -174,7 +174,7 @@ def compute_sparse_features_from_kernel(kernel):
         explained_variance_ = (S ** 2) / (n_samples - 1)
         total_explained_variance_ratio_ = np.sum(explained_variance_ / total_var)
         i += 1
-    print("number of kernel features:", 1000*500*(i-1), flush=True) 
+    print("number of kernel features:", 1000*500*(i-1), flush=True)
 
     print("Compute features from kernel finished.", flush=True)
     # if one wants to sort features according to the eigvals descending
@@ -194,7 +194,7 @@ def compute_sparse_features_from_kernel(kernel):
 
 
 def compute_kernel_from_squared_distance(squared_distance, kernel_parameters):
-    print("Compute kernel.")
+    print("Compute kernel.", flush=True)
     kernel_type = kernel_parameters["kernel_type"]
     if kernel_type == "center":
         H = np.eye(len(squared_distance)) - np.ones((len(squared_distance), len(squared_distance))) / len(squared_distance)
