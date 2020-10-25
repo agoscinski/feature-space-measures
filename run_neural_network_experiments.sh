@@ -9,7 +9,7 @@ out
 #echo "##########################\n"
 #taskset -c 4 python experiment_schnet_convergence_on_U0_qm9.py 10000 --option
 #
-# [(2, 2), (4, 3), (6, 4)]  and (8,5) in metadata-c24c2f22.json
+# [(2, 2), (4, 3), (6, 4)]  (8,5) is missing
 #echo "\n##########################"
 #echo "# GFRE/GFRD SOAP convergence experiment #"
 #echo "##########################\n"
@@ -31,13 +31,19 @@ echo "##########################\n"
 taskset --cpu-list 33,34,35,36,37,38  python experiment_sym_2_body_adcf_poly_kernel_schnet_comparison_on_U0_qm9.py 10000 --option
 ##########################
 
-out4
+out4 with updated totial variance of sparse kernel
 echo "\n##########################"
 echo "# GFRE/GFRD symmetrized 2-body atomic density function poly kernel comparison with schnet experiment #"
 echo "##########################\n"
 taskset --cpu-list 33,34,35,36,37,38  python experiment_sym_2_body_adcf_poly_kernel_schnet_comparison_on_U0_qm9.py 10000 --option
 ##########################
 
+out5
+echo "\n##########################"
+echo "# GFRE/GFRD SOAP convergence experiment #"
+echo "##########################\n"
+taskset -c 4 python experiment_soap_pca_convergence_on_U0_qm9.py 10000 --option
+##########################
 
 echo "\n##########################"
 echo "# experiment_dimenet_convergence_on_U0_qm9.py #"

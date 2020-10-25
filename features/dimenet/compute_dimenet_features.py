@@ -45,7 +45,7 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
         raise ValueError("Wrong property key "+structure_property_key)
 
     cutoff = config['cutoff']
-    print("Cutoff used",cutoff)
+    print("Cutoff used",cutoff, flush=True)
     envelope_exponent = config['envelope_exponent']
 
     num_before_skip = config['num_before_skip']
@@ -90,7 +90,7 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
     dimenet_features = np.zeros( (nb_envs, len(model.output_blocks), feature_size) )
     for i in range(nb_structures):
         if (i % 500 == 0):
-            print(i)
+            print(i,flush=True)
         model(data_provider.idx_to_data(i)[0])
         for layer in range(len(model.output_blocks)):
             dimenet_features[struc_to_env_idx[i]:struc_to_env_idx[i+1], layer, :] = model.output_blocks[layer].representation.numpy()
@@ -113,12 +113,12 @@ def compute_smooth_cutoff(cutoff=5, p=6, grid_size=100):
     print("The smooth cutoff width most similar to the one of dimenet", smooth_widths[np.argmin(err)])
 
 def main():
-    nb_structures = 500
+    nb_structures = 10000
     #structure_properties_key = ['U0', 'mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U', 'H', 'G', 'Cv']
     structure_properties_key = [sys.argv[1]]
     for structure_property_key in structure_properties_key:
         print()
-        print(structure_property_key)
+        print(structure_property_key, flush=True)
         print()
         features = compute_dimenet_features_for_qm9(nb_structures, structure_property_key)
         for layer in range(features.shape[1]):
