@@ -32,11 +32,11 @@ regularizer = "CV 2 fold"
 layers = [0,1,2,3,4,5,6]
 hash_values = []
 for layer in layers:
-    features_hypers2 = [{
+    features_hypers1 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "schnet",
-            "filename": "schnet_qm9_energy_U0_nb_structures=10000_layer="+str(layer)".npy",
+            "filename": "schnet_qm9_energy_U0_nb_structures=10000_layer="+str(layer)+".npy",
             "filetype": "npy",
         }
     }]
@@ -44,7 +44,7 @@ for layer in layers:
         "feature_type": "precomputed",
         "feature_parameters": {
             "feature_name": "dimenet",
-            "filename": "dimenet_qm9_energy_U0_nb_structures=10000_layer="+str(layer)".npy",
+            "filename": "dimenet_qm9_energy_U0_nb_structures=10000_layer="+str(layer)+".npy",
             "filetype": "npy",
         }
     }]
