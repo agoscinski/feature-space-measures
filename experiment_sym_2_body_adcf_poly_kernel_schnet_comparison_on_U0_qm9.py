@@ -42,7 +42,7 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-polynomial_degrees = [1,2,3,4,5,6,7]
+polynomial_degrees = [1,2]
 
 hash_values = [] 
 gfre_mat = np.zeros( (len(polynomial_degrees), 2) )

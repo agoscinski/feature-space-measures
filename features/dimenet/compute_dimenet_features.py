@@ -113,8 +113,9 @@ def compute_smooth_cutoff(cutoff=5, p=6, grid_size=100):
     print("The smooth cutoff width most similar to the one of dimenet", smooth_widths[np.argmin(err)])
 
 def main():
-    nb_structures = 10000
-    structure_properties_key = ['U0', 'mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U', 'H', 'G', 'Cv']
+    nb_structures = 500
+    #structure_properties_key = ['U0', 'mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U', 'H', 'G', 'Cv']
+    structure_properties_key = [sys.argv[1]]
     for structure_property_key in structure_properties_key:
         print()
         print(structure_property_key)

@@ -83,7 +83,7 @@ def select_pca(X, hypers):
                 break;
         if ( np.sum(pca.explained_variance_ratio_) < hypers['explained_variance_ratio'] ):
             print("WARNING: explained_variance_ratio was not reached in feature selection, continue with 10000 features")
-        print("pca.n_components_:",pca.n_components_)
+        print("pca.n_components_:",pca.n_components_, flush=True)
         return pca
     else:
         raise ValueError(f"Missing PCA parameters, PCA hypers:", hypers)

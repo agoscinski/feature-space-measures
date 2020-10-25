@@ -150,7 +150,12 @@ def compute_sparse_features_from_kernel(kernel):
     from sklearn.utils.validation import check_random_state
     i = 0
     total_explained_variance_ratio_  = 0
-    total_var = np.var(kernel, ddof=1, axis=0)
+    # https://github.com/scikit-learn/scikit-learn/blob/0fb307bf3/sklearn/decomposition/_pca.py#L552-L556
+    # this is the original total variance estimation of the code
+    #total_var = np.var(kernel, ddof=1, axis=0)
+    # but it is only accurate if features << samples which is not the case for the kernel
+    # therefore we estimate a lower bound by taking the currently smallest eigval and
+    n_samples = len(kernel)
     while(total_explained_variance_ratio_ < 0.99):
         random_state = check_random_state(None)
         iterated_power='auto'
@@ -161,10 +166,15 @@ def compute_sparse_features_from_kernel(kernel):
                                  random_state=random_state)
         # altered copy from
         # https://github.com/scikit-learn/scikit-learn/blob/0fb307bf3/sklearn/decomposition/_pca.py#L552-L556
-        explained_variance_ = (S ** 2) / (len(kernel) - 1)
-        total_explained_variance_ratio_ = np.sum(explained_variance_ / total_var.sum())
+        # this is the original total variance estimation of the code
+        #total_var = np.var(kernel, ddof=1, axis=0).sum()
+        # but it is only accurate if features << samples which is not the case for the kernel
+        # therefore we estimate a lower bound by taking the currently smallest eigval and
+        total_var = ( np.sum(S**2) + (n_samples-len(S))* np.min(S)**2 ) / (n_samples - 1)
+        explained_variance_ = (S ** 2) / (n_samples - 1)
+        total_explained_variance_ratio_ = np.sum(explained_variance_ / total_var)
         i += 1
-    print("number of kernel features:", 500*i) 
+    print("number of kernel features:", 1000*500*(i-1)) 
 
     print("Compute features from kernel finished.")
     # if one wants to sort features according to the eigvals descending
