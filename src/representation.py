@@ -65,7 +65,7 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
     import copy
     from nice.blocks import StandardSequence, StandardBlock, ThresholdExpansioner, CovariantsPurifierBoth, IndividualLambdaPCAsBoth, ThresholdExpansioner, InvariantsPurifier, InvariantsPCA, InitialScaler
 
-    from nice.utilities import get_spherical_expansion, make_structural_features
+    from nice.utilities import get_spherical_expansion
     print("WARNING: nice species hack, set species 9 to 8 because 9 is barely present")
     for frame in frames:
         frame.numbers[frame.numbers==9] = 8
@@ -102,11 +102,12 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
         print(train_coefficients[species].shape)
         nice_calculator[species] = copy.deepcopy(invariant_nice_calculator)
         nice_calculator[species].fit(train_coefficients[species])
-        features[species] = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
-    features = make_structural_features(features, frames, all_species)
+        features_sp = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
+        features[species] = np.concatenate([features_sp[block] for block in features_sp], axis=1)
+    features = np.concatenate([features[species] for species in features], axis=0)
     cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
-    features_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(cumulative_env_idx))] )
-    return features[features_idx]
+    sample_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(center_atom_id_mask))] )
+    return features[sample_idx]
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]

@@ -64,8 +64,9 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, frames=
             np.random.shuffle(struc_idx)
             split_id = int(len(struc_idx) * train_ratio)
             train_struc_idx, test_struc_idx = struc_idx[:split_id], struc_idx[split_id:]
-            train_env_idx = np.array([len(frames[idx]) for idx in train_struc_idx])
-            test_env_idx = np.array([len(frames[idx]) for idx in test_struc_idx])
+            cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
+            train_env_idx = np.concatenate([np.arange(len(frames[idx])) + cumulative_env_idx[idx] for idx in train_struc_idx])
+            test_env_idx = np.concatenate([np.arange(len(frames[idx])) + cumulative_env_idx[idx] for idx in test_struc_idx])
             train_test_struc_idx = {'train':train_struc_idx, 'test':test_struc_idx}
             return train_env_idx, test_env_idx, train_test_struc_idx
 
