@@ -41,7 +41,7 @@ regularizer = "CV 2 fold"
 dataset_name = "qm9.db"
 
 #max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5)]
-max_radials_angulars = [(8, 5)]
+max_radials_angulars = [(2, 2), (4, 3), (6, 4)]
 hash_values = [] 
 gfre_mat = np.zeros( (len(max_radials_angulars), 2) )
 i = 0
