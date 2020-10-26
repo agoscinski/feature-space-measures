@@ -78,12 +78,18 @@ def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_m
 
 
 def compute_features_from_kernel(kernel):
-    print("Compute features from kernel...")
+    print("Compute features from kernel...", flush=True)
     # SVD is more numerical stable than eigh
-    U, s, _ = scipy.linalg.svd(kernel)
+    #U, s, _ = scipy.linalg.svd(kernel)
     # reorder eigvals and eigvectors such that largest eigvenvectors and eigvals start in the fist column
-    print("Compute features from kernel finished.")
-    return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
+    #return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
+    d, A = scipy.linalg.eigh(kernel)
+    print("Compute features from kernel finished.", flush=True)
+    if np.min(d) < 0:
+        print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
+        d[d < 0] = 0
+    return A.dot(np.diag(np.sqrt(d)))
+
 
 # use this implementation to check for negative eigenvalues for debugging
 # def compute_features_from_kernel(kernel):
