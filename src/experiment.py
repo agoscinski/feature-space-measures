@@ -56,7 +56,7 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, frames=
             idx = np.arange(nb_samples)
             np.random.shuffle(idx)
             split_id = int(len(idx) * train_ratio)
-            return idx[:split_id], idx[split_id:], None
+            return idx[:split_id], idx[split_id:]
         # choose structures instead of environments
         else:
             np.random.seed(seed)
