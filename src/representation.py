@@ -67,11 +67,15 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
 
     from nice.utilities import get_spherical_expansion
     print("WARNING: nice species hack, set species 9 to 8 because 9 is barely present")
-    for frame in frames:
-        frame.numbers[frame.numbers==9] = 8
+    #for frame in frames:
+    #    frame.numbers[frame.numbers==9] = 8
+    print("len(frames)",len(frames))
     all_species = np.unique(np.concatenate([frame.numbers for frame in frames]))
+    print(train_test_structures_idx['train'])
+    #np.save('train_structures_idx.npy', train_test_structures_idx['train'])
     train_coefficients = get_spherical_expansion([frames[idx] for idx in train_test_structures_idx['train']], feature_hypers['spherical_coeffs'], all_species)
     coefficients = get_spherical_expansion(frames, feature_hypers['spherical_coeffs'], all_species)
+    np.save("train_coefficients.npy", train_coefficients[1])
 
     invariant_nice_calculator = StandardSequence([
         StandardBlock(ThresholdExpansioner(num_expand=150),
@@ -101,13 +105,16 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
         print("species ",species)
         print(train_coefficients[species].shape)
         nice_calculator[species] = copy.deepcopy(invariant_nice_calculator)
+        print("train_coefficients[species] min max isnan", np.min(train_coefficients[species]), np.max(train_coefficients[species]), np.sum(np.isnan(train_coefficients[species])))
         nice_calculator[species].fit(train_coefficients[species])
         features_sp = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
         features[species] = np.concatenate([features_sp[block] for block in features_sp], axis=1)
     features = np.concatenate([features[species] for species in features], axis=0)
-    cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
-    sample_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(center_atom_id_mask))] )
-    return features[sample_idx]
+    print("nice features.shape", features.shape)
+    #cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
+    #sample_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(center_atom_id_mask))] )
+    #return features[sample_idx]
+    return features
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]

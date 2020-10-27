@@ -18,7 +18,6 @@ out1.3
 
 ##########################
 out2
-
 echo "\n##########################"
 echo "# GFRE/GFRD soap schnet comparison all properties experiment #"
 echo "##########################\n"
@@ -41,7 +40,7 @@ echo "##########################\n"
 taskset --cpu-list 33,34,35,36,37,38  python experiment_sym_2_body_adcf_poly_kernel_schnet_comparison_on_U0_qm9.py 10000 --option
 ##########################
 
-out5  (8,5)
+out5  
 echo "\n##########################"
 echo "# GFRE/GFRD SOAP convergence experiment #"
 echo "##########################\n"
@@ -73,6 +72,7 @@ out9 srv8
 echo "\n##########################"
 echo "#  #"
 echo "##########################\n"
+# TODO rename porperties to properties
 taskset --cpu-list 33,34,35,36,37,38 python experiment_soap_dimenet_comparison_on_all_porperties_qm9.py 10000 --option
 
 ##########################
@@ -97,6 +97,8 @@ taskset -c 0 python experiment_soap_gschnet_comparison_on_qm9.py 10000 --option
 out11.3
 taskset -c 0 python experiment_schnet_gschnet_comparison_on_qm9.py 10000 --option
 ########################### LFRE
+out 12
+python experiment_soap_nice_schnet_gschnet_comparison_on_methane.py 
 
 #echo "\n##########################"
 #echo "# LFRE soap schnet experiment #"
