@@ -87,7 +87,17 @@ def compute_features_from_kernel(kernel):
     print("Compute features from kernel finished.", flush=True)
     if np.min(d) < 0:
         print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
-    idx = np.where(d > 1e-3)[0]
+    #import matplotlib.pyplot as plt
+    #d=d[::-1]
+    #plt.plot(d[:100])
+    #plt.title("100 largest eigenvalues")
+    #plt.vline(np.argmax(np.cumsum(d)/np.sum(d)>0.99))
+    #plt.show()
+    #print("ncomp", np.argmax(np.cumsum(d)/np.sum(d)>0.99))
+    #print("d", d[:5])
+    #print("np.argmax(d)",np.max(d))
+    idx = np.where(d > 1e-1)[0]
+    print("idx", len(idx))
     d = d[idx]
     A = A[:,idx]
     return A.dot(np.diag(np.sqrt(d)))
