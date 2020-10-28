@@ -109,7 +109,7 @@ def compute_features_from_kernel(kernel):
     #print("d", d[:5])
     #print("np.argmax(d)",np.max(d))
     #print("d[246]", d[246])
-    idx = np.where(d > d[0]*1e-3)[0]
+    idx = np.where(d > d[0]*1e-2)[0]
     print("np.sum(d)", np.sum(d))
     print("len(idx)", len(idx))
     d = d[idx]
