@@ -87,7 +87,9 @@ def compute_features_from_kernel(kernel):
     print("Compute features from kernel finished.", flush=True)
     if np.min(d) < 0:
         print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
-        d[d < 0] = 0
+    idx = np.where(d > 1e-3)[0]
+    d = d[idx]
+    A = A[:,idx]
     return A.dot(np.diag(np.sqrt(d)))
 
 
