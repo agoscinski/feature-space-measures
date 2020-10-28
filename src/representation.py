@@ -5,7 +5,7 @@ from rascal.representations import SphericalInvariants
 from rascal.neighbourlist.structure_manager import mask_center_atoms_by_id
 from src.wasserstein import compute_squared_wasserstein_distance, compute_radial_spectrum_wasserstein_features
 from src.sorted_distances import compute_sorted_distances
-from src.scalers import standardize_features
+from src.scalers import standardize_features, standardize_kernel
 
 FEATURES_ROOT ="features"
 
@@ -82,7 +82,8 @@ def compute_features_from_kernel(kernel):
     # SVD is more numerical stable than eigh
     #U, s, _ = scipy.linalg.svd(kernel)
     # reorder eigvals and eigvectors such that largest eigvenvectors and eigvals start in the fist column
-    #return np.flip(U, axis=1).dot(np.diag(np.flip(s)))
+    #return np.flip(U, axis=1).dot(np.diag(np.flip(s))) 
+    kernel = standardize_kernel(kernel)
     d, A = scipy.linalg.eigh(kernel)
     print("Compute features from kernel finished.", flush=True)
     if np.min(d) < 0:
@@ -108,7 +109,8 @@ def compute_features_from_kernel(kernel):
     #print("d", d[:5])
     #print("np.argmax(d)",np.max(d))
     #print("d[246]", d[246])
-    idx = np.where(d > d[0]*2e-3)[0]
+    idx = np.where(d > d[0]*1e-3)[0]
+    print("np.sum(d)", np.sum(d))
     print("len(idx)", len(idx))
     d = d[idx]
     A = A[:,idx]

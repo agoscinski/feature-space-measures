@@ -20,7 +20,7 @@ else:
     train_ratio = None
 noise_removal = False
 regularizer = "CV 2 fold"##"1e-5#"CV 2 fold"
-nb_samples = 6000
+nb_samples = 4000
 
 inner_epsilon = None
 outer_epsilon = None
