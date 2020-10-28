@@ -19,8 +19,8 @@ else:
     seed = None
     train_ratio = None
 noise_removal = False
-regularizer = 1e-5#"CV 2 fold"
-nb_samples = 4000
+regularizer = "CV 2 fold"##"1e-5#"CV 2 fold"
+nb_samples = 6000
 
 inner_epsilon = None
 outer_epsilon = None

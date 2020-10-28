@@ -14,7 +14,7 @@ else:
     train_ratio = None
 noise_removal = False
 regularizer = "CV 2 fold"
-nb_samples = 4000
+nb_samples = 6000
 
 
 cutoff = 4

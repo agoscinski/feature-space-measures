@@ -88,16 +88,28 @@ def compute_features_from_kernel(kernel):
     if np.min(d) < 0:
         print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
     #import matplotlib.pyplot as plt
-    #d=d[::-1]
-    #plt.plot(d[:100])
-    #plt.title("100 largest eigenvalues")
-    #plt.vline(np.argmax(np.cumsum(d)/np.sum(d)>0.99))
+    d=d[::-1]
+    A=A[:,::-1]
+    #import matplotlib.pyplot as plt
+    #plt.plot(d)
+    #plt.yscale("log")
+    #plt.axhline(1e-3,color='green',label="1e-3")
+    #plt.axhline(d[246],color='black',label="99% explained variance")
+    #plt.title("eigenvalues")
+    #plt.legend()
+    #plt.savefig("eigenvalues_3body_gamma10.png")
     #plt.show()
     #print("ncomp", np.argmax(np.cumsum(d)/np.sum(d)>0.99))
+    #print("ncomp", np.argmax(np.cumsum(d**2)/np.sum(d**2)>0.99))
+    #print("ncomp", len(np.where(d>1e-1)[0]))
+    #print("ncomp", len(np.where(d**2>1e-1)[0]))
+    #print("ncomp", np.argmax(d < d[0]*1e-3))
+    #print("ncomp", np.argmax(d < d[0]*1e-3))
     #print("d", d[:5])
     #print("np.argmax(d)",np.max(d))
-    idx = np.where(d > 1e-1)[0]
-    print("idx", len(idx))
+    #print("d[246]", d[246])
+    idx = np.where(d > d[0]*2e-3)[0]
+    print("len(idx)", len(idx))
     d = d[idx]
     A = A[:,idx]
     return A.dot(np.diag(np.sqrt(d)))
