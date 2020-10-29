@@ -66,6 +66,10 @@ for dataset_name in ["selection-10k.extxyz"]:
                 "cutoff_smooth_width": 0.5,
                 "normalize": normalize
             },
+            "feature_selection_parameters": {
+                "type": "PCA",
+                "explained_variance_ratio": 0.99,
+            },
             "hilbert_space_parameters": {
                 "computation_type" : "implicit_distance",
                 "distance_parameters": {"distance_type": "euclidean"},
