@@ -230,8 +230,13 @@ def two_split_reconstruction_measure_all_pairs(
     FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     nb_samples = len(feature_spaces[0])
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+    print(f"Computing GFRE/GFRD for {len(feature_spaces)**2} feature pairs")
+    counter = 0
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
+            counter += 1
+            print("GFRE( feature space i, feature space j) ", (i,j))
+            print(f"Comuted GFRE {counter} between {len(feature_spaces)**2} feature pairs")
             features1_train, features2_train, features1_test, features2_test = feature_spaces[i][0], feature_spaces[j][0], feature_spaces[i][1], feature_spaces[j][1]
             reconstruction_weights = feature_space_reconstruction_weights(
                 features1_train, features2_train, regularizer
