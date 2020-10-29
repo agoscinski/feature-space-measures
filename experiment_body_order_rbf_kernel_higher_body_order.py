@@ -19,7 +19,7 @@ else:
     seed = None
     train_ratio = None
 noise_removal = False
-regularizer = "CV 2 fold"##"1e-5#"CV 2 fold"
+regularizer = 1e-5#"CV 2 fold"
 nb_samples = 4000
 
 inner_epsilon = None
@@ -66,7 +66,12 @@ for dataset_name in ["selection-10k.extxyz"]:
                 "cutoff_smooth_width": 0.5,
                 "normalize": normalize
             },
+            "feature_selection_parameters": {
+                "type": "PCA",
+                "explained_variance_ratio": 0.99,
+            },
             "hilbert_space_parameters": {
+                "computation_type" : "implicit_distance",
                 "distance_parameters": {"distance_type": "euclidean"},
                 "kernel_parameters": {"kernel_type": "rbf", "gamma": gamma}
             }} for gamma in gammas])

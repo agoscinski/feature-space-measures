@@ -14,7 +14,7 @@ else:
     train_ratio = None
 noise_removal = False
 regularizer = "CV 2 fold"
-nb_samples = 6000
+nb_samples = 4000
 
 
 cutoff = 4
@@ -57,13 +57,18 @@ for dataset_name in ["selection-10k.extxyz"]:
                 "cutoff_smooth_width": cutoff_smooth_width,
                 "normalize": normalize
             },
+            "feature_selection_parameters": {
+                "type": "PCA",
+                "explained_variance_ratio": 0.99,
+            },
             "hilbert_space_parameters": {
+                "computation_type" : "implicit_distance",
                 "distance_parameters": {"distance_type": "euclidean"},
                 "kernel_parameters": {"kernel_type": "rbf", "gamma": gamma}
             }
         } for gamma in gammas])
 
-        hash_value = gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer)
+        hash_value = gfr_all_pairs_experiment(dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, compute_distortion=False)
         hash_values.append(hash_value)
         print(f"dataset_name={dataset_name} soap_type={soap_type} hash_value={hash_value}")
 print('"' + ' '.join(hash_values).replace(' ','" "' ) + '" ')

@@ -150,6 +150,20 @@ class KernelNormalizer(TransformerMixin, BaseEstimator):
             
         return K_std
 
+#    def transform_train_test(self, K_train_test):
+#       """ transforms a kernel of shape (number of train samples+test samples, number of train samples+test samples)"""
+#        K_diag = K.diagonal().copy()
+#        if self.__with_mean:
+#            self.K_train_row_mean_ = K.mean(axis=0)
+#            self.K_train_mean_ = K.mean()
+#            K_diag +=  - self.K_train_row_mean_*2 + self.K_train_mean_
+#        self.scale_ = 1.0
+#        var = K_diag.mean()            
+#        self.scale_ = 1.0/var 
+#
+#        K_std *= self.scale_
+#        return K_std
+
 def standardize_features(features, train_idx=None):
     if train_idx is None:
         return NormalizeScaler().fit(features).transform(features)
@@ -157,6 +171,5 @@ def standardize_features(features, train_idx=None):
 
 def standardize_kernel(kernel, train_idx=None):
     if train_idx is None:
-        return KernelNormalizer().fit(kernel).transform(kernel)
-    return NormalizeScaler().fit(kernel[train_idx]).transform(kernel)
-
+        KernelNormalizer().fit(kernel).transform(kernel)
+    return KernelNormalizer().fit(kernel[train_idx,:][:,train_idx]).transform(kernel, K_test_train=(kernel[:,train_idx], kernel[:,train_idx].T))

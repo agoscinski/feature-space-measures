@@ -1,16 +1,28 @@
 import numpy as np
 import scipy
 from src.CUR import CUR
+#from src.kpcovr import KPCovR
 
 
-def select_features(features, hypers):
-    if hypers['n_features'] >= features.shape[1]:
-        print("Warning: n_features >= nb_samples")
-        return np.arange(features.shape[1])
+def select_features(features, features_train, hypers, Y=None):
+    if 'n_features' in hypers:
+        if hypers['n_features'] >= features_train.shape[1]:
+            print("Warning: n_features >= nb_samples")
+            features_idx = np.arange(features_train.shape[1])
+            return features[:, features_idx]
     if hypers['type'] == 'FPS':
-        return select_fps(features.T, hypers)
-    if hypers['type'] == 'CUR':
-        return select_cur(features, hypers)
+        features_idx = select_fps(features_train.T, hypers)
+        return features[:, features_idx]
+    elif hypers['type'] == 'CUR':
+        features_idx = select_cur(features_train, hypers)
+        return features[:, features_idx]
+    elif hypers['type'] == 'PCA':
+        pca = select_pca(features_train, hypers)
+        print("pca.explained_variance_ratio_", np.sum(pca.explained_variance_ratio_))
+        return pca.transform(features)
+    elif hypers['type'] == 'KPCA':
+        kpcovr = select_kpca(features_train, Y, hypers)
+        return kpcovr.transform(features)
     else:
         raise ValueError('unknown feature selection type ' + hypers['type'])
 
@@ -55,3 +67,33 @@ def select_cur(X, hypers):
 
     #print(X[:, cur.idx_c].shape)
     return cur.idx_c
+
+def select_pca(X, hypers):
+    import sklearn.decomposition
+    if 'n_features' in hypers:
+        return sklearn.decomposition.PCA(n_components=hypers['n_features']).fit(X)
+    elif 'explained_variance_ratio' in hypers:
+        # increase n_components by 1000 up to 10000 until  
+        # TODO make max number of features hyper
+        for i in range(19): 
+            pca = sklearn.decomposition.PCA(n_components=min(1000+(500*i),X.shape[1])).fit(X)
+            if ( np.sum(pca.explained_variance_ratio_) >= hypers['explained_variance_ratio'] ):
+                n_components_fulfilling_ratio = np.argmax(np.cumsum(pca.explained_variance_ratio_) > hypers['explained_variance_ratio'])
+                pca.n_components_ = n_components_fulfilling_ratio
+                break;
+        if ( np.sum(pca.explained_variance_ratio_) < hypers['explained_variance_ratio'] ):
+            print("WARNING: explained_variance_ratio was not reached in feature selection, continue with 10000 features")
+        print("pca.n_components_:",pca.n_components_, flush=True)
+        return pca
+    else:
+        raise ValueError(f"Missing PCA parameters, PCA hypers:", hypers)
+
+
+def select_kpca(X, Y, hypers):
+    print("NOT FINISHED")
+    kpcovr_calculators = KPCovR(alpha=a, n_PC=hypers['n_features'],
+                                           kernel_type="linear",
+                                           regularization=1e-6)
+    kpcovr_calculators.fit(X, Y)
+    return kpcovr_calculators
+

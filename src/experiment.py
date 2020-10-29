@@ -71,8 +71,7 @@ def postprocess_features(features, feature_hypers, train_idx, test_idx=None):
     features = standardize_features(features, train_idx)
     features = standardize_features(features, train_idx)
     if "feature_selection_parameters" in feature_hypers:
-        features_idx = select_features(features[train_idx], feature_hypers["feature_selection_parameters"])
-        features = features[:, features_idx]
+        features = select_features(features, features[train_idx], feature_hypers["feature_selection_parameters"])
     return (features[train_idx], features[test_idx])
 
 # This experiment produces GFR(features_hypers1_i, features_hypers2_i) pairs

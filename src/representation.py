@@ -58,7 +58,9 @@ def compute_representation(feature_hypers, frames, center_atom_id_mask):
             return load_hydrogen_distance_dataset(frames)[:nb_envs]
 
 def compute_hilbert_space_features(feature_hypers, frames, train_idx, center_atom_id_mask):
-    features = compute_features_from_kernel(compute_kernel_from_squared_distance(compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask), feature_hypers["hilbert_space_parameters"]["kernel_parameters"]))
+    dist = compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_mask)
+    kernel = compute_kernel_from_squared_distance(dist, feature_hypers["hilbert_space_parameters"]["kernel_parameters"])
+    features = compute_features_from_kernel(kernel, train_idx)
     return features
 
 
@@ -77,20 +79,37 @@ def compute_squared_distance(feature_hypers, frames, train_idx, center_atom_id_m
     return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
 
 
-def compute_features_from_kernel(kernel):
+def compute_features_from_kernel(kernel, train_idx=None):
+    """
+    Computes RKHS features from a kernel
+
+    Parameters 
+    ----------
+    kernel_train_test: array shape (number of training + testing points, number of training + testing points)
+        kernel on training and test dataset
+    kernel_train: array shape (number of training points, number of training points)
+        kernel on training dataset
+    """
+
     print("Compute features from kernel...", flush=True)
-    # SVD is more numerical stable than eigh
-    #U, s, _ = scipy.linalg.svd(kernel)
-    # reorder eigvals and eigvectors such that largest eigvenvectors and eigvals start in the fist column
-    #return np.flip(U, axis=1).dot(np.diag(np.flip(s))) 
-    kernel = standardize_kernel(kernel)
-    d, A = scipy.linalg.eigh(kernel)
+
+    kernel_std = standardize_kernel(kernel, train_idx)
+    d, A = scipy.linalg.eigh(kernel_std )
     print("Compute features from kernel finished.", flush=True)
     if np.min(d) < 0:
         print('Warning: Negative eigenvalue encountered ',np.min(d),' If small value, it could be numerical error', flush=True)
-    #import matplotlib.pyplot as plt
-    d=d[::-1]
-    A=A[:,::-1]
+        d[d<0] = 0
+    rkhs_features = A.dot(np.diag(np.sqrt(d)))
+
+
+    ### TESTING ###
+    #d, A = scipy.linalg.eigh(kernel)
+    #rkhs_features_not_std = A.dot(np.diag(np.sqrt(d)))
+    #rkhs_features_std = standardize_features(rkhs_features_not_std, train_idx)
+    #print("std kernel - std feature kernel",np.linalg.norm( kernel_std - rkhs_features_std.dot(rkhs_features_std.T))/len(rkhs_features))
+    #print("std kernel - not std feature kernel", np.linalg.norm( kernel_std - rkhs_features_not_std.dot(rkhs_features_not_std.T))/len(rkhs_features))
+    ### TESTING ###
+    return rkhs_features
     #import matplotlib.pyplot as plt
     #plt.plot(d)
     #plt.yscale("log")
@@ -109,12 +128,13 @@ def compute_features_from_kernel(kernel):
     #print("d", d[:5])
     #print("np.argmax(d)",np.max(d))
     #print("d[246]", d[246])
-    idx = np.where(d > d[0]*1e-2)[0]
-    print("np.sum(d)", np.sum(d))
-    print("len(idx)", len(idx))
-    d = d[idx]
-    A = A[:,idx]
-    return A.dot(np.diag(np.sqrt(d)))
+
+    #idx = np.where(d > d[0]*1e-2)[0]
+    #print("np.sum(d)", np.sum(d))
+    #print("len(idx)", len(idx))
+    #d = d[idx]
+    #A = A[:,idx]
+    #return A.dot(np.diag(np.sqrt(d)))
 
 
 # use this implementation to check for negative eigenvalues for debugging
