@@ -202,7 +202,7 @@ def gfr_all_pairs_experiment(
     store_results("gfre_mat-", experiment_id, FRE_matrix)
     store_results("gfrd_mat-", experiment_id, FRD_matrix)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
-    return experiment_id
+    return experiment_id, FRE_matrix
 
 def lfre_pairwise_experiment(
         dataset_name, nb_frames, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon=None, outer_epsilon=None, one_direction=False, set_methane_dataset_to_same_species=True, center_atom_id_mask_description="first environment"):
