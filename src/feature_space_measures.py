@@ -107,7 +107,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    print("Compute reconstruction weight...")
+    print("Compute reconstruction weight...", flush=True)
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
             regularizer = regularizer_cv_folds_old(features1, features2)
@@ -119,7 +119,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
-    print("Compute reconstruction weight finished")
+    print("Compute reconstruction weight finished", flush=True)
     return W
 
 def feature_space_reconstruction_measures(
@@ -148,7 +148,7 @@ def feature_space_reconstruction_measures(
     double: FRD(X_{F},X_{F'}) scalar value
     """
 
-    print("Compute GFRE...")
+    print("Compute GFRE...", flush=True)
     if reconstruction_weights is None:
         if regularizer is np.nan:
             raise ValueError("If no reconstruction weights is given a regularizer has to be given.")
@@ -173,10 +173,10 @@ def feature_space_reconstruction_measures(
         / n_test)
     else:
         raise ValueError("reduce_error_dimension="+reduce_error_dimension+" is not known.")
-    print("Compute GFRE finished")
+    print("Compute GFRE finished", flush=True)
 
     if compute_distortion:
-        print("Compute GFRD...")
+        print("Compute GFRD...", flush=True)
         # P = U S V, we use svd because it is more stable than eigendecomposition
         U, S, _ = scipy.linalg.svd(reconstruction_weights, lapack_driver="gesvd")
 
@@ -208,7 +208,7 @@ def feature_space_reconstruction_measures(
         Q = U2.dot(V2)
         alpha = 1
         FRD = np.linalg.norm(alpha * features1_U.dot(Q) - reconstructed_features2_VT) / np.sqrt(n_test)
-        print("Compute GFRD finished")
+        print("Compute GFRD finished", flush=True)
     else:
         FRD = np.nan
     return FRE, FRD
@@ -230,13 +230,13 @@ def two_split_reconstruction_measure_all_pairs(
     FRD_matrix = np.zeros((len(feature_spaces), len(feature_spaces)))
     nb_samples = len(feature_spaces[0])
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
-    print(f"Computing GFRE/GFRD for {len(feature_spaces)**2} feature pairs")
+    print(f"Computing GFRE/GFRD for {len(feature_spaces)**2} feature pairs", flush=True)
     counter = 0
     for i in range(len(feature_spaces)):
         for j in range(len(feature_spaces)):
             counter += 1
-            print("GFRE( feature space i, feature space j) ", (i,j))
-            print(f"Comuted GFRE {counter} between {len(feature_spaces)**2} feature pairs")
+            print("GFRE( feature space i, feature space j) ", (i,j), flush=True)
+            print(f"Comuted GFRE {counter} between {len(feature_spaces)**2} feature pairs", flush=True)
             features1_train, features2_train, features1_test, features2_test = feature_spaces[i][0], feature_spaces[j][0], feature_spaces[i][1], feature_spaces[j][1]
             reconstruction_weights = feature_space_reconstruction_weights(
                 features1_train, features2_train, regularizer
