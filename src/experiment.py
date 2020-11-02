@@ -176,11 +176,11 @@ def gfr_all_pairs_experiment(
     dataset_name, nb_frames, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, compute_distortion=True,
     set_methane_dataset_to_same_species=True,
     center_atom_id_mask_description="first environment"
-
 ):
     metadata, experiment_id = store_metadata(
         dataset_name, nb_frames, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer
     )
+    print("experiment_id",experiment_id,flush=True)
 
     frames = read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species)
 
@@ -341,7 +341,7 @@ def read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species=Tr
 
 # TODO can be mostly deleted
 def compute_feature_space_reconstruction_measures(
-    two_split, train_ratio, seed, noise_removal, regularizer, feature_spaces1, feature_spaces2=None 
+    two_split, train_ratio, seed, noise_removal, regularizer, feature_spaces1, feature_spaces2=None
 ):
     print("Compute feature space reconstruction measures...", flush=True)
     if two_split:

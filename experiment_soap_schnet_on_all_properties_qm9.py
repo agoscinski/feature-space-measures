@@ -48,14 +48,18 @@ for key in properties_key:
         "feature_parameters": {
             "soap_type": "PowerSpectrum",
             "radial_basis": "GTO",
-            "interaction_cutoff": cutoff,
-            "max_radial": 8,
-            "max_angular": 5,
-            "gaussian_sigma_constant": sigma,
+            "interaction_cutoff": 5,
+            "max_radial": 12,
+            "max_angular": 9,
+            "gaussian_sigma_constant": 0.3,
             "gaussian_sigma_type": "Constant",
-            "cutoff_smooth_width": cutoff_smooth_width,
-            "normalize": normalize
-        },
+            "cutoff_function_type": "RadialScaling"
+            "cutoff_smooth_width": 0.5,
+            "cutoff_function_parameters": dict(rate=1,
+                 scale=2,
+                 exponent=7),
+            "normalize": True
+        }
         "feature_selection_parameters": {
             "type": "PCA",
             "explained_variance_ratio": 0.99,

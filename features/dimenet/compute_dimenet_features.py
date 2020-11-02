@@ -1,25 +1,31 @@
 import tensorflow as tf
+import yaml
 import numpy as np
 import os
 import sys
+from multiprocessing import Process, Lock
 
 sys.path.insert(0,'./dimenet')
-
-import yaml
 from dimenet.model.dimenet import DimeNet
 from dimenet.model.dimenet_pp import DimeNetPP
 from dimenet.model.activations import swish
 from dimenet.training.data_container import DataContainer
 from dimenet.training.data_provider import DataProvider
 
+
 DIMENET_FOLDER = 'dimenet/'
 
-def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
+def compute_dimenet_features_for_qm9(nb_structures, structure_property_key, model_name):
     # config.yaml for DimeNet, config_pp.yaml for DimeNet
-    with open(DIMENET_FOLDER+'config.yaml', 'r') as c:
-        config = yaml.safe_load(c)
-
-    model_name = config['model_name']
+    if model_name == "dimenet":
+        with open(DIMENET_FOLDER+'config.yaml', 'r') as c:
+            config = yaml.safe_load(c)
+    elif model_name == "dimenet++":
+        with open(DIMENET_FOLDER+'config_pp.yaml', 'r') as c:
+            config = yaml.safe_load(c)
+    else:
+        raise ValueError(f"Dimenet model name {model_name} not known")
+            
 
     if model_name == "dimenet":
         num_bilinear = config['num_bilinear']
@@ -28,7 +34,7 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
         out_emb_size = config['out_emb_size']
         int_emb_size = config['int_emb_size']
         basis_emb_size = config['basis_emb_size']
-        feature_size = 256
+        feature_size = 128
         
     emb_size = config['emb_size']
     num_blocks = config['num_blocks']
@@ -37,7 +43,7 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
     num_radial = config['num_radial']
 
     # 'zeros' for Mu, HOMO, LUMO, and ZPVE; 'GlorotOrthogonal' for alpha, R2, U0, U, H, G, and Cv
-    if structure_property_key  in ['mu', 'homo', 'lumo', 'zpve']:
+    if structure_property_key in ['mu', 'homo', 'lumo', 'zpve']:
         output_init = 'zeros'
     elif structure_property_key in ['alpha', 'r2', 'U0', 'U', 'H', 'G', 'Cv']:
         output_init = 'GlorotOrthogonal'  
@@ -65,15 +71,28 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
     targets = [structure_property_key]
     #####################################################################5
 
-    model = DimeNet(
-            emb_size=emb_size, num_blocks=num_blocks, num_bilinear=num_bilinear,
-            num_spherical=num_spherical, num_radial=num_radial,
-            cutoff=cutoff, envelope_exponent=envelope_exponent,
-            num_before_skip=num_before_skip, num_after_skip=num_after_skip,
-            num_dense_output=num_dense_output, num_targets=len(targets),
-            activation=swish, output_init=output_init)
+    if model_name == "dimenet":
+        model = DimeNet(
+                emb_size=emb_size, num_blocks=num_blocks, num_bilinear=num_bilinear,
+                num_spherical=num_spherical, num_radial=num_radial,
+                cutoff=cutoff, envelope_exponent=envelope_exponent,
+                num_before_skip=num_before_skip, num_after_skip=num_after_skip,
+                num_dense_output=num_dense_output, num_targets=len(targets),
+                activation=swish, output_init=output_init)
+        best_ckpt_file = DIMENET_FOLDER+'pretrained/dimenet/'+structure_property_key+'/ckpt'
+    elif model_name == "dimenet++":
+        model = DimeNetPP(
+                emb_size=emb_size, out_emb_size=out_emb_size,
+                int_emb_size=int_emb_size, basis_emb_size=basis_emb_size,
+                num_blocks=num_blocks, num_spherical=num_spherical, num_radial=num_radial,
+                cutoff=cutoff, envelope_exponent=envelope_exponent,
+                num_before_skip=num_before_skip, num_after_skip=num_after_skip,
+                num_dense_output=num_dense_output, num_targets=len(targets),
+                activation=swish, output_init=output_init)
+        best_ckpt_file = DIMENET_FOLDER+'pretrained/dimenet_pp/'+structure_property_key+'/ckpt'
+    else:
+        raise ValueError(f"Unknown model name: '{model_name}'")
 
-    best_ckpt_file = DIMENET_FOLDER+'pretrained/dimenet/'+structure_property_key+'/ckpt'
     model.load_weights(best_ckpt_file)
 
     data_container = DataContainer(dataset_path, cutoff=cutoff, target_keys=targets)
@@ -90,7 +109,7 @@ def compute_dimenet_features_for_qm9(nb_structures, structure_property_key):
     dimenet_features = np.zeros( (nb_envs, len(model.output_blocks), feature_size) )
     for i in range(nb_structures):
         if (i % 500 == 0):
-            print(i,flush=True)
+            print(structure_property_key,i,flush=True)
         model(data_provider.idx_to_data(i)[0])
         for layer in range(len(model.output_blocks)):
             dimenet_features[struc_to_env_idx[i]:struc_to_env_idx[i+1], layer, :] = model.output_blocks[layer].representation.numpy()
@@ -112,17 +131,20 @@ def compute_smooth_cutoff(cutoff=5, p=6, grid_size=100):
         err[i] = np.linalg.norm(d_dimenet - d_soap)
     print("The smooth cutoff width most similar to the one of dimenet", smooth_widths[np.argmin(err)])
 
+def compute_and_store_dimenet_features_for_qm9(nb_structures, structure_property_key, model_name):
+    print("structure_property_key", structure_property_key, flush=True)
+    features = compute_dimenet_features_for_qm9(nb_structures, structure_property_key, model_name)
+    for layer in range(features.shape[1]):
+        np.save('dimenet_qm9_'+structure_property_key+'_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
+
 def main():
-    nb_structures = 10000
+    nb_structures = 1000
     #structure_properties_key = ['U0', 'mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U', 'H', 'G', 'Cv']
-    structure_properties_key = [sys.argv[1]]
+    #structure_properties_key = ['U0', 'mu', 'alpha', 'homo']
+    structure_properties_key = ['U0']
+    model_name = "dimenet++"
     for structure_property_key in structure_properties_key:
-        print()
-        print(structure_property_key, flush=True)
-        print()
-        features = compute_dimenet_features_for_qm9(nb_structures, structure_property_key)
-        for layer in range(features.shape[1]):
-            np.save('dimenet_qm9_'+structure_property_key+'_nb_structures='+str(nb_structures)+'_layer='+str(layer)+'.npy', features[:, layer])
+        Process(target=compute_and_store_dimenet_features_for_qm9, args=(nb_structures, structure_property_key, model_name)).start()
 
 if __name__ == "__main__":
     # execute only if run as a script
