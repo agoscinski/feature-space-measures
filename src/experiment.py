@@ -27,7 +27,7 @@ import subprocess
 DATASET_FOLDER = "data/"
 RESULTS_FOLDER = "results/"
 
-def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, frames=None, center_atom_id_mask_description="all environments"):
+def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, target="Atom", frames=None, center_atom_id_mask_description="all environments"):
     """
     Computes the FRE and FRD of features2 from features1 with a two-split
 
@@ -51,31 +51,11 @@ def generate_two_split_idx(nb_samples, train_ratio=0.5, seed=0x5F3759DF, frames=
         else:
             raise ValueError(f"train_ration {train_ratio} is not known.")
     else:
-        if (frames is None):
-            np.random.seed(seed)
-            idx = np.arange(nb_samples)
-            np.random.shuffle(idx)
-            split_id = int(len(idx) * train_ratio)
-            return idx[:split_id], idx[split_id:]
-        # choose structures instead of environments
-        else:
-            np.random.seed(seed)
-            struc_idx = np.arange(len(frames))
-            np.random.shuffle(struc_idx)
-            split_id = int(len(struc_idx) * train_ratio)
-            train_struc_idx, test_struc_idx = struc_idx[:split_id], struc_idx[split_id:]
-            if (center_atom_id_mask_description == "first environment"):
-                train_env_idx = np.copy(train_struc_idx) 
-                test_env_idx = np.copy(test_struc_idx)
-                train_test_struc_idx = {'train':train_struc_idx, 'test':test_struc_idx}
-            elif (center_atom_id_mask_description == "all environments"):
-                cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
-                train_env_idx = np.concatenate([np.arange(len(frames[idx])) + cumulative_env_idx[idx] for idx in train_struc_idx])
-                test_env_idx = np.concatenate([np.arange(len(frames[idx])) + cumulative_env_idx[idx] for idx in test_struc_idx])
-                train_test_struc_idx = {'train':train_struc_idx, 'test':test_struc_idx}
-            else:
-                raise ValueError(f"center_atom_id_mask_description  {center_atom_id_mask_description } is not known.")
-            return train_env_idx, test_env_idx, train_test_struc_idx
+        np.random.seed(seed)
+        idx = np.arange(nb_samples)
+        np.random.shuffle(idx)
+        split_id = int(len(idx) * train_ratio)
+        return idx[:split_id], idx[split_id:]
 
 def standardize_features(features, train_idx=None):
     if train_idx is None:
@@ -112,7 +92,8 @@ def gfr_pairwise_experiment(
     compute_distortion=True,
     train_test_gfrm=False,
     set_methane_dataset_to_same_species=True,
-    center_atom_id_mask_description="first environment"
+    center_atom_id_mask_description="first environment",
+    target="Atom"
 ):
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -126,23 +107,23 @@ def gfr_pairwise_experiment(
         one_direction=one_direction,
         compute_distortion=compute_distortion,
         train_test_gfrm=train_test_gfrm,
-        center_atom_id_mask_description=center_atom_id_mask_description
+        center_atom_id_mask_description=center_atom_id_mask_description,
+        target=target
     )
     frames = read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species)
 
-    if center_atom_id_mask_description == "first environment":
+    if center_atom_id_mask_description == "first environment" or target == "Structure":
         nb_samples = len(frames)
-    elif center_atom_id_mask_description == "all environments":
+    elif center_atom_id_mask_description == "all environments" and target == "Atom":
         nb_samples = sum([frame.get_global_number_of_atoms() for frame in frames])
 
-
-    train_idx, test_idx, train_test_structures_idx = generate_two_split_idx(nb_samples, train_ratio, seed, frames, center_atom_id_mask_description )
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
     print("np.max(train_idx)", np.max(train_idx))
     print("np.max(test_idx)", np.max(test_idx))
 
-    feature_spaces1 = compute_representations(features_hypers1, frames, train_idx, center_atom_id_mask_description, train_test_structures_idx)
+    feature_spaces1 = compute_representations(features_hypers1, frames, target, train_idx, center_atom_id_mask_description)
     print("feature_spaces1[0].shape",feature_spaces1[0].shape)
-    feature_spaces2 = compute_representations(features_hypers2, frames, train_idx, center_atom_id_mask_description, train_test_structures_idx)
+    feature_spaces2 = compute_representations(features_hypers2, frames, target, train_idx, center_atom_id_mask_description)
 
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
@@ -175,10 +156,11 @@ def gfr_pairwise_experiment(
 def gfr_all_pairs_experiment(
     dataset_name, nb_frames, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, compute_distortion=True,
     set_methane_dataset_to_same_species=True,
-    center_atom_id_mask_description="first environment"
+    center_atom_id_mask_description="first environment",
+    target="Atom"
 ):
     metadata, experiment_id = store_metadata(
-        dataset_name, nb_frames, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer
+        dataset_name, nb_frames, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, center_atom_id_mask_description=center_atom_id_mask_description, target=target
     )
     print("experiment_id",experiment_id,flush=True)
 
@@ -190,7 +172,7 @@ def gfr_all_pairs_experiment(
         nb_samples = sum([frame.get_global_number_of_atoms() for frame in frames])
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
 
-    feature_spaces = compute_representations(features_hypers, frames, train_idx, center_atom_id_mask_description)
+    feature_spaces = compute_representations(features_hypers, frames, target, train_idx, center_atom_id_mask_description)
     for i in range(len(feature_spaces)):
         feature_spaces[i] = postprocess_features(feature_spaces[i], features_hypers[i], train_idx, test_idx)
     FRE_matrix, FRD_matrix = two_split_reconstruction_measure_all_pairs(
@@ -261,11 +243,8 @@ def lfre_all_pairs_experiment(
     store_results("lfrd_mat-", experiment_id, lfrd_mat)
     print(f"Store results finished. Hash value {experiment_id}", flush=True)
 
-
-
-
 def store_metadata(
-    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None, one_direction=None, compute_distortion=None, train_test_gfrm=None, center_atom_id_mask_description=None
+    dataset_name, nb_samples, features_hypers, two_split, train_ratio, seed, noise_removal, regularizer, hidden_feature_name = None, nb_local_envs = None, inner_epsilon=None, outer_epsilon=None, one_direction=None, compute_distortion=None, train_test_gfrm=None, center_atom_id_mask_description=None, target=None
 ):
     metadata = {
         # Methane
@@ -291,7 +270,7 @@ def store_metadata(
         "git_last_commit_id": subprocess.check_output(["git", "describe", "--always"])
         .strip()
         .decode("utf-8"),
-        "additional_info": "H5 environments, no lfrd computed, truncation->extension",
+        "additional_info": "",
     }
 
     # only relevant for hidden feature reconstruction error experiments
@@ -311,7 +290,8 @@ def store_metadata(
         metadata["train_test_gfrm"] = train_test_gfrm 
     if center_atom_id_mask_description is not None:
         metadata["center_atom_id_mask_description "] = "first environment"
-        
+    if target is not None:
+        metadata["target"] = target
 
 
     sha = hashlib.sha1(json.dumps(metadata).encode("utf8")).hexdigest()[:8]
