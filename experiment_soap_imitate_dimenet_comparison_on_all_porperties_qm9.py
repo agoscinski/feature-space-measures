@@ -17,12 +17,10 @@ def memory_limit(nb_bytes):
 memory_limit(int(8e+11))
 
 ### cosmo paper https://doi.org/10.1039/C8CP05921G hypers
-cutoff = 5
-sigma = 0.3
-cutoff_function_type = "RadialScaling"
-cutoff_smooth_width =  0.5
-cutoff_function_parameters = dict(rate=1, scale=2, exponent=7)
-normalize = False # it is actually True, but we still keep to False, to be consistent with normalization only on training set
+cutoff = 5 # dimenet
+sigma = 0.2041 # schnet
+cutoff_smooth_width = 4.1 # dimenet
+normalize = False
 
 # Experiment metadata
 dataset_name = "qm9.db"
@@ -37,7 +35,7 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-properties_key = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
+properties_key = ['mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U0', 'U', 'H', 'G', 'Cv']
 hash_values = []
 for key in properties_key:
     features_hypers1 = [{
@@ -49,9 +47,8 @@ for key in properties_key:
             "max_radial": 12,
             "max_angular": 9,
             "gaussian_sigma_constant": sigma,
-            "cutoff_function_type": cutoff_function_type,
+            "cutoff_function_type": "ShiftedCosine",
             "cutoff_smooth_width": cutoff_smooth_width,
-            "cutoff_function_parameters": cutoff_function_parameters,
             "gaussian_sigma_type": "Constant",
             "normalize": normalize
         },
@@ -59,18 +56,12 @@ for key in properties_key:
             "type": "PCA",
             "explained_variance_ratio": 0.99,
         },
-        "hilbert_space_parameters": {
-            "computation_type": "sparse_implicit_distance",
-            "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":0}
-        }
     }]
-
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
-            "feature_name": "schnet",
-            "filename": "schnet_"+key+"_U0_nb_structures=20000_layer=6.npy",
+            "feature_name": "dimenet",
+            "filename": "dimenet_qm9_"+key+"_nb_structures=10000_layer=6.npy",
             "filetype": "npy",
         }
     }]

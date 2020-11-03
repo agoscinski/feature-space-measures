@@ -27,8 +27,8 @@ cutoff_function_parameters = None
 normalize = False # there is no schnet parameter for this but we keep it to False
 
 ### cosmo paper https://doi.org/10.1039/C8CP05921G hypers
-cutoff = 5 
-sigma = 0.3 
+cutoff = 5
+sigma = 0.3
 cutoff_function_type = "RadialScaling"
 cutoff_smooth_width =  0.5
 cutoff_function_parameters = dict(rate=1, scale=2, exponent=7)

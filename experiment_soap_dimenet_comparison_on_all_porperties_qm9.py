@@ -14,15 +14,13 @@ def memory_limit(nb_bytes):
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
     resource.setrlimit(resource.RLIMIT_AS, (nb_bytes, hard))
 # limits memory usage to 800 GB
-memory_limit(8e+11)
+memory_limit(int(8e+11))
 
 
 # Constant hyperparameters
 cutoff = 5 # dimenet
-
 sigma = 0.2041 # schnet
 cutoff_smooth_width = 4.1 # dimenet
-
 normalize = False
 
 # Experiment metadata
@@ -47,8 +45,8 @@ for key in properties_key:
             "soap_type": "PowerSpectrum",
             "radial_basis": "GTO",
             "interaction_cutoff": cutoff,
-            "max_radial": 8,
-            "max_angular": 5,
+            "max_radial": 12,
+            "max_angular": 9,
             "gaussian_sigma_constant": sigma,
             "gaussian_sigma_type": "Constant",
             "cutoff_smooth_width": cutoff_smooth_width,

@@ -37,7 +37,7 @@ else:
     train_ratio = None
 regularizer = "CV 2 fold"
 
-properties_key = ["dipole_moment", "isotropic_polarizability", "homo", "lumo", "electronic_spatial_extent", "zpve", "energy_U0", "energy_U", "enthalpy_H", "free_energy", "heat_capacity"]
+properties_key = ['mu', 'alpha', 'homo', 'lumo', 'r2', 'zpve', 'U0', 'U', 'H', 'G', 'Cv']
 hash_values = []
 for key in properties_key:
     features_hypers1 = [{
@@ -51,7 +51,7 @@ for key in properties_key:
             "gaussian_sigma_constant": sigma,
             "cutoff_function_type": cutoff_function_type,
             "cutoff_smooth_width": cutoff_smooth_width,
-            "cutoff_function_parameters": cutoff_function_parameters,
+            "cutoff_function_parameters": cutoff_function_parameters
             "gaussian_sigma_type": "Constant",
             "normalize": normalize
         },
@@ -62,15 +62,15 @@ for key in properties_key:
         "hilbert_space_parameters": {
             "computation_type": "sparse_implicit_distance",
             "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":0}
+            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":1}
         }
     }]
 
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
-            "feature_name": "schnet",
-            "filename": "schnet_"+key+"_U0_nb_structures=20000_layer=6.npy",
+            "feature_name": "dimenet",
+            "filename": "dimenet_qm9_"+key+"_nb_structures=10000_layer=6.npy",
             "filetype": "npy",
         }
     }]
