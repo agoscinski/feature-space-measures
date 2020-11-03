@@ -33,7 +33,7 @@ def compute_representations(features_hypers, frames, target="Atom", environments
         else:
             features = compute_representation(feature_hypers, frames, environments_train_idx, center_atom_id_mask, train_test_structures_idx)
             if target == "Structure":
-                compute_structure_features_from_atom_features(features, center_atom_id_mask)
+                features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
         feature_spaces.append(features)
 
     print("Compute representations finished", flush=True)
@@ -141,7 +141,7 @@ def compute_hilbert_space_features(feature_hypers, frames, target, train_idx, ce
 def compute_kernel(feature_hypers, frames, target, train_idx, center_atom_id_mask):
     features = compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask)
     if target == "Structure":
-        compute_structure_features_from_atom_features(features, center_atom_id_mask)
+        features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
     features = standardize_features(features, train_idx)
     kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
     kernel_type = kernel_parameters["kernel_type"]
@@ -152,7 +152,7 @@ def compute_kernel(feature_hypers, frames, target, train_idx, center_atom_id_mas
 def compute_explicit_features(feature_hypers, frames, target, train_idx, center_atom_id_mask):
     features = compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask)
     if target == "Structure":
-        compute_structure_features_from_atom_features(features, center_atom_id_mask)
+        features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
     kernel_parameters = feature_hypers["hilbert_space_parameters"]["kernel_parameters"]
     kernel_type = kernel_parameters["kernel_type"]
     if kernel_type == "polynomial":
@@ -194,7 +194,7 @@ def compute_squared_distance(feature_hypers, frames, target, train_idx, center_a
     else:
         raise ValueError("The distance_type='" + distance_type + "' is not known.")
     if target == "Structure":
-        compute_structure_features_from_atom_features(features, center_atom_id_mask)
+        features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
     features = standardize_features(features, train_idx)
     # D(A,B)**2 = K(A,A) + K(B,B) - 2*K(A,B)
     return np.sum(features ** 2, axis=1)[:, np.newaxis] + np.sum(features ** 2, axis=1)[np.newaxis, :] - 2 * features.dot(features.T)
