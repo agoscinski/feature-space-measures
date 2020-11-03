@@ -51,7 +51,7 @@ for key in properties_key:
             "gaussian_sigma_constant": sigma,
             "cutoff_function_type": cutoff_function_type,
             "cutoff_smooth_width": cutoff_smooth_width,
-            "cutoff_function_parameters": cutoff_function_parameters
+            "cutoff_function_parameters": cutoff_function_parameters,
             "gaussian_sigma_type": "Constant",
             "normalize": normalize
         },
