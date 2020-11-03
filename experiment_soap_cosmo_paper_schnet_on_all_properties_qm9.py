@@ -65,8 +65,7 @@ for key in properties_key:
             "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":0}
         }
     }]
-    if cutoff_function_parameters is not None:
-        features_hypers1[0]["feature_parameters"][
+
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
