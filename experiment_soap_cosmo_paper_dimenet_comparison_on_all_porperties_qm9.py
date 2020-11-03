@@ -59,11 +59,11 @@ for key in properties_key:
             "type": "PCA",
             "explained_variance_ratio": 0.99,
         },
-        "hilbert_space_parameters": {
-            "computation_type": "sparse_implicit_distance",
-            "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":1}
-        }
+        #"hilbert_space_parameters": {
+        #    "computation_type": "sparse_implicit_distance",
+        #    "distance_parameters": {"distance_type": "euclidean"},
+        #    "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":1}
+        #}
     }]
 
     features_hypers2 = [{

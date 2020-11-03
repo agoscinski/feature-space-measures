@@ -62,7 +62,7 @@ for key in properties_key:
         "hilbert_space_parameters": {
             "computation_type": "sparse_implicit_distance",
             "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":0}
+            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":1}
         }
     }]
 
