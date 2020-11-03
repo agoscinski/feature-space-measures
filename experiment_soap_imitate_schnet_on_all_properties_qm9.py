@@ -26,14 +26,6 @@ cutoff_function_parameters = None
 #cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
 normalize = False # there is no schnet parameter for this but we keep it to False
 
-### cosmo paper https://doi.org/10.1039/C8CP05921G hypers
-cutoff = 5 
-sigma = 0.3 
-cutoff_function_type = "RadialScaling"
-cutoff_smooth_width =  0.5
-cutoff_function_parameters = dict(rate=1, scale=2, exponent=7)
-normalize = False # it is actually True, but we still keep to False, to be consistent with normalization only on training set
-
 # Experiment metadata
 dataset_name = "qm9.db"
 nb_samples = sys.argv[1] if len(sys.argv) > 1 else 10000
@@ -68,14 +60,7 @@ for key in properties_key:
             "type": "PCA",
             "explained_variance_ratio": 0.99,
         },
-        "hilbert_space_parameters": {
-            "computation_type": "sparse_implicit_distance",
-            "distance_parameters": {"distance_type": "euclidean"},
-            "kernel_parameters": {"kernel_type": "polynomial", "degree": 2, "gamma":1, "c":0}
-        }
     }]
-    if cutoff_function_parameters is not None:
-        features_hypers1[0]["feature_parameters"]["cutoff_function_parameters"] = cutoff_function_parameters
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {

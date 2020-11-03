@@ -25,7 +25,7 @@ normalize = False
 
 # Experiment metadata
 dataset_name = "qm9.db"
-nb_samples = sys.argv[1] if len(sys.argv) > 1 else 1000
+nb_samples = sys.argv[1] if len(sys.argv) > 1 else 10000
 two_split = True
 if two_split:
     seed = 0x5f4759df

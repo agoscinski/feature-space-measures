@@ -16,16 +16,6 @@ def memory_limit(nb_bytes):
 # limits memory usage to 800 GB
 memory_limit(int(8e+11))
 
-## imitate soap hypers
-cutoff = 10 # schnet, gschnet
-sigma = 0.2041 # schnet
-#sigma = 0.4167 # gschnet
-cutoff_function_type = "ShiftedCosine"
-cutoff_smooth_width = 10 # schnet
-cutoff_function_parameters = None 
-#cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
-normalize = False # there is no schnet parameter for this but we keep it to False
-
 ### cosmo paper https://doi.org/10.1039/C8CP05921G hypers
 cutoff = 5 
 sigma = 0.3 
@@ -61,6 +51,7 @@ for key in properties_key:
             "gaussian_sigma_constant": sigma,
             "cutoff_function_type": cutoff_function_type,
             "cutoff_smooth_width": cutoff_smooth_width,
+            "cutoff_function_parameters": cutoff_function_parameters
             "gaussian_sigma_type": "Constant",
             "normalize": normalize
         },
@@ -75,7 +66,7 @@ for key in properties_key:
         }
     }]
     if cutoff_function_parameters is not None:
-        features_hypers1[0]["feature_parameters"]["cutoff_function_parameters"] = cutoff_function_parameters
+        features_hypers1[0]["feature_parameters"][
     features_hypers2 = [{
         "feature_type": "precomputed",
         "feature_parameters": {
