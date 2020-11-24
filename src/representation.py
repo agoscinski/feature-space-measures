@@ -10,11 +10,12 @@ from src.scalers import standardize_features, standardize_kernel
 
 FEATURES_ROOT ="features"
 
+# computes mean features TODO generalize this to general atom computation
 def compute_structure_features_from_atom_features(features, center_atom_id_mask):
     atom_to_struc_idx = np.hstack( (0, np.cumsum([len(center_mask) for center_mask in center_atom_id_mask])) )
     return np.vstack( [np.mean(features[atom_to_struc_idx[i]:atom_to_struc_idx[i+1]], axis=0) for i in range(len(center_atom_id_mask))] )
 
-def compute_representations(features_hypers, frames, target="Atom", environments_train_idx=None, center_atom_id_mask_description="first environment", train_test_structures_idx=None):
+def compute_representations(features_hypers, frames, target="Atom", environments_train_idx=None, center_atom_id_mask_description="first environment"):
     if center_atom_id_mask_description == "first environment":
         print("WARNING only the first environment of all structures is computed. Please use center_atom_id_mask_description='all environments' if you want to use all environments")
         center_atom_id_mask = [[0] for frame in frames]
@@ -22,16 +23,15 @@ def compute_representations(features_hypers, frames, target="Atom", environments
         center_atom_id_mask = [list(range(len(frame))) for frame in frames]
     else:
         raise ValueError("The center_atom_id_mask_description "+center_atom_id_mask_description+" is not available")
-    for i in range(len(frames)):
-        # masks the atom such that only the representation of the first environment is computed
-        mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
     print("Compute representations...", flush=True)
     feature_spaces = []
     for feature_hypers in features_hypers:
         if "hilbert_space_parameters" in feature_hypers:
             features = compute_hilbert_space_features(feature_hypers, frames, target, environments_train_idx, center_atom_id_mask)
         else:
-            features = compute_representation(feature_hypers, frames, environments_train_idx, center_atom_id_mask, train_test_structures_idx)
+            # compute representation should have been a prerpocess of hilbert space
+            features = compute_representation(feature_hypers, frames, environments_train_idx, center_atom_id_mask)
+            print("features.shape",features.shape)
             if target == "Structure":
                 features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
         feature_spaces.append(features)
@@ -40,15 +40,22 @@ def compute_representations(features_hypers, frames, target="Atom", environments
     return feature_spaces
 
 
-def compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask, train_test_structures_idx=None):
+def compute_representation(feature_hypers, frames, train_idx, center_atom_id_mask):
     if feature_hypers["feature_type"] == "soap":
+        for i in range(len(frames)):
+            mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
         representation = SphericalInvariants(**feature_hypers["feature_parameters"])
         return representation.transform(frames).get_features(representation)
     elif feature_hypers["feature_type"] == "nice":
-        return compute_nice_features(feature_hypers["feature_parameters"], frames, train_idx, center_atom_id_mask, train_test_structures_idx)
+        # nice cannot deal with masked central atoms
+        return compute_nice_features(feature_hypers["feature_parameters"], frames, train_idx, center_atom_id_mask)
     elif feature_hypers["feature_type"] == "wasserstein":
+        for i in range(len(frames)):
+            mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
         return compute_radial_spectrum_wasserstein_features(feature_hypers["feature_parameters"], frames)
     elif feature_hypers["feature_type"] == "sorted_distances":
+        for i in range(len(frames)):
+            mask_center_atoms_by_id(frames[i], id_select=center_atom_id_mask[i])
         features = compute_sorted_distances(feature_hypers["feature_parameters"], frames, center_atom_id_mask)
         return features
     elif feature_hypers["feature_type"] == "precomputed":
@@ -68,60 +75,122 @@ def compute_representation(feature_hypers, frames, train_idx, center_atom_id_mas
         elif parameters["feature_name"] == "displaced_hydrogen_distance": 
             return load_hydrogen_distance_dataset(frames)[:nb_samples]
 
-def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask, train_test_structures_idx):
+def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask):
     import copy
     from nice.blocks import StandardSequence, StandardBlock, ThresholdExpansioner, CovariantsPurifierBoth, IndividualLambdaPCAsBoth, ThresholdExpansioner, InvariantsPurifier, InvariantsPCA, InitialScaler
 
     from nice.utilities import get_spherical_expansion
-    print("WARNING: nice species hack, set species 9 to 8 because 9 is barely present")
-    #for frame in frames:
-    #    frame.numbers[frame.numbers==9] = 8
-    print("len(frames)",len(frames))
-    all_species = np.unique(np.concatenate([frame.numbers for frame in frames]))
-    print(train_test_structures_idx['train'])
-    #np.save('train_structures_idx.npy', train_test_structures_idx['train'])
-    train_coefficients = get_spherical_expansion([frames[idx] for idx in train_test_structures_idx['train']], feature_hypers['spherical_coeffs'], all_species)
-    coefficients = get_spherical_expansion(frames, feature_hypers['spherical_coeffs'], all_species)
-    np.save("train_coefficients.npy", train_coefficients[1])
+    #print(np.max(train_idx), len(frames))
+    #print("len(frames)",len(frames))
+    #print("frames[0]", frames[0])
+    
+    nb_blocks = feature_hypers["nb_blocks"]
+    for nu in feature_hypers["nus"]:
+        if nu not in range(1, nb_blocks+2):
+            raise ValueError(f"nu={nu} should be in range [1, nb_blocks+1] with nb_blocks={nb_blocks}")
 
-    invariant_nice_calculator = StandardSequence([
-        StandardBlock(ThresholdExpansioner(num_expand=150),
-                      CovariantsPurifierBoth(max_take=10),
-                      IndividualLambdaPCAsBoth(n_components=50),
-                      ThresholdExpansioner(num_expand=300, mode='invariants'),
-                      InvariantsPurifier(max_take=50),
-                      InvariantsPCA(n_components=200)),
-        StandardBlock(ThresholdExpansioner(num_expand=150),
-                      CovariantsPurifierBoth(max_take=10),
-                      IndividualLambdaPCAsBoth(n_components=50),
-                      ThresholdExpansioner(num_expand=300, mode='invariants'),
-                      InvariantsPurifier(max_take=50),
-                      InvariantsPCA(n_components=200)),
-        StandardBlock(None, None, None,
-                      ThresholdExpansioner(num_expand=300, mode='invariants'),
-                      InvariantsPurifier(max_take=50),
+    if (nb_blocks == 1):
+        blocks = [
+                StandardBlock(None, None, None,
+                      ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                      InvariantsPurifier(max_take=10),
                       InvariantsPCA(n_components=200))
-    ],
-                        initial_scaler=InitialScaler(
-                            mode='signal integral', individually=True))
+            ]
+    elif (nb_blocks == 2):
+        blocks = [
+            StandardBlock(ThresholdExpansioner(num_expand=300),
+                          CovariantsPurifierBoth(max_take=10),
+                          IndividualLambdaPCAsBoth(n_components=100),
+                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                          InvariantsPurifier(max_take=10),
+                          InvariantsPCA(n_components=200)),
+            StandardBlock(None, None, None,
+                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                          InvariantsPurifier(max_take=10),
+                          InvariantsPCA(n_components=200))
+            ]
+    elif (nb_blocks == 3):
+        blocks = [
+            StandardBlock(ThresholdExpansioner(num_expand=300),
+                          CovariantsPurifierBoth(max_take=10),
+                          IndividualLambdaPCAsBoth(n_components=100),
+                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                          InvariantsPurifier(max_take=10),
+                          InvariantsPCA(n_components=200)),
+            StandardBlock(ThresholdExpansioner(num_expand=300),
+                          CovariantsPurifierBoth(max_take=10),
+                          IndividualLambdaPCAsBoth(n_components=100),
+                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                          InvariantsPurifier(max_take=10),
+                          InvariantsPCA(n_components=200)),
+            StandardBlock(None, None, None,
+                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
+                          InvariantsPurifier(max_take=10),
+                          InvariantsPCA(n_components=100))
+            ]
+    else:
+        raise ValueError("nb_blocks > 3 is not supported")
 
+    invariant_nice_calculator = StandardSequence(blocks,
+                        initial_scaler=InitialScaler(
+                            mode='variance', individually=False))
+
+    all_species = np.unique(np.concatenate([frame.numbers for frame in frames]))
+    train_coefficients = get_spherical_expansion([frames[idx] for idx in train_idx], feature_hypers['spherical_coeffs'], all_species)
+    train_coefficients = np.concatenate([train_coefficients[key] for key in train_coefficients.keys()], axis=0)
+    #print("train_coefficients.shape", train_coefficients.shape)
+    # we fit all environments, not species-wise
+    invariant_nice_calculator.fit(train_coefficients)
+
+    # does not work because `transform_sequentially` includes already
+    #from nice.utilities import transform_sequentially
+    #nice_calculator = {specie: invariant_nice_calculator for specie in all_species}
+    #features = transform_sequentially(nice_calculator, frames, feature_hypers['spherical_coeffs'], all_species)
+    #print("type(features)",type(features))
+    #print("len(features)",len(features))
+    #print("features min max isnan", np.min(features), np.max(features), np.sum(np.isnan(features)))
+    #return features
+
+    #print("features.shape", features.shape)
+
+    coefficients = get_spherical_expansion(frames, feature_hypers['spherical_coeffs'], all_species)
     nice_calculator = {}
-    features = {}
-    print(train_coefficients.keys())
+    features_sp = {}
     for species in all_species:
-        print("species ",species)
-        print(train_coefficients[species].shape)
+        #print("species ",species)
+        #print(train_coefficients[species].shape)
         nice_calculator[species] = copy.deepcopy(invariant_nice_calculator)
-        print("train_coefficients[species] min max isnan", np.min(train_coefficients[species]), np.max(train_coefficients[species]), np.sum(np.isnan(train_coefficients[species])))
-        nice_calculator[species].fit(train_coefficients[species])
-        features_sp = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
-        features[species] = np.concatenate([features_sp[block] for block in features_sp], axis=1)
-    features = np.concatenate([features[species] for species in features], axis=0)
+        #print("train_coefficients[species] min max isnan", np.min(train_coefficients[species]), np.max(train_coefficients[species]), np.sum(np.isnan(train_coefficients[species])))
+
+        features_sp_block = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
+
+        # species-wise fitting
+        #nice_calculator[species].fit(train_coefficients[species])
+        #features_sp_block = nice_calculator[species].transform(coefficients[species], return_only_invariants=True)
+        #features_sp[species] = np.concatenate([features_sp_block[block] for block in features_sp_block], axis=1)
+
+        #print("len(features_sp_block)",len(features_sp_block))
+        #print("features_sp_block.keys", features_sp_block.keys())
+        #print("[block for block in features_sp_block]", [block for block in features_sp_block])
+        #print("[features_sp_block[block].shape for block in features_sp_block]", [features_sp_block[block].shape for block in features_sp_block])
+        #print("features_sp_block[1].shape", features_sp_block[1].shape)
+        #print("features_sp_block[2].shape", features_sp_block[2].shape)
+        features_sp[species] = np.hstack( [features_sp_block[block] for block in feature_hypers["nus"]] )
+        #print("features_sp[species].shape",features_sp[species].shape)
+        #print("features_sp[species].shape",features_sp[species].shape)
+    
+    # envs to struc for all strucs
+    nb_envs = sum([features_sp[species].shape[0] for species in all_species])
+    nb_features = features_sp[all_species[0]].shape[1]
+    features = np.zeros((nb_envs, nb_features))
+    for species in all_species:
+        sp_mask = np.concatenate( [frame.numbers==species for frame in frames] )
+        features[np.arange(nb_envs)[sp_mask]] = features_sp[species]
     print("nice features.shape", features.shape)
-    #cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
-    #sample_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(center_atom_id_mask))] )
-    #return features[sample_idx]
-    return features
+
+    cumulative_env_idx = np.hstack( (0, np.cumsum([len(frame) for frame in frames])) )
+    sample_idx = np.concatenate( [np.array(center_atom_id_mask[idx]) + cumulative_env_idx[idx] for idx in range(len(center_atom_id_mask))] )
+    return features[sample_idx]
 
 def compute_hilbert_space_features(feature_hypers, frames, target, train_idx, center_atom_id_mask):
     computation_type = feature_hypers["hilbert_space_parameters"]["computation_type"]

@@ -76,7 +76,7 @@ def select_pca(X, hypers):
         # increase n_components by 1000 up to 10000 until  
         # TODO make max number of features hyper
         for i in range(19): 
-            pca = sklearn.decomposition.PCA(n_components=min(1000+(500*i),X.shape[1])).fit(X)
+            pca = sklearn.decomposition.PCA(n_components=min(1000+(500*i),X.shape[1],X.shape[0])).fit(X)
             if ( np.sum(pca.explained_variance_ratio_) >= hypers['explained_variance_ratio'] ):
                 n_components_fulfilling_ratio = np.argmax(np.cumsum(pca.explained_variance_ratio_) > hypers['explained_variance_ratio'])
                 pca.n_components_ = n_components_fulfilling_ratio

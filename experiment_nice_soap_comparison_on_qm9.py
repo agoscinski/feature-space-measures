@@ -18,13 +18,15 @@ memory_limit(8e+11)
 
 
 # Constant hyperparameters
-cutoff = 10 # schnet, gschnet
+cutoff = 4 # schnet, gschnet
 
 #sigma = 0.2041 # schnet
 #cutoff_smooth_width = 10 # schnet
-sigma = 0.4167 # gschnet
-cutoff_smooth_width = 0.001 # gschnet, simulate hard cutoff
+sigma = 0.5#0.4167 # gschnet
+cutoff_smooth_width = 0.1 # gschnet, simulate hard cutoff
 
+max_radial = 6
+max_angular = 4
 normalize = False
 
 # Experiment metadata
@@ -49,8 +51,8 @@ features_hypers1 = [{
         "spherical_coeffs": {
             "radial_basis": "GTO",
             "interaction_cutoff": cutoff,
-            "max_radial": 8,
-            "max_angular": 5,
+            "max_radial": max_radial,
+            "max_angular": max_angular,
             "gaussian_sigma_constant": sigma,
             "gaussian_sigma_type": "Constant",
             "cutoff_smooth_width": cutoff_smooth_width,
@@ -68,8 +70,8 @@ features_hypers2 = [{
         "soap_type": "PowerSpectrum",
         "radial_basis": "GTO",
         "interaction_cutoff": cutoff,
-        "max_radial": 8,
-        "max_angular": 5,
+        "max_radial": max_radial,
+        "max_angular": max_angular,
         "gaussian_sigma_constant": sigma,
         "gaussian_sigma_type": "Constant",
         "cutoff_smooth_width": cutoff_smooth_width,
@@ -81,7 +83,7 @@ features_hypers2 = [{
     },
 }]
 
-hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
+hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments", target="Structure")
 print(hash_value)
 print(gfre_vec)
 print()

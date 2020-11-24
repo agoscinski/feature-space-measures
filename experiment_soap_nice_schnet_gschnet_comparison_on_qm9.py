@@ -47,15 +47,15 @@ features_hypers1 = [{
     "feature_type": "nice",
     "feature_parameters": {
         "nb_blocks": 3,
+        "nus": [1,2,3,4],
         "spherical_coeffs": {
             "radial_basis": "GTO",
             "interaction_cutoff": cutoff,
-            "max_radial": 8,
-            "max_angular": 5,
+            "max_radial": 12,
+            "max_angular": 9,
             "gaussian_sigma_constant": sigma,
             "gaussian_sigma_type": "Constant",
             "cutoff_smooth_width": cutoff_smooth_width,
-            #"normalize": normalize
         }
     },
     "feature_selection_parameters": {
@@ -72,7 +72,7 @@ features_hypers2 = [{
     }
 }]
 
-hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
+hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments", target="Structure")
 hash_values.append(hash_value)
 print(hash_value)
 print(gfre_vec)
@@ -96,7 +96,7 @@ features_hypers2 = [{
     }
 }]
 
-hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
+hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments", target="Structure")
 hash_values.append(hash_value)
 print(hash_value)
 print(gfre_vec)
@@ -107,8 +107,8 @@ features_hypers1 = [{
         "soap_type": "PowerSpectrum",
         "radial_basis": "GTO",
         "interaction_cutoff": cutoff,
-        "max_radial": 8,
-        "max_angular": 5,
+        "max_radial": 12,
+        "max_angular": 9,
         "gaussian_sigma_constant": sigma,
         "gaussian_sigma_type": "Constant",
         "cutoff_smooth_width": cutoff_smooth_width,
@@ -127,7 +127,7 @@ features_hypers2 = [{
         "filetype": "npy",
     }
 }]
-hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments")
+hash_value, gfre_vec = gfr_pairwise_experiment( dataset_name, nb_samples, features_hypers1, features_hypers2, two_split=two_split, train_ratio=train_ratio, seed=seed, noise_removal=False, regularizer=regularizer, set_methane_dataset_to_same_species=False, center_atom_id_mask_description="all environments", target="Structure")
 hash_values.append(hash_value)
 print(hash_value)
 print(gfre_vec)

@@ -111,19 +111,19 @@ def gfr_pairwise_experiment(
         target=target
     )
     frames = read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species)
-
-    if center_atom_id_mask_description == "first environment" or target == "Structure":
+    if (center_atom_id_mask_description == "first environment") or (target == "Structure"):
         nb_samples = len(frames)
     elif center_atom_id_mask_description == "all environments" and target == "Atom":
         nb_samples = sum([frame.get_global_number_of_atoms() for frame in frames])
 
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
-    print("np.max(train_idx)", np.max(train_idx))
-    print("np.max(test_idx)", np.max(test_idx))
+    #print("np.max(train_idx)", np.max(train_idx))
+    #print("np.max(test_idx)", np.max(test_idx))
 
     feature_spaces1 = compute_representations(features_hypers1, frames, target, train_idx, center_atom_id_mask_description)
-    print("feature_spaces1[0].shape",feature_spaces1[0].shape)
+    #print("feature_spaces1[0].shape",feature_spaces1[0].shape)
     feature_spaces2 = compute_representations(features_hypers2, frames, target, train_idx, center_atom_id_mask_description)
+    #print("feature_spaces2[0].shape",feature_spaces2[0].shape)
 
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
@@ -316,6 +316,7 @@ def read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species=Tr
             frames[i].wrap(eps=1e-11)
             if (set_methane_dataset_to_same_species):
                 frames[i].numbers = np.ones(len(frames[i]))
+
     print("Load data finished.", flush=True)
     return frames
 
