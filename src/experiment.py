@@ -187,7 +187,7 @@ def gfr_all_pairs_experiment(
     return experiment_id, FRE_matrix
 
 def lfre_pairwise_experiment(
-        dataset_name, nb_frames, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon=None, outer_epsilon=None, one_direction=False, set_methane_dataset_to_same_species=True, center_atom_id_mask_description="first environment"):
+        dataset_name, nb_frames, features_hypers1, features_hypers2, nb_local_envs, two_split, seed, train_ratio, regularizer, inner_epsilon=None, outer_epsilon=None, one_direction=False, set_methane_dataset_to_same_species=True, center_atom_id_mask_description="first environment", target="Atom"):
 
     metadata, experiment_id = store_metadata(
         dataset_name,
@@ -202,13 +202,23 @@ def lfre_pairwise_experiment(
         inner_epsilon=inner_epsilon,
         outer_epsilon=outer_epsilon,
         one_direction=one_direction,
-        center_atom_id_mask_description=center_atom_id_mask_description
+        center_atom_id_mask_description=center_atom_id_mask_description,
+        target=target
     )
 
 
     frames = read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species)
-    feature_spaces1 = compute_representations(features_hypers1, frames, center_atom_id_mask_description=center_atom_id_mask_description)
-    feature_spaces2 = compute_representations(features_hypers2, frames, center_atom_id_mask_description=center_atom_id_mask_description)
+    if (center_atom_id_mask_description == "first environment") or (target == "Structure"):
+        nb_samples = len(frames)
+    elif center_atom_id_mask_description == "all environments" and target == "Atom":
+        nb_samples = sum([frame.get_global_number_of_atoms() for frame in frames])
+
+    train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
+
+    feature_spaces1 = compute_representations(features_hypers1, frames, target, train_idx, center_atom_id_mask_description)
+    #print("feature_spaces1[0].shape",feature_spaces1[0].shape)
+    feature_spaces2 = compute_representations(features_hypers2, frames, target, train_idx, center_atom_id_mask_description)
+    #print("feature_spaces2[0].shape",feature_spaces2[0].shape)
 
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], np.arange(feature_spaces1[i].shape[0]), [])[0]
@@ -309,7 +319,7 @@ def read_dataset(dataset_name, nb_frames, set_methane_dataset_to_same_species=Tr
         for i in range(len(frames)):
             frames[i].pbc=True
             frames[i].wrap(eps=1e-11)
-    elif dataset_name == "random-ch4-10k.extxyz" or dataset_name == "selection-10k.extxyz" or dataset_name == 'qm9.db':
+    elif dataset_name == "random-ch4-10k.extxyz" or dataset_name == "selection-10k.extxyz" or dataset_name == 'qm9.db' or dataset_name == 'manif-minus-plus.extxyz':
         for i in range(len(frames)):
             frames[i].cell = np.eye(3) * 20
             frames[i].center()

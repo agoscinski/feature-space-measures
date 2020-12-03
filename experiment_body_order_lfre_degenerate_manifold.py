@@ -23,8 +23,8 @@ outer_epsilon = None#1e-1
 ## Constant hyperparameters
 radial_basis = "GTO"
 cutoff = 4
-max_radial = 6
-max_angular = 4
+max_radial = 2
+max_angular = 2
 sigma = 0.5
 normalize = False
 

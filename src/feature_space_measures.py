@@ -107,7 +107,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     --------
     array : weights P = argmin_{P'} | X_{F'} - (X_F)P' |
     """
-    print("Compute reconstruction weight...", flush=True)
+    #print("Compute reconstruction weight...", flush=True)
     if type("CV 2 fold") == type(regularizer):
         if "CV" == regularizer:
             regularizer = regularizer_cv_folds_old(features1, features2)
@@ -119,7 +119,7 @@ def feature_space_reconstruction_weights(features1, features2, regularizer=1e-6)
     W = np.linalg.lstsq(features1, features2, rcond=regularizer)[0]
     #if np.linalg.norm(W) > 1e7:
     #    warnings.warn("Reconstruction weight matrix very large "+ str(np.linalg.norm(W)) +". Results could be misleading.", Warning)
-    print("Compute reconstruction weight finished", flush=True)
+    #print("Compute reconstruction weight finished", flush=True)
     return W
 
 def feature_space_reconstruction_measures(
