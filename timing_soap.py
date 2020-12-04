@@ -13,7 +13,7 @@ cutoff = 4
 sigma = 0.5
 cutoff_smooth_width = 0.5
 normalize = False
-max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5)]
+max_radials_angulars = [(2, 2), (4, 3), (6, 4), (8, 5), (10, 6)]
 
 DEFAULT_ITERATIONS = 10
 
