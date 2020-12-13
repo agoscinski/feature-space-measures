@@ -37,7 +37,6 @@ experiment_ids = []
 gammas = [0.01, 0.1, 1, 10, 100]
 for dataset_name in ["selection-10k.extxyz"]:
     for soap_types in [("RadialSpectrum", "PowerSpectrum"), ("PowerSpectrum", "BiSpectrum")]:
-    #for soap_types in [("PowerSpectrum", "BiSpectrum")]:
         ## Tested hyperparameters
         features_hypers1 = [{
             "feature_type": "soap",

@@ -34,8 +34,8 @@ empty_hash_values = ""
 bracket_hash_values = ""
 
 ## Tested hyperparameters
-for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
-    for radial_basis in ["GTO", "DVR"]:
+for dataset_name in ["selection-10k.extxyz"]:
+    for radial_basis in ["GTO"]:
         soap_types = ["RadialSpectrum", "PowerSpectrum", "BiSpectrum"]
         features_hypers = [{
             "feature_type": "soap",
@@ -51,7 +51,7 @@ for dataset_name in ["selection-10k.extxyz", "C-VII-pp-wrapped.xyz"]:
                 "normalize": normalize
             },
         } for soap_type in soap_types]
-        
+
         if dataset_name == "selection-10k.extxyz":
             filename = "methane-allc.npy"
         elif dataset_name == "C-VII-pp-wrapped.xyz":
