@@ -4,7 +4,7 @@ Please refer to the `run.sh` script to see what `*-experiments.py` file correspo
 Datasets (if available in `/data`):
  - `selection-10k.extxyz` *random methane* 
 
-   Sergey Pozdnyakov, Michael Willat, Michele Ceriotti, Randomly-displaced methane configurations, Materials Cloud Archive 2020.105 (2020), doi: 10.24435/materialscloud:s6-nq.
+   Sergey Pozdnyakov, Michael Willat, Michele Ceriotti, Randomly-displaced methane configurations, Materials Cloud Archive **2020.105** (2020), doi: 10.24435/materialscloud:s6-nq.
  - `C-VII-pp-wrapped.xyz` *carbon* to obtain the dataset please refer to 
 
    Chris J. Pickard, AIRSS data for carbon at 10GPa and the C+N+H+O system at 1GPa, Materials Cloud Archive **2020.0026/v1** (2020), doi: 10.24435/materialscloud:2020.0026/v1.
