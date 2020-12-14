@@ -93,7 +93,7 @@ taskset -c 0 python experiment_body_order_rbf_kernel_higher_body_order.py --opti
 echo "\n###########################"
 echo "# distance density plots #"
 echo "###########################\n"
-taskset -c 0 python compute_density_mat.py --option
+taskset -c 0 python compute_distance_density_mat.py --option
 
 # data for Fig. 13
 echo "\n###########################"
