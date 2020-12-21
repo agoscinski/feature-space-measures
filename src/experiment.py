@@ -116,9 +116,13 @@ def gfr_pairwise_experiment(
     elif center_atom_id_mask_description == "all environments" and target == "Atom":
         nb_samples = sum([frame.get_global_number_of_atoms() for frame in frames])
 
+    
     train_idx, test_idx = generate_two_split_idx(nb_samples, train_ratio, seed)
-    #print("np.max(train_idx)", np.max(train_idx))
-    #print("np.max(test_idx)", np.max(test_idx))
+    #explained_variance_ratio = features_hypers1[0]['feature_selection_parameters']['explained_variance_ratio']
+    #np.save(f"power_spectrum_with_schnet_imitated_hypers_qm9_nb_samples={nb_samples}_explained_ratio={explained_variance_ratio}_train_idx.npy", train_idx)
+    #np.save(f"power_spectrum_with_schnet_imitated_hypers_qm9_nb_samples={nb_samples}_explained_ratio={explained_variance_ratio}_test_idx.npy", test_idx)
+    print("np.max(train_idx)", np.max(train_idx))
+    print("np.max(test_idx)", np.max(test_idx))
 
     feature_spaces1 = compute_representations(features_hypers1, frames, target, train_idx, center_atom_id_mask_description)
     #print("feature_spaces1[0].shape",feature_spaces1[0].shape)
@@ -128,6 +132,9 @@ def gfr_pairwise_experiment(
     for i in range(len(feature_spaces1)):
         feature_spaces1[i] = postprocess_features(feature_spaces1[i], features_hypers1[i], train_idx, test_idx)
         feature_spaces2[i] = postprocess_features(feature_spaces2[i], features_hypers2[i], train_idx, test_idx)
+    print("feature_spaces1[0].shape",feature_spaces1[0][0].shape)
+    #np.save(f"power_spectrum_with_schnet_imitated_hypers_qm9_nb_samples={nb_samples}_explained_variance_ratio={explained_variance_ratio}_train.npy", feature_spaces1[0][0])
+    #np.save(f"power_spectrum_with_schnet_imitated_hypers_qm9_nb_samples={nb_samples}_explained_ratio={explained_variance_ratio}_test.npy", feature_spaces1[0][1])
 
     print("Compute feature space reconstruction measures...", flush=True)
     if train_test_gfrm:
