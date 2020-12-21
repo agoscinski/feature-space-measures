@@ -32,8 +32,9 @@ def compute_representations(features_hypers, frames, target="Atom", environments
             features = compute_hilbert_space_features(feature_hypers, frames, target, environments_train_idx, center_atom_id_mask)
         else:
             features = compute_representation(feature_hypers, frames, environments_train_idx, center_atom_id_mask, train_test_structures_idx)
-            if target == "Structure":
+            if target == "Structure" and ("target" not in feature_hypers["feature_parameters"] or feature_hypers["feature_parameters"]["target"] == "Atom"):
                 features = compute_structure_features_from_atom_features(features, center_atom_id_mask)
+        print("np.sum(np.isnan(features))",np.sum(np.isnan(features)))
         feature_spaces.append(features)
 
     print("Compute representations finished", flush=True)
@@ -54,7 +55,10 @@ def compute_representation(feature_hypers, frames, train_idx, center_atom_id_mas
     elif feature_hypers["feature_type"] == "precomputed":
         parameters = feature_hypers['feature_parameters']
         # TODO parameter case seems to useless, probably can be removed 
-        nb_samples = sum([len(structure_mask) for structure_mask in center_atom_id_mask]) if "nb_samples" not in parameters.keys() else parameters["nb_samples"]
+        if ("target" not in feature_hypers["feature_parameters"]) or (feature_hypers["feature_parameters"]["target"] == "Atom"):
+            nb_samples = sum([len(structure_mask) for structure_mask in center_atom_id_mask]) if "nb_samples" not in parameters.keys() else parameters["nb_samples"]
+        elif (feature_hypers["feature_parameters"]["target"] == "Structure"):
+            nb_samples = len(frames)
         if parameters["filetype"] == "npy":
             pathname = f"{FEATURES_ROOT}/{parameters['feature_name']}/{parameters['filename']}"
             return np.load(pathname)[:nb_samples]
