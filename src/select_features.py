@@ -78,16 +78,38 @@ def select_pca(X, hypers):
         # increase n_components by 1000 up to 10000 until  
         # TODO make max number of features hyper
         for i in range(19): 
-            pca = sklearn.decomposition.PCA(n_components=min(1000+(500*i),X.shape[1],X.shape[0])).fit(X)
+            n_components = min(1000+(500*i),X.shape[1],X.shape[0])
+            pca = sklearn.decomposition.PCA(n_components=n_components).fit(X)
+            print( "pca.explained_variance_", pca.explained_variance_[-5:])
+            if ( n_components >= X.shape[0] ):
+                break;
             if ( np.sum(pca.explained_variance_ratio_) >= hypers['explained_variance_ratio'] ):
                 n_components_fulfilling_ratio = np.argmax(np.cumsum(pca.explained_variance_ratio_) > hypers['explained_variance_ratio'])
                 print("n_components_fulfilling_ratio", n_components_fulfilling_ratio)
                 pca.n_components_ = n_components_fulfilling_ratio
                 pca.components_ = pca.components_[:n_components_fulfilling_ratio]
-                #pca = sklearn.decomposition.PCA(n_components=n_components_fulfilling_ratio).fit(X)
                 break;
         if ( np.sum(pca.explained_variance_ratio_) < hypers['explained_variance_ratio'] ):
             print("WARNING: explained_variance_ratio was not reached in feature selection, continue with 10000 features")
+        print("pca.n_components_:",pca.n_components_, flush=True)
+        return pca
+    elif 'explained_variance' in hypers:
+        # increase n_components by 1000 up to 10000 until  
+        # TODO make max number of features hyper
+        for i in range(19): 
+            n_components = min(1000+(500*i),X.shape[1],X.shape[0])
+            pca = sklearn.decomposition.PCA(n_components=n_components).fit(X)
+            print("pca.explained_variance_", pca.explained_variance_[-5:])
+            if ( n_components >= X.shape[0] ):
+                break;
+            if ( pca.explained_variance_[-5] <= hypers['explained_variance'] ):
+                n_components_fulfilling_ratio = np.argmax(np.cumsum(pca.explained_variance_ratio_) > hypers['explained_variance'])
+                print("n_components_fulfilling_ratio", n_components_fulfilling_ratio)
+                pca.n_components_ = n_components_fulfilling_ratio
+                pca.components_ = pca.components_[:n_components_fulfilling_ratio]
+                break;
+        if ( np.sum(pca.explained_variance_ratio_) < hypers['explained_variance'] ):
+            print("WARNING: explained_variance was not reached in feature selection, continue with 10000 features")
         print("pca.n_components_:",pca.n_components_, flush=True)
         return pca
     else:

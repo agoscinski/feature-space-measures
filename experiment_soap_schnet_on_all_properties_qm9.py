@@ -68,7 +68,8 @@ for key in properties_key:
         },
         "feature_selection_parameters": {
             "type": "PCA",
-            "explained_variance_ratio": 1-1e-4,
+            #"explained_variance_ratio": 1-1e-6,
+            "explained_variance": 1e-9,
         },
         #"hilbert_space_parameters": {
         #    "computation_type": "sparse_implicit_distance",
@@ -83,8 +84,8 @@ for key in properties_key:
         "feature_parameters": {
             "feature_name": "schnet",
             "target": "Structure",
-            "filename": "schnet_qm9_"+key+"_nb_structures=130831_layer=6_target=Structure.npy",
-            #"filename": "schnet_qm9_"+key+"_nb_structures=10000_layer=6_target=Structure.npy", 
+            #"filename": "schnet_qm9_"+key+"_nb_structures=130831_layer=6_target=Structure.npy",
+            "filename": "schnet_qm9_"+key+"_nb_structures=10000_layer=6_target=Structure.npy",
             "filetype": "npy",
         }
     }]
