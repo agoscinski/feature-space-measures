@@ -90,46 +90,97 @@ def compute_nice_features(feature_hypers, frames, train_idx, center_atom_id_mask
     for nu in feature_hypers["nus"]:
         if nu not in range(1, nb_blocks+2):
             raise ValueError(f"nu={nu} should be in range [1, nb_blocks+1] with nb_blocks={nb_blocks}")
-
+    # mode
+    # n_components
+    mode = feature_hypers["mode"]
+    n_components = feature_hypers["n_components"]
     if (nb_blocks == 1):
-        blocks = [
-                StandardBlock(None, None, None,
-                      ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                      InvariantsPurifier(max_take=10),
-                      InvariantsPCA(n_components=200))
-            ]
+        if mode == 'invariants':
+            blocks = [
+                    StandardBlock(None, None, None,
+                          ThresholdExpansioner(num_expand=None, mode='invariants'),
+                          InvariantsPurifier(max_take=None),
+                          InvariantsPCA(n_components=n_components))
+                ]
+        elif mode == 'covariants':
+            blocks = [
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                ]
     elif (nb_blocks == 2):
-        blocks = [
-            StandardBlock(ThresholdExpansioner(num_expand=300),
-                          CovariantsPurifierBoth(max_take=10),
-                          IndividualLambdaPCAsBoth(n_components=100),
-                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                          InvariantsPurifier(max_take=10),
-                          InvariantsPCA(n_components=200)),
-            StandardBlock(None, None, None,
-                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                          InvariantsPurifier(max_take=10),
-                          InvariantsPCA(n_components=200))
-            ]
+        if mode == 'invariants':
+            blocks = [
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(None, None, None,
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components))
+                ]
+        elif mode == 'covariants':
+            blocks = [
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_c),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components))
+                ]
     elif (nb_blocks == 3):
-        blocks = [
-            StandardBlock(ThresholdExpansioner(num_expand=300),
-                          CovariantsPurifierBoth(max_take=10),
-                          IndividualLambdaPCAsBoth(n_components=100),
-                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                          InvariantsPurifier(max_take=10),
-                          InvariantsPCA(n_components=200)),
-            StandardBlock(ThresholdExpansioner(num_expand=300),
-                          CovariantsPurifierBoth(max_take=10),
-                          IndividualLambdaPCAsBoth(n_components=100),
-                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                          InvariantsPurifier(max_take=10),
-                          InvariantsPCA(n_components=200)),
-            StandardBlock(None, None, None,
-                          ThresholdExpansioner(num_expand=1000, mode='invariants'),
-                          InvariantsPurifier(max_take=10),
-                          InvariantsPCA(n_components=100))
-            ]
+        if mode == 'invariants':
+            blocks = [
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(None, None, None,
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components))
+                ]
+        elif mode == 'covariants':
+            blocks = [
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components)),
+                StandardBlock(ThresholdExpansioner(num_expand=None),
+                              CovariantsPurifierBoth(max_take=None),
+                              IndividualLambdaPCAsBoth(n_components=n_components),
+                              ThresholdExpansioner(num_expand=None, mode='invariants'),
+                              InvariantsPurifier(max_take=None),
+                              InvariantsPCA(n_components=n_components))
+                ]
     else:
         raise ValueError("nb_blocks > 3 is not supported")
 

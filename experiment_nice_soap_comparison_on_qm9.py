@@ -30,8 +30,8 @@ max_angular = 4
 normalize = False
 
 # Experiment metadata
-dataset_name = "qm9.db"
-nb_samples = sys.argv[1] if len(sys.argv) > 1 else 500
+dataset_name = "qm9.extxyz"
+nb_samples = sys.argv[1] if len(sys.argv) > 1 else 100
 two_split = True
 if two_split:
     seed = 0x5f4759df
@@ -47,7 +47,10 @@ regularizer = "CV 2 fold"
 features_hypers1 = [{
     "feature_type": "nice",
     "feature_parameters": {
-        "nb_blocks": 3,
+        "nb_blocks": 2,
+        "nus": [1,2,3],
+        "n_components": 100,
+        "mode": "invariants",
         "spherical_coeffs": {
             "radial_basis": "GTO",
             "interaction_cutoff": cutoff,
@@ -61,7 +64,8 @@ features_hypers1 = [{
     },
     "feature_selection_parameters": {
         "type": "PCA",
-        "explained_variance_ratio": 0.99,
+        #"explained_variance_ratio": 0.99,
+        "explained_variance": 1e-9,
     },
 }]
 features_hypers2 = [{
@@ -79,7 +83,8 @@ features_hypers2 = [{
     },
     "feature_selection_parameters": {
         "type": "PCA",
-        "explained_variance_ratio": 0.99,
+        #"explained_variance_ratio": 0.99,
+        "explained_variance": 1e-9,
     },
 }]
 

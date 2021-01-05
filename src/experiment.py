@@ -306,7 +306,7 @@ def store_metadata(
     if train_test_gfrm is not None:
         metadata["train_test_gfrm"] = train_test_gfrm 
     if center_atom_id_mask_description is not None:
-        metadata["center_atom_id_mask_description "] = "first environment"
+        metadata["center_atom_id_mask_description"] = center_atom_id_mask_description
     if target is not None:
         metadata["target"] = target
 
